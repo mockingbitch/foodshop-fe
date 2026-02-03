@@ -52,15 +52,17 @@ axiosInstance.interceptors.response.use(
     const { status, data } = error.response
 
     switch (status) {
-      case 401:
+      case 401: {
+        const isAuthMe = error.config?.url?.includes('/auth/me') ?? false
         clearToken()
-        toast.error(data?.message || ERROR_MESSAGES.UNAUTHORIZED)
-        
-        // Redirect to login page
-        if (!window.location.pathname.includes('/login')) {
-          window.location.href = '/owner/login'
+        if (!isAuthMe) {
+          toast.error(data?.message || ERROR_MESSAGES.UNAUTHORIZED)
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/owner/login'
+          }
         }
         break
+      }
 
       case 403:
         toast.error(data?.message || ERROR_MESSAGES.FORBIDDEN)
