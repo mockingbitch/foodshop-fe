@@ -6,9 +6,9 @@ import { STORAGE_KEYS } from '@constants'
 export const getItem = (key) => {
   try {
     const item = localStorage.getItem(key)
-    return item ? JSON.parse(item) : null
-  } catch (error) {
-    console.error(`Error getting item ${key} from localStorage:`, error)
+    if (item == null || item === 'undefined' || item === 'null') return null
+    return JSON.parse(item)
+  } catch {
     return null
   }
 }
@@ -18,10 +18,13 @@ export const getItem = (key) => {
  */
 export const setItem = (key, value) => {
   try {
+    if (value === undefined) {
+      localStorage.removeItem(key)
+      return true
+    }
     localStorage.setItem(key, JSON.stringify(value))
     return true
-  } catch (error) {
-    console.error(`Error setting item ${key} to localStorage:`, error)
+  } catch {
     return false
   }
 }

@@ -1,0 +1,918 @@
+{
+	"info": {
+		"_postman_id": "foodshop-api-collection",
+		"name": "FoodShop API",
+		"description": "REST API cho FoodShop - Quản lý nhà hàng và món ăn.\n\n**Biến:**\n- `base_url`: URL gốc (mặc định http://localhost:8000)\n- `token`: Bearer token sau khi login (điền vào sau khi gọi Owner/Admin Login)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "id",
+			"value": "1"
+		},
+		{
+			"key": "restaurantId",
+			"value": "1"
+		},
+		{
+			"key": "foodItemId",
+			"value": "1"
+		},
+		{
+			"key": "categoryId",
+			"value": "1"
+		},
+		{
+			"key": "code",
+			"value": "en"
+		}
+	],
+	"item": [
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "API Test",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [
+							{ "key": "Accept", "value": "application/json" }
+						],
+						"url": "{{base_url}}/api/test",
+						"description": "Kiểm tra API đang chạy."
+					}
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register Owner",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Nguyen Van Owner\",\n  \"email\": \"owner@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"phone\": \"0901234567\",\n  \"address\": \"123 Nguyen Hue, Q1\",\n  \"country_id\": 1\n}"
+						},
+						"url": "{{base_url}}/api/auth/owner/register",
+						"description": "Đăng ký chủ nhà hàng. Response có `token` - copy vào biến `token` để dùng cho request cần auth."
+					}
+				},
+				{
+					"name": "Owner Login",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"owner@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": "{{base_url}}/api/auth/owner/login",
+						"description": "Đăng nhập owner. Copy `token` từ response vào collection variable `token`."
+					}
+				},
+				{
+					"name": "Admin Login",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": "{{base_url}}/api/auth/admin/login"
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" }
+						],
+						"url": "{{base_url}}/api/auth/logout",
+						"description": "Thu hồi token hiện tại. Cần Bearer token."
+					}
+				},
+				{
+					"name": "Me",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Accept", "value": "application/json" }
+						],
+						"url": "{{base_url}}/api/auth/me"
+					}
+				},
+				{
+					"name": "Update Owner Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Ten moi\",\n  \"phone\": \"0987654321\",\n  \"address\": \"Dia chi moi\",\n  \"country_id\": 1\n}"
+						},
+						"url": "{{base_url}}/api/owner/profile"
+					}
+				}
+			]
+		},
+		{
+			"name": "Reference",
+			"item": [
+				{
+					"name": "List Languages",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/languages"
+					}
+				},
+				{
+					"name": "Get Language by Code",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/languages/{{code}}"
+					}
+				},
+				{
+					"name": "List Countries",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/countries"
+					}
+				},
+				{
+					"name": "Get Country by ID",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/countries/{{id}}"
+					}
+				},
+				{
+					"name": "List Restaurant Types",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/restaurant-types"
+					}
+				}
+			]
+		},
+		{
+			"name": "Restaurants",
+			"item": [
+				{
+					"name": "List Restaurants",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/restaurants?per_page=15",
+							"query": [
+								{ "key": "country_id", "value": "", "disabled": true },
+								{ "key": "restaurant_type_id", "value": "", "disabled": true },
+								{ "key": "delivery_available", "value": "", "disabled": true },
+								{ "key": "search", "value": "", "disabled": true },
+								{ "key": "per_page", "value": "15" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Search Restaurants",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/restaurants/search",
+							"query": [
+								{ "key": "name", "value": "" },
+								{ "key": "per_page", "value": "15" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Restaurants Nearby",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/restaurants/nearby",
+							"query": [
+								{ "key": "latitude", "value": "10.7769" },
+								{ "key": "longitude", "value": "106.7009" },
+								{ "key": "radius_km", "value": "10" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Restaurant",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/restaurants/{{id}}"
+					}
+				},
+				{
+					"name": "Create Restaurant",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"country_id\": 1,\n  \"restaurant_type_id\": 1,\n  \"name\": { \"en\": \"My Restaurant\", \"vn\": \"Nha hang cua toi\" },\n  \"description\": { \"en\": \"Description\" },\n  \"city\": \"Ho Chi Minh\",\n  \"address\": \"123 Nguyen Hue\",\n  \"phone\": \"0901234567\",\n  \"zalo\": \"0901234567\",\n  \"email\": \"restaurant@example.com\",\n  \"latitude\": 10.7769,\n  \"longitude\": 106.7009,\n  \"delivery_available\": true\n}"
+						},
+						"url": "{{base_url}}/api/restaurants"
+					}
+				},
+				{
+					"name": "Update Restaurant",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"country_id\": 1,\n  \"restaurant_type_id\": 1,\n  \"name\": { \"en\": \"Updated Name\" },\n  \"city\": \"Ho Chi Minh\",\n  \"address\": \"456 Le Loi\",\n  \"phone\": \"0901234567\",\n  \"delivery_available\": false\n}"
+						},
+						"url": "{{base_url}}/api/restaurants/{{id}}"
+					}
+				},
+				{
+					"name": "Delete Restaurant",
+					"request": {
+						"method": "DELETE",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/restaurants/{{id}}"
+					}
+				},
+				{
+					"name": "Get Restaurant Reviews",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/restaurants/{{restaurantId}}/reviews"
+					}
+				},
+				{
+					"name": "Create Restaurant Review",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reviewer_name\": \"Customer Name\",\n  \"reviewer_email\": \"customer@example.com\",\n  \"rating\": 5,\n  \"comment\": \"Great food!\"\n}"
+						},
+						"url": "{{base_url}}/api/restaurants/{{restaurantId}}/reviews"
+					}
+				},
+				{
+					"name": "Get Restaurant Menus",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/restaurants/{{restaurantId}}/menus"
+					}
+				}
+			]
+		},
+		{
+			"name": "Food Items",
+			"item": [
+				{
+					"name": "List Food Items",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/food-items",
+							"query": [
+								{ "key": "restaurant_id", "value": "", "disabled": true },
+								{ "key": "category_id", "value": "", "disabled": true },
+								{ "key": "best_seller", "value": "", "disabled": true },
+								{ "key": "vegetarian", "value": "", "disabled": true },
+								{ "key": "search", "value": "", "disabled": true },
+								{ "key": "per_page", "value": "15" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Search Food Items",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/food-items/search",
+							"query": [
+								{ "key": "search", "value": "" },
+								{ "key": "per_page", "value": "15" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Food Items by Category",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/food-items/by-category/{{categoryId}}"
+					}
+				},
+				{
+					"name": "Best Seller Food Items",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/food-items/best-seller",
+							"query": [
+								{ "key": "restaurant_id", "value": "", "disabled": true },
+								{ "key": "per_page", "value": "15" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Food Item",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/food-items/{{id}}"
+					}
+				},
+				{
+					"name": "Create Food Item",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"restaurant_id\": 1,\n  \"food_category_id\": 1,\n  \"name\": { \"en\": \"Pho Bo\", \"vn\": \"Phở bò\" },\n  \"description\": { \"en\": \"Beef noodle soup\" },\n  \"main_image\": \"https://example.com/image.jpg\",\n  \"extra_images\": [],\n  \"price\": 50000,\n  \"currency_code\": \"VND\",\n  \"serving_size\": 1,\n  \"weight\": 300,\n  \"is_vegetarian\": false\n}"
+						},
+						"url": "{{base_url}}/api/food-items"
+					}
+				},
+				{
+					"name": "Update Food Item",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": { \"en\": \"Updated Pho\" },\n  \"price\": 55000,\n  \"currency_code\": \"VND\"\n}"
+						},
+						"url": "{{base_url}}/api/food-items/{{id}}"
+					}
+				},
+				{
+					"name": "Delete Food Item",
+					"request": {
+						"method": "DELETE",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/food-items/{{id}}"
+					}
+				},
+				{
+					"name": "Confirm Food Code",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/food-items/{{id}}/confirm-code"
+					}
+				},
+				{
+					"name": "Get Food Item Reviews",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/food-items/{{foodItemId}}/reviews"
+					}
+				},
+				{
+					"name": "Create Food Item Review",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reviewer_name\": \"Customer Name\",\n  \"reviewer_email\": \"customer@example.com\",\n  \"rating\": 5,\n  \"comment\": \"Delicious!\"\n}"
+						},
+						"url": "{{base_url}}/api/food-items/{{foodItemId}}/reviews"
+					}
+				}
+			]
+		},
+		{
+			"name": "Food Categories",
+			"item": [
+				{
+					"name": "List Food Categories",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/food-categories",
+							"query": [
+								{ "key": "root_only", "value": "", "disabled": true },
+								{ "key": "parent_id", "value": "", "disabled": true }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Food Category",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/food-categories/{{id}}",
+							"query": [
+								{ "key": "language_code", "value": "en" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Food Category",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"MAIN\",\n  \"parent_id\": null,\n  \"sort_order\": 1,\n  \"translations\": [\n    { \"language_code\": \"en\", \"name\": \"Main Dishes\", \"description\": \"Main course\" },\n    { \"language_code\": \"vn\", \"name\": \"Mon chinh\" }\n  ]\n}"
+						},
+						"url": "{{base_url}}/api/food-categories"
+					}
+				},
+				{
+					"name": "Update Food Category",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"MAIN\",\n  \"sort_order\": 2\n}"
+						},
+						"url": "{{base_url}}/api/food-categories/{{id}}"
+					}
+				},
+				{
+					"name": "Delete Food Category",
+					"request": {
+						"method": "DELETE",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/food-categories/{{id}}"
+					}
+				},
+				{
+					"name": "Add Category Translation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"language_code\": \"en\",\n  \"name\": \"Category Name\",\n  \"description\": \"Description\",\n  \"video_link\": \"https://youtube.com/...\"\n}"
+						},
+						"url": "{{base_url}}/api/food-categories/{{id}}/translations"
+					}
+				}
+			]
+		},
+		{
+			"name": "News",
+			"item": [
+				{
+					"name": "List News",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/news",
+							"query": [
+								{ "key": "type", "value": "news", "disabled": true },
+								{ "key": "search", "value": "", "disabled": true },
+								{ "key": "per_page", "value": "15" }
+							]
+						}
+					}
+				},
+				{
+					"name": "News by Type",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/news/by-type/news"
+					}
+				},
+				{
+					"name": "Get News",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/news/{{id}}"
+					}
+				},
+				{
+					"name": "Create News",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"news\",\n  \"category_id\": null,\n  \"title\": { \"en\": \"Article Title\" },\n  \"content\": { \"en\": \"Full content here\" },\n  \"excerpt\": { \"en\": \"Short excerpt\" },\n  \"status\": \"draft\",\n  \"published_at\": null\n}"
+						},
+						"url": "{{base_url}}/api/news"
+					}
+				},
+				{
+					"name": "Update News",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"news\",\n  \"title\": { \"en\": \"Updated Title\" },\n  \"content\": { \"en\": \"Updated content\" },\n  \"status\": \"published\",\n  \"published_at\": \"2025-02-02\"\n}"
+						},
+						"url": "{{base_url}}/api/news/{{id}}"
+					}
+				},
+				{
+					"name": "Delete News",
+					"request": {
+						"method": "DELETE",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/news/{{id}}"
+					}
+				}
+			]
+		},
+		{
+			"name": "Menus",
+			"item": [
+				{
+					"name": "Get Menu",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/menus/{{id}}"
+					}
+				},
+				{
+					"name": "Create Menu",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"restaurant_id\": 1,\n  \"name\": { \"en\": \"Breakfast Menu\" },\n  \"description\": { \"en\": \"Morning dishes\" },\n  \"image\": null,\n  \"sort_order\": 1\n}"
+						},
+						"url": "{{base_url}}/api/menus"
+					}
+				},
+				{
+					"name": "Update Menu",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": { \"en\": \"Updated Menu Name\" },\n  \"sort_order\": 2\n}"
+						},
+						"url": "{{base_url}}/api/menus/{{id}}"
+					}
+				},
+				{
+					"name": "Delete Menu",
+					"request": {
+						"method": "DELETE",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/menus/{{id}}"
+					}
+				}
+			]
+		},
+		{
+			"name": "Exchange Rates",
+			"item": [
+				{
+					"name": "Get Exchange Rates",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/exchange-rates",
+							"query": [
+								{ "key": "date", "value": "", "description": "Y-m-d, default today" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Convert Currency",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 100,\n  \"from_currency\": \"VND\",\n  \"to_currency\": \"USD\"\n}"
+						},
+						"url": "{{base_url}}/api/exchange-rates/convert"
+					}
+				}
+			]
+		},
+		{
+			"name": "Upload",
+			"item": [
+				{
+					"name": "Upload Images",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{ "key": "images[]", "type": "file", "src": [] }
+							]
+						},
+						"url": "{{base_url}}/api/upload/images"
+					}
+				},
+				{
+					"name": "Upload Restaurant Images",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{ "key": "outside_images[]", "type": "file", "src": [], "description": "Max 2" },
+								{ "key": "inside_images[]", "type": "file", "src": [], "description": "Max 5" }
+							]
+						},
+						"url": "{{base_url}}/api/upload/restaurant-images"
+					}
+				},
+				{
+					"name": "Upload Food Images",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{ "key": "main_image", "type": "file", "src": [], "description": "Required" },
+								{ "key": "extra_images[]", "type": "file", "src": [], "description": "Optional, max 5" }
+							]
+						},
+						"url": "{{base_url}}/api/upload/food-images"
+					}
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Dashboard Stats",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/admin/dashboard/stats",
+						"description": "Cần đăng nhập admin."
+					}
+				},
+				{
+					"name": "Admin List Restaurants",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/admin/restaurants",
+							"query": [
+								{ "key": "status", "value": "", "disabled": true },
+								{ "key": "per_page", "value": "15" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Admin Restaurant Food Items",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/admin/restaurants/{{restaurantId}}/food-items"
+					}
+				},
+				{
+					"name": "Admin Update Restaurant Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"active\"\n}"
+						},
+						"url": "{{base_url}}/api/admin/restaurants/{{id}}/status",
+						"description": "status: active | hidden | pending"
+					}
+				},
+				{
+					"name": "Pending Food Codes",
+					"request": {
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": "{{base_url}}/api/food-items/pending-codes"
+					}
+				},
+				{
+					"name": "Admin Update Food Item Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"active\"\n}"
+						},
+						"url": "{{base_url}}/api/admin/food-items/{{id}}/status",
+						"description": "status: active | hidden | pending"
+					}
+				}
+			]
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "Search Restaurants (alias)",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/search/restaurants",
+							"query": [{ "key": "name", "value": "" }]
+						}
+					}
+				},
+				{
+					"name": "Search Food Items (alias)",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/search/food-items",
+							"query": [{ "key": "search", "value": "" }]
+						}
+					}
+				},
+				{
+					"name": "Food Items by Category (alias)",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/search/food-items/by-category",
+							"query": [{ "key": "category_id", "value": "1" }]
+						}
+					}
+				},
+				{
+					"name": "Restaurants by Distance (alias)",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [{ "key": "Accept", "value": "application/json" }],
+						"url": {
+							"raw": "{{base_url}}/api/search/restaurants/by-distance",
+							"query": [
+								{ "key": "latitude", "value": "10.7769" },
+								{ "key": "longitude", "value": "106.7009" },
+								{ "key": "radius_km", "value": "10" }
+							]
+						}
+					}
+				}
+			]
+		}
+	]
+}

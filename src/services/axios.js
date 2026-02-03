@@ -1,12 +1,17 @@
 import axios from 'axios'
 import { API_BASE_URL, API_TIMEOUT, ERROR_MESSAGES } from '@constants'
-import { getAuthToken, removeAuthToken, removeUserData } from '@utils/storage'
+import { getToken, clearToken } from '@utils/authToken'
 import { toast } from 'react-toastify'
+
+if (import.meta.env.DEV) {
+  console.log('[API] baseURL:', API_BASE_URL)
+}
 
 // Create axios instance
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: API_TIMEOUT,
+  withCredentials: true, // gửi/nhận HttpOnly cookie
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -16,8 +21,7 @@ const axiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Add auth token to headers
-    const token = getAuthToken()
+    const token = getToken()
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -49,9 +53,7 @@ axiosInstance.interceptors.response.use(
 
     switch (status) {
       case 401:
-        // Unauthorized - clear auth data and redirect to login
-        removeAuthToken()
-        removeUserData()
+        clearToken()
         toast.error(data?.message || ERROR_MESSAGES.UNAUTHORIZED)
         
         // Redirect to login page

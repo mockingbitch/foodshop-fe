@@ -1,18 +1,20 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { 
-  getAuthToken, 
-  setAuthToken as saveAuthToken, 
-  removeAuthToken,
-  getUserData,
-  setUserData as saveUserData,
-  removeUserData 
-} from '@utils/storage'
+import { restoreToken, setToken, clearToken, hasToken } from '@utils/authToken'
 import { authApi } from '@services/api/authApi'
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '@constants'
 
 const AuthContext = createContext(null)
+
+/** Chuẩn hóa response login: hỗ trợ { token, user } hoặc { access_token, user } hoặc { data: { token, user } } */
+function normalizeLoginResponse(data) {
+  const payload = data?.data ?? data
+  const token = payload?.token ?? payload?.access_token ?? null
+  const user = payload?.user ?? null
+  return { token, user }
+}
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
@@ -34,50 +36,55 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   const checkAuth = async () => {
-    try {
-      const token = getAuthToken()
-      const userData = getUserData()
+    // Không block: restore token (sync) → tắt loading ngay → gọi /auth/me trong background.
+    restoreToken()
+    if (hasToken()) {
+      setIsAuthenticated(true)
+    }
+    setLoading(false)
 
-      if (token && userData) {
+    try {
+      const response = await authApi.me()
+      const userData = response.data?.user ?? response.data
+      const tokenFromMe = response.data?.token ?? response.data?.access_token
+      if (userData) {
         setUser(userData)
         setIsAuthenticated(true)
-        
-        // Optionally verify token with backend
-        try {
-          const response = await authApi.me()
-          setUser(response.data)
-          saveUserData(response.data)
-        } catch (error) {
-          // Token might be expired
-          if (error.response?.status === 401) {
-            logout(false)
-          }
-        }
+        if (tokenFromMe) setToken(tokenFromMe)
       }
     } catch (error) {
-      console.error('Auth check failed:', error)
-    } finally {
-      setLoading(false)
+      if (error.response?.status === 401) {
+        clearToken()
+        setUser(null)
+        setIsAuthenticated(false)
+      }
     }
   }
 
   const loginOwner = async (credentials) => {
     try {
       const response = await authApi.loginOwner(credentials)
-      const { token, user: userData } = response.data
+      const { token, user: userData } = normalizeLoginResponse(response.data)
 
-      saveAuthToken(token)
-      saveUserData(userData)
-      setUser(userData)
-      setIsAuthenticated(true)
+      if (!token || typeof token !== 'string') {
+        if (import.meta.env.DEV) console.warn('[Auth] Login response:', response.data)
+        toast.error('Invalid login response: no token')
+        return { success: false, error: 'Invalid login response' }
+      }
+
+      setToken(token)
+      flushSync(() => {
+        setUser({ ...(userData ?? {}), role: userData?.role || 'owner' })
+        setIsAuthenticated(true)
+      })
 
       toast.success(SUCCESS_MESSAGES.LOGIN_SUCCESS)
-      navigate('/owner/profile')
-      
+      navigate('/owner/dashboard', { replace: true })
+
       return { success: true }
     } catch (error) {
+      // Toast đã hiển thị ở axios interceptor, không gọi lại để tránh duplicate
       const message = error.response?.data?.message || ERROR_MESSAGES.NETWORK_ERROR
-      toast.error(message)
       return { success: false, error: message }
     }
   }
@@ -85,20 +92,26 @@ export const AuthProvider = ({ children }) => {
   const loginAdmin = async (credentials) => {
     try {
       const response = await authApi.loginAdmin(credentials)
-      const { token, user: userData } = response.data
+      const { token, user: userData } = normalizeLoginResponse(response.data)
 
-      saveAuthToken(token)
-      saveUserData(userData)
-      setUser(userData)
-      setIsAuthenticated(true)
+      if (!token || typeof token !== 'string') {
+        if (import.meta.env.DEV) console.warn('[Auth] Admin login response:', response.data)
+        toast.error('Invalid login response: no token')
+        return { success: false, error: 'Invalid login response' }
+      }
+
+      setToken(token)
+      flushSync(() => {
+        setUser({ ...(userData ?? {}), role: 'admin' })
+        setIsAuthenticated(true)
+      })
 
       toast.success(SUCCESS_MESSAGES.LOGIN_SUCCESS)
-      navigate('/admin/dashboard')
-      
+      navigate('/admin/dashboard', { replace: true })
+
       return { success: true }
     } catch (error) {
       const message = error.response?.data?.message || ERROR_MESSAGES.NETWORK_ERROR
-      toast.error(message)
       return { success: false, error: message }
     }
   }
@@ -106,27 +119,32 @@ export const AuthProvider = ({ children }) => {
   const registerOwner = async (data) => {
     try {
       const response = await authApi.registerOwner(data)
-      const { token, user: userData } = response.data
+      const { token, user: userData } = normalizeLoginResponse(response.data)
 
-      saveAuthToken(token)
-      saveUserData(userData)
-      setUser(userData)
-      setIsAuthenticated(true)
+      if (!token || typeof token !== 'string') {
+        if (import.meta.env.DEV) console.warn('[Auth] Register response:', response.data)
+        toast.error('Invalid register response: no token')
+        return { success: false, error: 'Invalid register response' }
+      }
+
+      setToken(token)
+      flushSync(() => {
+        setUser({ ...(userData ?? {}), role: userData?.role || 'owner' })
+        setIsAuthenticated(true)
+      })
 
       toast.success(SUCCESS_MESSAGES.REGISTER_SUCCESS)
-      navigate('/owner/profile')
-      
+      navigate('/owner/dashboard', { replace: true })
+
       return { success: true }
     } catch (error) {
       const message = error.response?.data?.message || ERROR_MESSAGES.NETWORK_ERROR
-      toast.error(message)
       return { success: false, error: message }
     }
   }
 
   const logout = (showToast = true) => {
-    removeAuthToken()
-    removeUserData()
+    clearToken()
     setUser(null)
     setIsAuthenticated(false)
 
@@ -141,21 +159,18 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authApi.updateOwnerProfile(data)
       const userData = response.data
-
-      saveUserData(userData)
       setUser(userData)
 
       toast.success(SUCCESS_MESSAGES.UPDATE_SUCCESS)
       return { success: true }
     } catch (error) {
       const message = error.response?.data?.message || ERROR_MESSAGES.NETWORK_ERROR
-      toast.error(message)
       return { success: false, error: message }
     }
   }
 
   const isOwner = () => {
-    return user?.role === 'owner'
+    return user?.role === 'owner' || user?.role === 'restaurant_owner'
   }
 
   const isAdmin = () => {

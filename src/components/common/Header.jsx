@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Menu, X, Search, User, LogOut, Globe } from 'lucide-react'
+import { Menu, X, Search, User, LogOut, Globe, LayoutDashboard } from 'lucide-react'
 import { useAuth } from '@context/AuthContext'
 import { useLanguage } from '@context/LanguageContext'
 import { LANGUAGE_LABELS } from '@constants'
@@ -8,7 +8,7 @@ import { LANGUAGE_LABELS } from '@constants'
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
-  const { isAuthenticated, user, logout } = useAuth()
+  const { isAuthenticated, user, logout, isOwner } = useAuth()
   const { currentLanguage, changeLanguage, t } = useLanguage()
   const navigate = useNavigate()
 
@@ -87,6 +87,16 @@ const Header = () => {
             {/* User Menu */}
             {isAuthenticated ? (
               <div className="flex items-center space-x-2">
+                {isOwner() && (
+                  <Link
+                    to="/owner/dashboard"
+                    className="hidden md:flex items-center space-x-2 px-3 py-2 text-gray-700 hover:text-primary-600 transition"
+                    title={t('common.dashboard')}
+                  >
+                    <LayoutDashboard size={20} />
+                    <span className="text-sm font-medium">{t('common.dashboard')}</span>
+                  </Link>
+                )}
                 <Link
                   to={user?.role === 'admin' ? '/admin/dashboard' : '/owner/profile'}
                   className="hidden md:flex items-center space-x-2 px-3 py-2 text-gray-700 hover:text-primary-600 transition"
@@ -155,6 +165,17 @@ const Header = () => {
               >
                 {t('common.news')}
               </Link>
+
+              {isAuthenticated && isOwner() && (
+                <Link
+                  to="/owner/dashboard"
+                  className="flex items-center gap-2 text-primary-600 font-medium hover:text-primary-700"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <LayoutDashboard size={20} />
+                  {t('common.dashboard')}
+                </Link>
+              )}
 
               {!isAuthenticated && (
                 <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">

@@ -29,7 +29,10 @@
     "error": "Error",
     "success": "Success",
     "confirm": "Confirm",
-    "language": "Language"
+    "language": "Language",
+    "active": "Active",
+    "inactive": "Inactive",
+    "required": "is required"
   },
   "restaurant": {
     "title": "Restaurants",
@@ -64,7 +67,12 @@
     "confirmPassword": "Confirm Password",
     "forgotPassword": "Forgot Password?",
     "noAccount": "Don't have an account?",
-    "hasAccount": "Already have an account?"
+    "hasAccount": "Already have an account?",
+    "rememberMe": "Remember me",
+    "orContinueWith": "Or continue with",
+    "invalidEmail": "Invalid email address",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "required": "is required"
   },
   "owner": {
     "title": "Owner Dashboard",
