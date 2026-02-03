@@ -27,6 +27,7 @@ import NewsDetailPage from '@pages/public/NewsDetailPage'
 // Owner Pages
 import OwnerRegisterPage from '@pages/owner/OwnerRegisterPage'
 import OwnerLoginPage from '@pages/owner/OwnerLoginPage'
+import OwnerDashboardPage from '@pages/owner/OwnerDashboardPage'
 import OwnerProfilePage from '@pages/owner/OwnerProfilePage'
 import RestaurantRegisterPage from '@pages/owner/RestaurantRegisterPage'
 import RestaurantEditPage from '@pages/owner/RestaurantEditPage'
@@ -77,6 +78,7 @@ function App() {
           {/* Protected Owner Routes */}
           <Route element={<ProtectedRoute role="owner" />}>
             <Route element={<OwnerLayout />}>
+              <Route path="/owner/dashboard" element={<OwnerDashboardPage />} />
               <Route path="/owner/profile" element={<OwnerProfilePage />} />
               <Route path="/owner/restaurant/register" element={<RestaurantRegisterPage />} />
               <Route path="/owner/restaurant/:id/edit" element={<RestaurantEditPage />} />

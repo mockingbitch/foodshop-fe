@@ -1,6 +1,7 @@
-// API Configuration
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
-export const API_TIMEOUT = import.meta.env.VITE_API_TIMEOUT || 30000
+// API Configuration - lấy từ .env (VITE_API_BASE_URL). Sau khi sửa .env cần restart dev server (npm run dev).
+const _apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api'
+export const API_BASE_URL = String(_apiBase).replace(/\/+$/, '') // bỏ trailing slash
+export const API_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT) || 30000
 
 // Upload Configuration
 export const MAX_FILE_SIZE = import.meta.env.VITE_MAX_FILE_SIZE || 5242880 // 5MB
@@ -30,8 +31,12 @@ export const LANGUAGE_LABELS = {
 // User Roles
 export const USER_ROLES = {
   OWNER: 'owner',
+  RESTAURANT_OWNER: 'restaurant_owner',
   ADMIN: 'admin',
 }
+
+/** Các role được coi là owner (dashboard owner). */
+export const OWNER_ROLES = ['owner', 'restaurant_owner']
 
 // Restaurant Types
 export const RESTAURANT_TYPES = {

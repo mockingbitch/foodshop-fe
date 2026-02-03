@@ -29,7 +29,10 @@
     "error": "Lỗi",
     "success": "Thành công",
     "confirm": "Xác nhận",
-    "language": "Ngôn ngữ"
+    "language": "Ngôn ngữ",
+    "active": "Hoạt động",
+    "inactive": "Không hoạt động",
+    "required": "là bắt buộc"
   },
   "restaurant": {
     "title": "Nhà hàng",
@@ -64,7 +67,12 @@
     "confirmPassword": "Xác nhận mật khẩu",
     "forgotPassword": "Quên mật khẩu?",
     "noAccount": "Chưa có tài khoản?",
-    "hasAccount": "Đã có tài khoản?"
+    "hasAccount": "Đã có tài khoản?",
+    "rememberMe": "Ghi nhớ đăng nhập",
+    "orContinueWith": "Hoặc đăng nhập bằng",
+    "invalidEmail": "Email không hợp lệ",
+    "passwordMinLength": "Mật khẩu phải có ít nhất 6 ký tự",
+    "required": "là bắt buộc"
   },
   "owner": {
     "title": "Bảng điều khiển chủ nhà hàng",

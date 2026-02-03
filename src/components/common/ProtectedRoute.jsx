@@ -1,8 +1,15 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@context/AuthContext'
+import { hasToken } from '@utils/authToken'
+import { OWNER_ROLES } from '@constants'
 
+/**
+ * Guard: token trong memory hoặc session từ HttpOnly cookie (isAuthenticated từ /auth/me).
+ * role "owner" chấp nhận cả user.role === 'owner' và 'restaurant_owner'.
+ */
 const ProtectedRoute = ({ role }) => {
   const { isAuthenticated, user, loading } = useAuth()
+  const tokenOrCookie = hasToken() || isAuthenticated
 
   if (loading) {
     return (
@@ -12,11 +19,15 @@ const ProtectedRoute = ({ role }) => {
     )
   }
 
-  if (!isAuthenticated) {
+  if (!tokenOrCookie) {
     return <Navigate to={role === 'admin' ? '/admin/login' : '/owner/login'} replace />
   }
 
-  if (role && user?.role !== role) {
+  if (role === 'owner') {
+    if (!OWNER_ROLES.includes(user?.role)) {
+      return <Navigate to="/" replace />
+    }
+  } else if (role && user?.role !== role) {
     return <Navigate to="/" replace />
   }
 
