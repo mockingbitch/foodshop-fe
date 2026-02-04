@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { restoreToken, setToken, clearToken, hasToken } from '@utils/authToken'
 import { authApi } from '@services/api/authApi'
-import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '@constants'
+import { SUCCESS_MESSAGES, ERROR_MESSAGES, getErrorMessageKey } from '@constants'
 
 const AuthContext = createContext(null)
 const USER_STORAGE_KEY = 'auth_user'
@@ -48,7 +48,8 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
+  // Khởi tạo user từ sessionStorage ngay để reload không mất: tránh effect fetchUser chạy khi user=null rồi 401 xóa user.
+  const [user, setUser] = useState(() => getStoredUser())
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const navigate = useNavigate()
@@ -125,8 +126,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true }
     } catch (error) {
       // Toast đã hiển thị ở axios interceptor, không gọi lại để tránh duplicate
-      const message = error.response?.data?.message || ERROR_MESSAGES.NETWORK_ERROR
-      return { success: false, error: message }
+      return { success: false, error: getErrorMessageKey(error) }
     }
   }
 
@@ -154,8 +154,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true }
     } catch (error) {
-      const message = error.response?.data?.message || ERROR_MESSAGES.NETWORK_ERROR
-      return { success: false, error: message }
+      return { success: false, error: getErrorMessageKey(error) }
     }
   }
 
@@ -183,8 +182,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true }
     } catch (error) {
-      const message = error.response?.data?.message || ERROR_MESSAGES.NETWORK_ERROR
-      return { success: false, error: message }
+      return { success: false, error: getErrorMessageKey(error) }
     }
   }
 
@@ -211,8 +209,7 @@ export const AuthProvider = ({ children }) => {
       toast.success(SUCCESS_MESSAGES.UPDATE_SUCCESS)
       return { success: true }
     } catch (error) {
-      const message = error.response?.data?.message || ERROR_MESSAGES.NETWORK_ERROR
-      return { success: false, error: message }
+      return { success: false, error: getErrorMessageKey(error) }
     }
   }
 

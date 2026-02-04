@@ -81,6 +81,14 @@
     "addRestaurant": "Add Restaurant",
     "addFoodItem": "Add Food Item"
   },
+  "errors": {
+    "networkError": "Network error. Please check your connection.",
+    "unauthorized": "You are not authorized. Please log in again.",
+    "forbidden": "Access forbidden.",
+    "notFound": "Resource not found.",
+    "serverError": "Server error. Please try again later.",
+    "validationError": "Please check your input and try again."
+  },
   "admin": {
     "title": "Admin Dashboard",
     "manageRestaurants": "Manage Restaurants",

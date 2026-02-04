@@ -74,6 +74,14 @@
     "passwordMinLength": "Mật khẩu phải có ít nhất 6 ký tự",
     "required": "là bắt buộc"
   },
+  "errors": {
+    "networkError": "Lỗi mạng. Vui lòng kiểm tra kết nối.",
+    "unauthorized": "Bạn chưa được xác thực. Vui lòng đăng nhập lại.",
+    "forbidden": "Không có quyền truy cập.",
+    "notFound": "Không tìm thấy tài nguyên.",
+    "serverError": "Lỗi máy chủ. Vui lòng thử lại sau.",
+    "validationError": "Vui lòng kiểm tra thông tin và thử lại."
+  },
   "owner": {
     "title": "Bảng điều khiển chủ nhà hàng",
     "myRestaurants": "Nhà hàng của tôi",
