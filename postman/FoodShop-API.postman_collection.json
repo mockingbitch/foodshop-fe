@@ -206,6 +206,7 @@
 		},
 		{
 			"name": "Restaurants",
+			"description": "API nhà hàng: danh sách, tìm kiếm, gần đây, chi tiết, CRUD (Owner), đánh giá, menu. Create/Update/Delete cần Bearer token.",
 			"item": [
 				{
 					"name": "List Restaurants",
@@ -213,16 +214,8 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/restaurants?per_page=15",
-							"query": [
-								{ "key": "country_id", "value": "", "disabled": true },
-								{ "key": "restaurant_type_id", "value": "", "disabled": true },
-								{ "key": "delivery_available", "value": "", "disabled": true },
-								{ "key": "search", "value": "", "disabled": true },
-								{ "key": "per_page", "value": "15" }
-							]
-						}
+						"url": "{{base_url}}/api/restaurants?country_id=1&restaurant_type_id=1&delivery_available=true&search=&per_page=15",
+						"description": "Danh sách nhà hàng active, phân trang. Query: country_id, restaurant_type_id, delivery_available, search, per_page."
 					}
 				},
 				{
@@ -231,13 +224,8 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/restaurants/search",
-							"query": [
-								{ "key": "name", "value": "" },
-								{ "key": "per_page", "value": "15" }
-							]
-						}
+						"url": "{{base_url}}/api/restaurants/search?name=pizza&per_page=15",
+						"description": "Tìm nhà hàng theo tên (name, per_page)."
 					}
 				},
 				{
@@ -246,14 +234,8 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/restaurants/nearby",
-							"query": [
-								{ "key": "latitude", "value": "10.7769" },
-								{ "key": "longitude", "value": "106.7009" },
-								{ "key": "radius_km", "value": "10" }
-							]
-						}
+						"url": "{{base_url}}/api/restaurants/nearby?latitude=10.7769&longitude=106.7009&radius=10",
+						"description": "Nhà hàng trong bán kính (km) quanh tọa độ. Params: latitude, longitude, radius (optional 1-100)."
 					}
 				},
 				{
@@ -262,7 +244,8 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/restaurants/{{id}}"
+						"url": "{{base_url}}/api/restaurants/{{id}}",
+						"description": "Chi tiết nhà hàng theo ID (kèm best_sellers, outside_images, inside_images)."
 					}
 				},
 				{
@@ -277,7 +260,8 @@
 							"mode": "raw",
 							"raw": "{\n  \"country_id\": 1,\n  \"restaurant_type_id\": 1,\n  \"name\": { \"en\": \"My Restaurant\", \"vn\": \"Nha hang cua toi\" },\n  \"description\": { \"en\": \"Description\" },\n  \"city\": \"Ho Chi Minh\",\n  \"address\": \"123 Nguyen Hue\",\n  \"phone\": \"0901234567\",\n  \"zalo\": \"0901234567\",\n  \"email\": \"restaurant@example.com\",\n  \"latitude\": 10.7769,\n  \"longitude\": 106.7009,\n  \"delivery_available\": true\n}"
 						},
-						"url": "{{base_url}}/api/restaurants"
+						"url": "{{base_url}}/api/restaurants",
+						"description": "Tạo nhà hàng (Owner). Cần Bearer token. Status pending cho đến khi admin duyệt. Body: country_id, restaurant_type_id, name (object en/vn), city, address, phone, zalo?, email?, latitude?, longitude?, delivery_available?."
 					}
 				},
 				{
@@ -290,9 +274,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"country_id\": 1,\n  \"restaurant_type_id\": 1,\n  \"name\": { \"en\": \"Updated Name\" },\n  \"city\": \"Ho Chi Minh\",\n  \"address\": \"456 Le Loi\",\n  \"phone\": \"0901234567\",\n  \"delivery_available\": false\n}"
+							"raw": "{\n  \"name\": { \"en\": \"Updated Name\", \"vn\": \"Ten cap nhat\" },\n  \"city\": \"Ho Chi Minh\",\n  \"address\": \"456 Le Loi\",\n  \"phone\": \"0901234567\",\n  \"zalo\": \"0901234567\",\n  \"email\": \"restaurant@example.com\",\n  \"delivery_available\": false\n}"
 						},
-						"url": "{{base_url}}/api/restaurants/{{id}}"
+						"url": "{{base_url}}/api/restaurants/{{id}}",
+						"description": "Cập nhật nhà hàng (Owner hoặc Admin). Cần Bearer token. Body: name?, description?, city?, address?, phone?, zalo?, email?, delivery_available?."
 					}
 				},
 				{
@@ -300,7 +285,8 @@
 					"request": {
 						"method": "DELETE",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/restaurants/{{id}}"
+						"url": "{{base_url}}/api/restaurants/{{id}}",
+						"description": "Xóa nhà hàng (Owner hoặc Admin). Cần Bearer token."
 					}
 				},
 				{
@@ -309,7 +295,8 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/restaurants/{{restaurantId}}/reviews"
+						"url": "{{base_url}}/api/restaurants/{{restaurantId}}/reviews?page=1",
+						"description": "Danh sách đánh giá đã duyệt của nhà hàng (paginate)."
 					}
 				},
 				{
@@ -325,7 +312,8 @@
 							"mode": "raw",
 							"raw": "{\n  \"reviewer_name\": \"Customer Name\",\n  \"reviewer_email\": \"customer@example.com\",\n  \"rating\": 5,\n  \"comment\": \"Great food!\"\n}"
 						},
-						"url": "{{base_url}}/api/restaurants/{{restaurantId}}/reviews"
+						"url": "{{base_url}}/api/restaurants/{{restaurantId}}/reviews",
+						"description": "Tạo đánh giá cho nhà hàng. Body: reviewer_name (required), reviewer_email?, rating (1-5), comment?. Status pending đến khi admin duyệt."
 					}
 				},
 				{
@@ -334,7 +322,8 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/restaurants/{{restaurantId}}/menus"
+						"url": "{{base_url}}/api/restaurants/{{restaurantId}}/menus",
+						"description": "Danh sách menu active của nhà hàng (theo sort_order)."
 					}
 				}
 			]
@@ -348,17 +337,7 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/food-items",
-							"query": [
-								{ "key": "restaurant_id", "value": "", "disabled": true },
-								{ "key": "category_id", "value": "", "disabled": true },
-								{ "key": "best_seller", "value": "", "disabled": true },
-								{ "key": "vegetarian", "value": "", "disabled": true },
-								{ "key": "search", "value": "", "disabled": true },
-								{ "key": "per_page", "value": "15" }
-							]
-						}
+						"url": "{{base_url}}/api/food-items?restaurant_id=&category_id=&best_seller=&vegetarian=&search=&per_page=15"
 					}
 				},
 				{
@@ -367,13 +346,7 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/food-items/search",
-							"query": [
-								{ "key": "search", "value": "" },
-								{ "key": "per_page", "value": "15" }
-							]
-						}
+						"url": "{{base_url}}/api/food-items/search?search=&per_page=15"
 					}
 				},
 				{
@@ -391,13 +364,7 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/food-items/best-seller",
-							"query": [
-								{ "key": "restaurant_id", "value": "", "disabled": true },
-								{ "key": "per_page", "value": "15" }
-							]
-						}
+						"url": "{{base_url}}/api/food-items/best-seller?restaurant_id=&per_page=15"
 					}
 				},
 				{
@@ -491,13 +458,7 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/food-categories",
-							"query": [
-								{ "key": "root_only", "value": "", "disabled": true },
-								{ "key": "parent_id", "value": "", "disabled": true }
-							]
-						}
+						"url": "{{base_url}}/api/food-categories?root_only=&parent_id="
 					}
 				},
 				{
@@ -506,12 +467,7 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/food-categories/{{id}}",
-							"query": [
-								{ "key": "language_code", "value": "en" }
-							]
-						}
+						"url": "{{base_url}}/api/food-categories/{{id}}?lang=en"
 					}
 				},
 				{
@@ -578,14 +534,7 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/news",
-							"query": [
-								{ "key": "type", "value": "news", "disabled": true },
-								{ "key": "search", "value": "", "disabled": true },
-								{ "key": "per_page", "value": "15" }
-							]
-						}
+						"url": "{{base_url}}/api/news?type=news&search=&per_page=15"
 					}
 				},
 				{
@@ -706,12 +655,7 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/exchange-rates",
-							"query": [
-								{ "key": "date", "value": "", "description": "Y-m-d, default today" }
-							]
-						}
+						"url": "{{base_url}}/api/exchange-rates?date="
 					}
 				},
 				{
@@ -798,13 +742,7 @@
 					"request": {
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/admin/restaurants",
-							"query": [
-								{ "key": "status", "value": "", "disabled": true },
-								{ "key": "per_page", "value": "15" }
-							]
-						}
+						"url": "{{base_url}}/api/admin/restaurants?status=&per_page=15"
 					}
 				},
 				{
@@ -866,10 +804,7 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/search/restaurants",
-							"query": [{ "key": "name", "value": "" }]
-						}
+						"url": "{{base_url}}/api/search/restaurants?name="
 					}
 				},
 				{
@@ -878,10 +813,7 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/search/food-items",
-							"query": [{ "key": "search", "value": "" }]
-						}
+						"url": "{{base_url}}/api/search/food-items?search="
 					}
 				},
 				{
@@ -890,10 +822,7 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/search/food-items/by-category",
-							"query": [{ "key": "category_id", "value": "1" }]
-						}
+						"url": "{{base_url}}/api/search/food-items/by-category?category_id=1"
 					}
 				},
 				{
@@ -902,14 +831,8 @@
 						"auth": { "type": "noauth" },
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": {
-							"raw": "{{base_url}}/api/search/restaurants/by-distance",
-							"query": [
-								{ "key": "latitude", "value": "10.7769" },
-								{ "key": "longitude", "value": "106.7009" },
-								{ "key": "radius_km", "value": "10" }
-							]
-						}
+						"url": "{{base_url}}/api/search/restaurants/by-distance?latitude=10.7769&longitude=106.7009&radius=10",
+						"description": "Alias của GET /api/restaurants/nearby."
 					}
 				}
 			]

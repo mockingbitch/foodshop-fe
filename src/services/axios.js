@@ -1,5 +1,6 @@
 import axios from 'axios'
-import { API_BASE_URL, API_TIMEOUT, ERROR_MESSAGES } from '@constants'
+import { API_BASE_URL, API_TIMEOUT, getErrorMessageKey } from '@constants'
+import { translate } from '@utils/translate'
 import { getToken, clearToken } from '@utils/authToken'
 import { toast } from 'react-toastify'
 
@@ -43,55 +44,24 @@ axiosInstance.interceptors.response.use(
     return response
   },
   (error) => {
+    const message = translate(getErrorMessageKey(error))
     if (!error.response) {
-      // Network error
-      toast.error(ERROR_MESSAGES.NETWORK_ERROR)
+      toast.error(message)
       return Promise.reject(error)
     }
-
-    const { status, data } = error.response
-
-    switch (status) {
-      case 401: {
-        const isAuthMe = error.config?.url?.includes('/auth/me') ?? false
-        clearToken()
-        if (!isAuthMe) {
-          toast.error(data?.message || ERROR_MESSAGES.UNAUTHORIZED)
-          if (!window.location.pathname.includes('/login')) {
-            window.location.href = '/owner/login'
-          }
+    const { status } = error.response
+    if (status === 401) {
+      const isAuthMe = error.config?.url?.includes('/auth/me') ?? false
+      clearToken()
+      if (!isAuthMe) {
+        toast.error(message)
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/owner/login'
         }
-        break
       }
-
-      case 403:
-        toast.error(data?.message || ERROR_MESSAGES.FORBIDDEN)
-        break
-
-      case 404:
-        toast.error(data?.message || ERROR_MESSAGES.NOT_FOUND)
-        break
-
-      case 422:
-        // Validation error
-        if (data?.errors) {
-          const firstError = Object.values(data.errors)[0]
-          toast.error(Array.isArray(firstError) ? firstError[0] : firstError)
-        } else {
-          toast.error(data?.message || ERROR_MESSAGES.VALIDATION_ERROR)
-        }
-        break
-
-      case 500:
-      case 502:
-      case 503:
-        toast.error(data?.message || ERROR_MESSAGES.SERVER_ERROR)
-        break
-
-      default:
-        toast.error(data?.message || ERROR_MESSAGES.NETWORK_ERROR)
+    } else {
+      toast.error(message)
     }
-
     return Promise.reject(error)
   }
 )

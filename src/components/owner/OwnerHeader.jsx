@@ -29,21 +29,21 @@ const OwnerHeader = () => {
       <div className="container-custom">
         <div className="flex items-center justify-between h-14 md:h-16">
           {/* Logo */}
-          <Link to="/owner/dashboard" className="flex items-center space-x-2 flex-shrink-0">
+          <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
             <div className="w-9 h-9 md:w-10 md:h-10 bg-primary-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg md:text-xl">FS</span>
             </div>
             <span className="font-bold text-lg md:text-xl text-gray-900 hidden sm:block">
-              {t('owner.title')}
+              Food Shop
             </span>
           </Link>
 
-          {/* Desktop: menu owner (giống sidebar) - giữa header */}
-          <nav className="hidden md:flex flex-1 items-center justify-center gap-1">
+          {/* Menu header owner: ẩn hết (chỉ dùng sidebar) */}
+          <nav className="hidden" aria-hidden="true">
             <OwnerHeaderNav onNavigate={closeMobileMenu} />
           </nav>
 
-          {/* Right: Language + User + Logout + Mobile menu button */}
+          {/* Right: Language + Profile + Logout (+ hamburger mobile) */}
           <div className="flex items-center gap-1 sm:gap-2">
             <div className="relative">
               <button
@@ -105,24 +105,27 @@ const OwnerHeader = () => {
           </div>
         </div>
 
-        {/* Mobile: menu owner (giống sidebar) */}
+        {/* Mobile: gộp hết menu sidebar (Profile, Dashboard, Add Restaurant, Add Food) + Language + Logout */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
             <nav className="flex flex-col gap-1">
               <OwnerHeaderNav onNavigate={closeMobileMenu} variant="mobile" />
-              <Link
-                to="/owner/profile"
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50"
-                onClick={closeMobileMenu}
-              >
-                <User size={20} />
-                <span>{user?.name || user?.email || 'Owner'}</span>
-              </Link>
-              <button
-                type="button"
-                onClick={() => { closeMobileMenu(); logout() }}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 w-full text-left"
-              >
+              <div className="px-4 py-2 border-t border-gray-100 mt-1">
+                <span className="text-xs font-medium text-gray-500 uppercase block mb-2">{t('common.language')}</span>
+                <div className="flex flex-wrap gap-1">
+                  {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
+                    <button
+                      key={code}
+                      type="button"
+                      className={`px-3 py-1.5 rounded text-sm ${currentLanguage === code ? 'bg-primary-100 text-primary-600 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
+                      onClick={() => handleLanguageChange(code)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <button type="button" onClick={() => { closeMobileMenu(); logout() }} className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 w-full text-left mt-1">
                 <LogOut size={20} />
                 <span>{t('common.logout')}</span>
               </button>

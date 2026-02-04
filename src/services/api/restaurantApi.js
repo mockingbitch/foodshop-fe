@@ -1,42 +1,24 @@
 import axios from '@services/axios'
 
+/**
+ * Restaurants API - theo Postman FoodShop-API.
+ * List: country_id, restaurant_type_id, delivery_available, search, per_page.
+ * Search: name, per_page. Nearby: latitude, longitude, radius (1-100).
+ */
 export const restaurantApi = {
-  // Public APIs
-  getRestaurants: (params) => {
-    return axios.get('/restaurants', { params })
-  },
+  getRestaurants: (params) => axios.get('/restaurants', { params }),
+  searchRestaurants: (params) => axios.get('/restaurants/search', { params }),
+  getNearbyRestaurants: (params) => axios.get('/restaurants/nearby', { params }),
+  getRestaurantById: (id) => axios.get(`/restaurants/${id}`),
 
-  searchRestaurants: (params) => {
-    return axios.get('/restaurants/search', { params })
-  },
+  createRestaurant: (data) => axios.post('/restaurants', data),
+  updateRestaurant: (id, data) => axios.put(`/restaurants/${id}`, data),
+  deleteRestaurant: (id) => axios.delete(`/restaurants/${id}`),
 
-  getNearbyRestaurants: (params) => {
-    return axios.get('/restaurants/nearby', { params })
-  },
-
-  getRestaurantById: (id) => {
-    return axios.get(`/restaurants/${id}`)
-  },
-
-  // Owner APIs
-  createRestaurant: (data) => {
-    return axios.post('/restaurants', data)
-  },
-
-  updateRestaurant: (id, data) => {
-    return axios.put(`/restaurants/${id}`, data)
-  },
-
-  deleteRestaurant: (id) => {
-    return axios.delete(`/restaurants/${id}`)
-  },
-
-  // Admin APIs
-  getAllRestaurants: (params) => {
-    return axios.get('/admin/restaurants', { params })
-  },
-
-  updateRestaurantStatus: (id, status) => {
-    return axios.put(`/admin/restaurants/${id}/status`, { status })
-  },
+  getRestaurantReviews: (restaurantId, params) =>
+    axios.get(`/restaurants/${restaurantId}/reviews`, { params }),
+  createRestaurantReview: (restaurantId, data) =>
+    axios.post(`/restaurants/${restaurantId}/reviews`, data),
+  getRestaurantMenus: (restaurantId) =>
+    axios.get(`/restaurants/${restaurantId}/menus`),
 }

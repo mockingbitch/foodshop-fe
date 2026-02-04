@@ -9,7 +9,6 @@ const OwnerSidebar = ({ open = false, onClose }) => {
   const { user, logout } = useAuth()
 
   const menuItems = [
-    { path: '/owner/profile', icon: User, label: t('common.profile') },
     { path: '/owner/dashboard', icon: BookOpen, label: t('owner.myRestaurants') },
     { path: '/owner/restaurant/register', icon: UtensilsCrossed, label: t('owner.addRestaurant') },
     { path: '/owner/food-items/create', icon: UtensilsCrossed, label: t('owner.addFoodItem') },

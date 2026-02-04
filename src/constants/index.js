@@ -125,7 +125,7 @@ export const REGEX_PATTERNS = {
   ZALO: /^[0-9]{9,11}$/,
 }
 
-// Error Messages
+// Error Messages (hiển thị cho user, không đổ full message từ backend)
 export const ERROR_MESSAGES = {
   NETWORK_ERROR: 'Network error. Please check your connection.',
   UNAUTHORIZED: 'You are not authorized to access this resource.',
@@ -135,6 +135,32 @@ export const ERROR_MESSAGES = {
   VALIDATION_ERROR: 'Please check your input and try again.',
   FILE_TOO_LARGE: `File size must be less than ${MAX_FILE_SIZE / 1024 / 1024}MB`,
   INVALID_FILE_TYPE: 'Invalid file type. Please upload an image file.',
+}
+
+/**
+ * Trả về key dịch lỗi (errors.xxx) để hiển thị đa ngôn ngữ qua t() hoặc translate().
+ * @param {import('axios').AxiosError} error
+ * @returns {string} key ví dụ 'errors.networkError'
+ */
+export function getErrorMessageKey(error) {
+  if (!error?.response) return 'errors.networkError'
+  const { status, data } = error.response
+  switch (status) {
+    case 401:
+      return 'errors.unauthorized'
+    case 403:
+      return 'errors.forbidden'
+    case 404:
+      return 'errors.notFound'
+    case 422:
+      return 'errors.validationError'
+    case 500:
+    case 502:
+    case 503:
+      return 'errors.serverError'
+    default:
+      return 'errors.networkError'
+  }
 }
 
 // Success Messages
