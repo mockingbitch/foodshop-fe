@@ -22,13 +22,24 @@ const OwnerLoginPage = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  // Đã đăng nhập owner / restaurant_owner → chuyển sang dashboard
+  // Đã đăng nhập owner → chuyển sang dashboard (kể cả khi user chưa load xong từ /auth/me)
   useEffect(() => {
     const isOwnerRole = user?.role === 'owner' || user?.role === 'restaurant_owner'
-    if (!authLoading && (hasToken() || isAuthenticated) && isOwnerRole) {
+    const hasAuth = hasToken() || isAuthenticated
+    if (!authLoading && hasAuth && (isOwnerRole || !user)) {
       navigate('/owner/dashboard', { replace: true })
     }
-  }, [authLoading, isAuthenticated, user?.role, navigate])
+  }, [authLoading, isAuthenticated, user, navigate])
+
+  // Đang check auth hoặc đã có auth (sẽ redirect) → không render form
+  const shouldRedirect = !authLoading && (hasToken() || isAuthenticated) && (user?.role === 'owner' || user?.role === 'restaurant_owner' || !user)
+  if (authLoading || shouldRedirect) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingSpinner />
+      </div>
+    )
+  }
 
   const validateForm = () => {
     const newErrors = {}

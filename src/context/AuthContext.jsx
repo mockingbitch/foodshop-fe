@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { flushSync } from 'react-dom'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { restoreToken, setToken, clearToken, hasToken } from '@utils/authToken'
 import { authApi } from '@services/api/authApi'
@@ -29,26 +29,28 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
 
-  // Check authentication status on mount
+  // Lúc mount: chỉ restore token, không gọi /auth/me → menu dashboard ở homepage không bị mất khi me() trả 401.
   useEffect(() => {
-    checkAuth()
-  }, [])
-
-  const checkAuth = async () => {
-    // Không block: restore token (sync) → tắt loading ngay → gọi /auth/me trong background.
     restoreToken()
     if (hasToken()) {
       setIsAuthenticated(true)
     }
     setLoading(false)
+  }, [])
 
+  const fetchUser = useCallback(async () => {
+    if (!hasToken() && !isAuthenticated) return
     try {
       const response = await authApi.me()
       const userData = response.data?.user ?? response.data
       const tokenFromMe = response.data?.token ?? response.data?.access_token
       if (userData) {
-        setUser(userData)
+        // Backend có thể không trả role → suy ra từ path để tránh redirect về / sau reload
+        const path = location.pathname
+        const inferredRole = path.startsWith('/owner') ? 'owner' : path.startsWith('/admin') ? 'admin' : userData?.role
+        setUser({ ...userData, role: userData?.role || inferredRole })
         setIsAuthenticated(true)
         if (tokenFromMe) setToken(tokenFromMe)
       }
@@ -59,7 +61,16 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(false)
       }
     }
-  }
+  }, [isAuthenticated, location.pathname])
+
+  // Chỉ gọi /auth/me khi vào route owner/admin (có token, chưa có user) → tránh 401 trên homepage làm mất menu.
+  useEffect(() => {
+    const path = location.pathname
+    const isProtectedPath = path.startsWith('/owner') || path.startsWith('/admin')
+    if (isProtectedPath && (hasToken() || isAuthenticated) && user == null) {
+      fetchUser()
+    }
+  }, [location.pathname, isAuthenticated, user, fetchUser])
 
   const loginOwner = async (credentials) => {
     try {
