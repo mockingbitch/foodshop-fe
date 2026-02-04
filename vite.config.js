@@ -1,9 +1,17 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const apiBase = env.VITE_API_BASE_URL ?? 'http://localhost:8000/api'
+  let proxyTarget = 'http://localhost:8000'
+  try {
+    proxyTarget = new URL(apiBase.startsWith('http') ? apiBase : `http://${apiBase}`).origin
+  } catch {}
+
+  return {
   plugins: [react()],
   resolve: {
     alias: {
@@ -27,6 +35,13 @@ export default defineConfig({
     watch: {
       usePolling: true,
     },
+    // Dev: proxy /api sang backend để tránh CORS (backend chưa set Access-Control-Allow-Origin).
+    proxy: {
+      '/api': {
+        target: proxyTarget,
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     outDir: 'dist',
@@ -40,4 +55,5 @@ export default defineConfig({
       },
     },
   },
+  }
 })

@@ -7,6 +7,29 @@ import { authApi } from '@services/api/authApi'
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '@constants'
 
 const AuthContext = createContext(null)
+const USER_STORAGE_KEY = 'auth_user'
+
+function getStoredUser() {
+  try {
+    const raw = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(USER_STORAGE_KEY) : null
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+function setStoredUser(user) {
+  try {
+    if (typeof sessionStorage !== 'undefined') {
+      if (user) sessionStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user))
+      else sessionStorage.removeItem(USER_STORAGE_KEY)
+    }
+  } catch {
+    // ignore
+  }
+}
 
 /** Chuẩn hóa response login: hỗ trợ { token, user } hoặc { access_token, user } hoặc { data: { token, user } } */
 function normalizeLoginResponse(data) {
@@ -31,11 +54,13 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Lúc mount: chỉ restore token, không gọi /auth/me → menu dashboard ở homepage không bị mất khi me() trả 401.
+  // Lúc mount: restore token + user từ sessionStorage để reload/navigate không mất thông tin user.
   useEffect(() => {
     restoreToken()
     if (hasToken()) {
       setIsAuthenticated(true)
+      const stored = getStoredUser()
+      if (stored) setUser(stored)
     }
     setLoading(false)
   }, [])
@@ -50,13 +75,16 @@ export const AuthProvider = ({ children }) => {
         // Backend có thể không trả role → suy ra từ path để tránh redirect về / sau reload
         const path = location.pathname
         const inferredRole = path.startsWith('/owner') ? 'owner' : path.startsWith('/admin') ? 'admin' : userData?.role
-        setUser({ ...userData, role: userData?.role || inferredRole })
+        const nextUser = { ...userData, role: userData?.role || inferredRole }
+        setUser(nextUser)
+        setStoredUser(nextUser)
         setIsAuthenticated(true)
         if (tokenFromMe) setToken(tokenFromMe)
       }
     } catch (error) {
       if (error.response?.status === 401) {
         clearToken()
+        setStoredUser(null)
         setUser(null)
         setIsAuthenticated(false)
       }
@@ -84,8 +112,10 @@ export const AuthProvider = ({ children }) => {
       }
 
       setToken(token)
+      const nextUser = { ...(userData ?? {}), role: userData?.role || 'owner' }
       flushSync(() => {
-        setUser({ ...(userData ?? {}), role: userData?.role || 'owner' })
+        setUser(nextUser)
+        setStoredUser(nextUser)
         setIsAuthenticated(true)
       })
 
@@ -112,8 +142,10 @@ export const AuthProvider = ({ children }) => {
       }
 
       setToken(token)
+      const nextUser = { ...(userData ?? {}), role: 'admin' }
       flushSync(() => {
-        setUser({ ...(userData ?? {}), role: 'admin' })
+        setUser(nextUser)
+        setStoredUser(nextUser)
         setIsAuthenticated(true)
       })
 
@@ -139,8 +171,10 @@ export const AuthProvider = ({ children }) => {
       }
 
       setToken(token)
+      const nextUser = { ...(userData ?? {}), role: userData?.role || 'owner' }
       flushSync(() => {
-        setUser({ ...(userData ?? {}), role: userData?.role || 'owner' })
+        setUser(nextUser)
+        setStoredUser(nextUser)
         setIsAuthenticated(true)
       })
 
@@ -156,6 +190,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = (showToast = true) => {
     clearToken()
+    setStoredUser(null)
     setUser(null)
     setIsAuthenticated(false)
 
@@ -171,6 +206,7 @@ export const AuthProvider = ({ children }) => {
       const response = await authApi.updateOwnerProfile(data)
       const userData = response.data
       setUser(userData)
+      setStoredUser(userData)
 
       toast.success(SUCCESS_MESSAGES.UPDATE_SUCCESS)
       return { success: true }

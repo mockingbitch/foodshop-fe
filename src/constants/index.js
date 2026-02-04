@@ -1,6 +1,7 @@
 // API Configuration - lấy từ .env (VITE_API_BASE_URL). Sau khi sửa .env cần restart dev server (npm run dev).
+// Dev: dùng /api để đi qua Vite proxy → tránh CORS khi backend chưa set Access-Control-Allow-Origin.
 const _apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api'
-export const API_BASE_URL = String(_apiBase).replace(/\/+$/, '') // bỏ trailing slash
+export const API_BASE_URL = import.meta.env.DEV ? '/api' : String(_apiBase).replace(/\/+$/, '')
 export const API_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT) || 30000
 
 // Upload Configuration
