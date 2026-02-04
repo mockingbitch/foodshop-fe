@@ -29,12 +29,12 @@ const OwnerHeader = () => {
       <div className="container-custom">
         <div className="flex items-center justify-between h-14 md:h-16">
           {/* Logo */}
-          <Link to="/owner/dashboard" className="flex items-center space-x-2 flex-shrink-0">
+          <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
             <div className="w-9 h-9 md:w-10 md:h-10 bg-primary-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg md:text-xl">FS</span>
             </div>
             <span className="font-bold text-lg md:text-xl text-gray-900 hidden sm:block">
-              {t('owner.title')}
+              Food Shop
             </span>
           </Link>
 
