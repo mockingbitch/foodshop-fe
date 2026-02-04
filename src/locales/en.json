@@ -72,14 +72,22 @@
     "orContinueWith": "Or continue with",
     "invalidEmail": "Invalid email address",
     "passwordMinLength": "Password must be at least 6 characters",
-    "required": "is required"
+    "required": "is required",
+    "name": "Name",
+    "phone": "Phone",
+    "address": "Address",
+    "alreadyHaveAccount": "Already have an account?",
+    "passwordMismatch": "Passwords do not match",
+    "invalidPhone": "Invalid phone number",
+    "orRegisterWith": "Or register with"
   },
   "owner": {
     "title": "Owner Dashboard",
     "myRestaurants": "My Restaurants",
     "myFoodItems": "My Food Items",
     "addRestaurant": "Add Restaurant",
-    "addFoodItem": "Add Food Item"
+    "addFoodItem": "Add Food Item",
+    "registerTitle": "Restaurant Registration"
   },
   "restaurantRegister": {
     "codeOptional": "Code (optional)",

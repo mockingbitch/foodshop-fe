@@ -72,7 +72,14 @@
     "orContinueWith": "또는 다음으로 계속",
     "invalidEmail": "유효하지 않은 이메일 주소",
     "passwordMinLength": "비밀번호는 최소 6자 이상이어야 합니다",
-    "required": "필수 항목입니다"
+    "required": "필수 항목입니다",
+    "name": "이름",
+    "phone": "전화번호",
+    "address": "주소",
+    "alreadyHaveAccount": "이미 계정이 있으신가요?",
+    "passwordMismatch": "비밀번호가 일치하지 않습니다",
+    "invalidPhone": "유효하지 않은 전화번호",
+    "orRegisterWith": "또는 등록"
   },
   "errors": {
     "invalidJson": "잘못된 JSON 형식입니다.",
@@ -88,7 +95,8 @@
     "myRestaurants": "내 레스토랑",
     "myFoodItems": "내 음식",
     "addRestaurant": "레스토랑 추가",
-    "addFoodItem": "음식 추가"
+    "addFoodItem": "음식 추가",
+    "registerTitle": "레스토랑 등록"
   },
   "restaurantRegister": {
     "codeOptional": "코드 (선택)",
