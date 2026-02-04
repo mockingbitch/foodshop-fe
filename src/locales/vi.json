@@ -72,14 +72,22 @@
     "orContinueWith": "Hoặc đăng nhập bằng",
     "invalidEmail": "Email không hợp lệ",
     "passwordMinLength": "Mật khẩu phải có ít nhất 6 ký tự",
-    "required": "là bắt buộc"
+    "required": "là bắt buộc",
+    "name": "Tên",
+    "phone": "Điện thoại",
+    "address": "Địa chỉ",
+    "alreadyHaveAccount": "Đã có tài khoản?",
+    "passwordMismatch": "Mật khẩu không khớp",
+    "invalidPhone": "Số điện thoại không hợp lệ",
+    "orRegisterWith": "Hoặc đăng ký bằng"
   },
   "owner": {
     "title": "Bảng điều khiển chủ nhà hàng",
     "myRestaurants": "Nhà hàng của tôi",
     "myFoodItems": "Món ăn của tôi",
     "addRestaurant": "Thêm nhà hàng",
-    "addFoodItem": "Thêm món ăn"
+    "addFoodItem": "Thêm món ăn",
+    "registerTitle": "Đăng ký nhà hàng"
   },
   "admin": {
     "title": "Bảng điều khiển quản trị",
