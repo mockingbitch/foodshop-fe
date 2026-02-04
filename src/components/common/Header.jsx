@@ -4,6 +4,7 @@ import { Menu, X, Search, User, LogOut, Globe, LayoutDashboard } from 'lucide-re
 import { useAuth } from '@context/AuthContext'
 import { useLanguage } from '@context/LanguageContext'
 import { LANGUAGE_LABELS } from '@constants'
+import { hasToken } from '@utils/authToken'
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -85,9 +86,10 @@ const Header = () => {
             </div>
 
             {/* User Menu */}
-            {isAuthenticated ? (
+            {(isAuthenticated || hasToken()) ? (
               <div className="flex items-center space-x-2">
-                {isOwner() && (
+                {/* Dashboard: hiện khi owner hoặc khi có token nhưng user chưa load (sau reload) */}
+                {(isOwner() || !user) && (
                   <Link
                     to="/owner/dashboard"
                     className="hidden md:flex items-center space-x-2 px-3 py-2 text-gray-700 hover:text-primary-600 transition"
@@ -102,7 +104,7 @@ const Header = () => {
                   className="hidden md:flex items-center space-x-2 px-3 py-2 text-gray-700 hover:text-primary-600 transition"
                 >
                   <User size={20} />
-                  <span>{user?.name || user?.email}</span>
+                  <span>{user?.name || user?.email || (hasToken() ? '...' : '')}</span>
                 </Link>
                 <button
                   onClick={logout}
@@ -166,7 +168,7 @@ const Header = () => {
                 {t('common.news')}
               </Link>
 
-              {isAuthenticated && isOwner() && (
+              {(isAuthenticated || hasToken()) && (isOwner() || !user) && (
                 <Link
                   to="/owner/dashboard"
                   className="flex items-center gap-2 text-primary-600 font-medium hover:text-primary-700"
@@ -177,7 +179,7 @@ const Header = () => {
                 </Link>
               )}
 
-              {!isAuthenticated && (
+              {!isAuthenticated && !hasToken() && (
                 <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
                   <Link to="/owner/login" className="btn btn-outline w-full">
                     {t('auth.loginTitle')}
