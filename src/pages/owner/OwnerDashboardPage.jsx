@@ -10,6 +10,22 @@ import { Store, UtensilsCrossed, Users, Clock, MapPin, User } from 'lucide-react
 /** owner_id từ user (backend có thể dùng id, user_id, owner_id) */
 const getOwnerId = (user) => user?.id ?? user?.user_id ?? user?.owner_id
 
+/** Chuỗi hiển thị từ name/description (string hoặc object { en, vn, kr }) */
+const toDisplayText = (val) => {
+  if (val == null) return ''
+  if (typeof val === 'string') return val
+  if (typeof val === 'object') {
+    const v = val.vn ?? val.vi ?? val.kr ?? val.ko ?? val.en
+    if (typeof v === 'string') return v
+    const first = Object.values(val).find((x) => typeof x === 'string')
+    return first ?? ''
+  }
+  return String(val)
+}
+
+/** ID nhà hàng (backend có thể trả id hoặc restaurant_id) */
+const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
+
 const OwnerDashboardPage = () => {
   const { t } = useLanguage()
   const { user } = useAuth()
@@ -27,11 +43,23 @@ const OwnerDashboardPage = () => {
     }
   }, [activeTab, ownerId])
 
+  /** Rút mảng từ response (hỗ trợ data, data.data, restaurants, items, results, list, phân trang). */
   const ensureArray = (value) => {
     if (Array.isArray(value)) return value
-    if (value && typeof value === 'object') {
-      const arr = value.data ?? value.restaurants ?? value.items ?? value.food_items ?? value.foodItems
-      return Array.isArray(arr) ? arr : []
+    if (!value || typeof value !== 'object') return []
+    const raw =
+      value.data ??
+      value.restaurants ??
+      value.items ??
+      value.results ??
+      value.list ??
+      value.food_items ??
+      value.foodItems
+    if (Array.isArray(raw)) return raw
+    if (raw && typeof raw === 'object') {
+      const nested =
+        raw.data ?? raw.restaurants ?? raw.items ?? raw.results ?? raw.list ?? raw.food_items ?? raw.foodItems
+      return Array.isArray(nested) ? nested : []
     }
     return []
   }
@@ -41,8 +69,10 @@ const OwnerDashboardPage = () => {
     setLoading(true)
     try {
       if (activeTab === 'restaurants') {
-        const response = await restaurantApi.getRestaurants({ owner_id: ownerId })
-        setRestaurants(ensureArray(response?.data))
+        const res = await restaurantApi.getRestaurants({ owner_id: ownerId })
+        const raw = res?.data
+        const list = ensureArray(raw)
+        setRestaurants(Array.isArray(list) ? list : [])
       } else {
         const response = await foodApi.getFoodItems({ owner_id: ownerId })
         setFoodItems(ensureArray(response?.data))
@@ -141,16 +171,16 @@ const OwnerDashboardPage = () => {
               </Link>
             </div>
           ) : Array.isArray(restaurants) && restaurants.length > 0 ? (
-            (Array.isArray(restaurants) ? restaurants : []).map((restaurant) => (
-              <div key={restaurant.id} className="card overflow-hidden flex flex-col sm:flex-row p-0">
+            (Array.isArray(restaurants) ? restaurants : []).map((restaurant, idx) => (
+              <div key={getRestaurantId(restaurant) ?? idx} className="card overflow-hidden flex flex-col sm:flex-row p-0">
                 <div className="w-full sm:w-1/3 relative group min-h-[180px] sm:min-h-[200px] flex-shrink-0">
                   <img
-                    src={restaurant.images?.[0]?.url || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'}
-                    alt={restaurant.name}
+                    src={restaurant.images?.[0]?.url || restaurant.outside_images?.[0]?.url || restaurant.image_url || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'}
+                    alt={toDisplayText(restaurant.name)}
                     className="w-full h-full object-cover"
                   />
                   <Link
-                    to={`/restaurants/${restaurant.id}`}
+                    to={`/restaurants/${getRestaurantId(restaurant)}`}
                     className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition active:opacity-100"
                   >
                     <span className="text-white font-medium text-sm sm:text-base">{t('common.view')}</span>
@@ -159,17 +189,17 @@ const OwnerDashboardPage = () => {
                 <div className="w-full sm:w-2/3 p-4 sm:p-6 flex flex-col justify-between min-w-0">
                   <div>
                     <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2 truncate">
-                      <Link to={`/restaurants/${restaurant.id}`} className="hover:text-primary-600">
-                        {restaurant.name}
+                      <Link to={`/restaurants/${getRestaurantId(restaurant)}`} className="hover:text-primary-600">
+                        {toDisplayText(restaurant.name) || restaurant.name || t('common.noData')}
                       </Link>
                     </h2>
                     <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 mb-3 sm:mb-4">
-                      {restaurant.description || t('common.noData')}
+                      {toDisplayText(restaurant.description) || restaurant.description || t('common.noData')}
                     </p>
                     <div className="flex flex-wrap gap-x-3 gap-y-1 sm:gap-4 text-xs sm:text-sm text-gray-500">
                       <span className="flex items-center gap-1"><Users size={14} className="flex-shrink-0" /> {restaurant.reviews_count || 0}</span>
                       <span className="flex items-center gap-1"><Clock size={14} className="flex-shrink-0" /> {restaurant.hours || '24/7'}</span>
-                      <span className="flex items-center gap-1 min-w-0"><MapPin size={14} className="flex-shrink-0" /> <span className="truncate">{restaurant.address ? `${restaurant.address.slice(0, 30)}...` : '—'}</span></span>
+                      <span className="flex items-center gap-1 min-w-0"><MapPin size={14} className="flex-shrink-0" /> <span className="truncate">{restaurant.address ? `${String(restaurant.address).slice(0, 30)}${String(restaurant.address).length > 30 ? '...' : ''}` : '—'}</span></span>
                       <span className="flex items-center gap-1">
                         <span className="inline-block w-12 sm:w-16 h-2 bg-gray-200 rounded overflow-hidden flex-shrink-0">
                           <span className="block h-full bg-primary-500 rounded" style={{ width: getRatingWidth(restaurant.rating) }} />
@@ -179,10 +209,10 @@ const OwnerDashboardPage = () => {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
-                    <Link to={`/restaurants/${restaurant.id}`} className="btn btn-outline text-xs sm:text-sm flex-1 sm:flex-initial min-w-0">
+                    <Link to={`/restaurants/${getRestaurantId(restaurant)}`} className="btn btn-outline text-xs sm:text-sm flex-1 sm:flex-initial min-w-0">
                       {t('common.view')}
                     </Link>
-                    <Link to={`/owner/restaurant/${restaurant.id}/edit`} className="btn btn-primary text-xs sm:text-sm flex-1 sm:flex-initial min-w-0">
+                    <Link to={`/owner/restaurant/${getRestaurantId(restaurant)}/edit`} className="btn btn-primary text-xs sm:text-sm flex-1 sm:flex-initial min-w-0">
                       {t('common.edit')}
                     </Link>
                   </div>

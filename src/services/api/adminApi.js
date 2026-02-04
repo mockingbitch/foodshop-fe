@@ -1,38 +1,19 @@
 import axios from '@services/axios'
 
+/**
+ * Admin API - theo Postman FoodShop-API.
+ * Dashboard Stats, List Restaurants (status, per_page), Restaurant Food Items, Update Restaurant/Food Item Status.
+ * Pending Food Codes: dùng foodApi.getPendingFoodCodes (GET /food-items/pending-codes).
+ */
 export const adminApi = {
-  // Dashboard
-  getDashboardStats: () => {
-    return axios.get('/admin/dashboard/stats')
-  },
+  getDashboardStats: () => axios.get('/admin/dashboard/stats'),
 
-  // Restaurants Management
-  getRestaurants: (params) => {
-    return axios.get('/admin/restaurants', { params })
-  },
+  getRestaurants: (params) => axios.get('/admin/restaurants', { params }),
+  getRestaurantFoodItems: (restaurantId, params) =>
+    axios.get(`/admin/restaurants/${restaurantId}/food-items`, { params }),
+  updateRestaurantStatus: (id, status) =>
+    axios.put(`/admin/restaurants/${id}/status`, { status }),
 
-  getRestaurantFoodItems: (id, params) => {
-    return axios.get(`/admin/restaurants/${id}/food-items`, { params })
-  },
-
-  updateRestaurantStatus: (id, status) => {
-    return axios.put(`/admin/restaurants/${id}/status`, { status })
-  },
-
-  updateFoodItemStatus: (id, status) => {
-    return axios.put(`/admin/food-items/${id}/status`, { status })
-  },
-
-  // Food Code Management
-  getPendingCodes: (params) => {
-    return axios.get('/admin/food-codes/pending', { params })
-  },
-
-  confirmCode: (id) => {
-    return axios.post(`/admin/food-codes/${id}/confirm`)
-  },
-
-  rejectCode: (id, reason) => {
-    return axios.post(`/admin/food-codes/${id}/reject`, { reason })
-  },
+  updateFoodItemStatus: (id, status) =>
+    axios.put(`/admin/food-items/${id}/status`, { status }),
 }

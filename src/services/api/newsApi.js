@@ -1,29 +1,15 @@
 import axios from '@services/axios'
 
+/**
+ * News API - theo Postman FoodShop-API.
+ * List: type, search, per_page. By Type: /by-type/:type.
+ */
 export const newsApi = {
-  // Public APIs
-  getNews: (params) => {
-    return axios.get('/news', { params })
-  },
+  getNews: (params) => axios.get('/news', { params }),
+  getNewsByType: (type, params) => axios.get(`/news/by-type/${type}`, { params }),
+  getNewsById: (id) => axios.get(`/news/${id}`),
 
-  getNewsByType: (type, params) => {
-    return axios.get(`/news/by-type/${type}`, { params })
-  },
-
-  getNewsById: (id) => {
-    return axios.get(`/news/${id}`)
-  },
-
-  // Admin APIs
-  createNews: (data) => {
-    return axios.post('/news', data)
-  },
-
-  updateNews: (id, data) => {
-    return axios.put(`/news/${id}`, data)
-  },
-
-  deleteNews: (id) => {
-    return axios.delete(`/news/${id}`)
-  },
+  createNews: (data) => axios.post('/news', data),
+  updateNews: (id, data) => axios.put(`/news/${id}`, data),
+  deleteNews: (id) => axios.delete(`/news/${id}`),
 }

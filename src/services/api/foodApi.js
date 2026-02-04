@@ -1,54 +1,28 @@
 import axios from '@services/axios'
 
+/**
+ * Food Items API - theo Postman FoodShop-API.
+ * List: restaurant_id, category_id, best_seller, vegetarian, search, per_page.
+ * Search: search, per_page. By Category: /by-category/:categoryId. Best-seller: restaurant_id, per_page.
+ */
 export const foodApi = {
-  // Public APIs
-  getFoodItems: (params) => {
-    return axios.get('/food-items', { params })
-  },
+  getFoodItems: (params) => axios.get('/food-items', { params }),
+  searchFoodItems: (params) => axios.get('/food-items/search', { params }),
+  getFoodItemsByCategory: (categoryId, params) =>
+    axios.get(`/food-items/by-category/${categoryId}`, { params }),
+  getBestSellerFoodItems: (params) => axios.get('/food-items/best-seller', { params }),
+  getFoodItemById: (id) => axios.get(`/food-items/${id}`),
 
-  searchFoodItems: (params) => {
-    return axios.get('/food-items/search', { params })
-  },
+  createFoodItem: (data) => axios.post('/food-items', data),
+  updateFoodItem: (id, data) => axios.put(`/food-items/${id}`, data),
+  deleteFoodItem: (id) => axios.delete(`/food-items/${id}`),
+  confirmFoodCode: (id) => axios.post(`/food-items/${id}/confirm-code`),
 
-  getFoodItemsByCategory: (categoryId, params) => {
-    return axios.get(`/food-items/by-category/${categoryId}`, { params })
-  },
+  getFoodItemReviews: (foodItemId, params) =>
+    axios.get(`/food-items/${foodItemId}/reviews`, { params }),
+  createFoodItemReview: (foodItemId, data) =>
+    axios.post(`/food-items/${foodItemId}/reviews`, data),
 
-  getBestSellerFoodItems: (params) => {
-    return axios.get('/food-items/best-seller', { params })
-  },
-
-  getFoodItemById: (id) => {
-    return axios.get(`/food-items/${id}`)
-  },
-
-  // Owner APIs
-  createFoodItem: (data) => {
-    return axios.post('/food-items', data)
-  },
-
-  updateFoodItem: (id, data) => {
-    return axios.put(`/food-items/${id}`, data)
-  },
-
-  deleteFoodItem: (id) => {
-    return axios.delete(`/food-items/${id}`)
-  },
-
-  confirmFoodCode: (id) => {
-    return axios.post(`/food-items/${id}/confirm-code`)
-  },
-
-  // Admin APIs
-  getPendingFoodCodes: (params) => {
-    return axios.get('/admin/food-items/pending-codes', { params })
-  },
-
-  getRestaurantFoodItems: (restaurantId, params) => {
-    return axios.get(`/admin/restaurants/${restaurantId}/food-items`, { params })
-  },
-
-  updateFoodItemStatus: (id, status) => {
-    return axios.put(`/admin/food-items/${id}/status`, { status })
-  },
+  /** Postman Admin: Pending Food Codes - GET /api/food-items/pending-codes */
+  getPendingFoodCodes: (params) => axios.get('/food-items/pending-codes', { params }),
 }
