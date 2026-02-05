@@ -31,6 +31,7 @@
     "error": "오류",
     "success": "성공",
     "confirm": "확인",
+    "confirmDelete": "이 항목을 삭제하시겠습니까?",
     "language": "언어",
     "active": "활성",
     "inactive": "비활성",
@@ -95,7 +96,8 @@
     "myFoodItems": "내 음식",
     "addRestaurant": "레스토랑 추가",
     "editRestaurant": "레스토랑 수정",
-    "addFoodItem": "음식 추가"
+    "addFoodItem": "음식 추가",
+    "editFoodItem": "음식 수정"
   },
   "restaurantRegister": {
     "codeOptional": "코드 (선택)",

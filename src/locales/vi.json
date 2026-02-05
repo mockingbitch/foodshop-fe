@@ -31,6 +31,7 @@
     "error": "Lỗi",
     "success": "Thành công",
     "confirm": "Xác nhận",
+    "confirmDelete": "Bạn có chắc muốn xóa mục này?",
     "language": "Ngôn ngữ",
     "active": "Hoạt động",
     "inactive": "Không hoạt động",
@@ -95,7 +96,8 @@
     "myFoodItems": "Món ăn của tôi",
     "addRestaurant": "Thêm nhà hàng",
     "editRestaurant": "Chỉnh sửa nhà hàng",
-    "addFoodItem": "Thêm món ăn"
+    "addFoodItem": "Thêm món ăn",
+    "editFoodItem": "Chỉnh sửa món ăn"
   },
   "restaurantRegister": {
     "codeOptional": "Mã (tùy chọn)",
