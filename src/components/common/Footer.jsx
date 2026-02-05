@@ -2,9 +2,21 @@ import { Link } from 'react-router-dom'
 import { Facebook, Youtube, Mail, Phone } from 'lucide-react'
 import { useLanguage } from '@context/LanguageContext'
 
-const Footer = () => {
+const Footer = ({ compact = false }) => {
   const { t } = useLanguage()
   const currentYear = new Date().getFullYear()
+
+  if (compact) {
+    return (
+      <footer className="bg-gray-900 text-gray-300 border-t border-gray-800">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-3">
+          <p className="text-xs sm:text-sm text-center text-gray-400">
+            &copy; {currentYear} Food Shop. All rights reserved.
+          </p>
+        </div>
+      </footer>
+    )
+  }
 
   return (
     <footer className="bg-gray-900 text-gray-300">

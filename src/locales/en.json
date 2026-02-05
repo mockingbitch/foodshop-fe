@@ -14,6 +14,8 @@
     "dashboard": "Dashboard",
     "search": "Search",
     "filter": "Filter",
+    "all": "All",
+    "clearFilters": "Clear filters",
     "sort": "Sort",
     "submit": "Submit",
     "cancel": "Cancel",
@@ -47,7 +49,11 @@
     "address": "Address",
     "hours": "Opening Hours",
     "rating": "Rating",
-    "reviews": "Reviews"
+    "reviews": "Reviews",
+    "noResults": "No restaurants found for your search.",
+    "filterCountry": "Country",
+    "filterType": "Restaurant type",
+    "deliveryOnly": "Delivery only"
   },
   "food": {
     "title": "Food Items",
@@ -79,6 +85,7 @@
     "myRestaurants": "My Restaurants",
     "myFoodItems": "My Food Items",
     "addRestaurant": "Add Restaurant",
+    "editRestaurant": "Edit Restaurant",
     "addFoodItem": "Add Food Item"
   },
   "restaurantRegister": {

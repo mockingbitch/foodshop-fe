@@ -14,6 +14,8 @@
     "dashboard": "대시보드",
     "search": "검색",
     "filter": "필터",
+    "all": "전체",
+    "clearFilters": "필터 초기화",
     "sort": "정렬",
     "submit": "제출",
     "cancel": "취소",
@@ -47,7 +49,11 @@
     "address": "주소",
     "hours": "영업시간",
     "rating": "평점",
-    "reviews": "리뷰"
+    "reviews": "리뷰",
+    "noResults": "검색 결과가 없습니다.",
+    "filterCountry": "국가",
+    "filterType": "레스토랑 유형",
+    "deliveryOnly": "배달만"
   },
   "food": {
     "title": "음식",
@@ -88,6 +94,7 @@
     "myRestaurants": "내 레스토랑",
     "myFoodItems": "내 음식",
     "addRestaurant": "레스토랑 추가",
+    "editRestaurant": "레스토랑 수정",
     "addFoodItem": "음식 추가"
   },
   "restaurantRegister": {

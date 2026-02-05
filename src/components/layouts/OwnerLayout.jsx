@@ -30,7 +30,7 @@ const OwnerLayout = () => {
           </div>
         </main>
       </div>
-      <Footer />
+      <Footer compact />
     </div>
   )
 }

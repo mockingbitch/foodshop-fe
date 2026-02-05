@@ -34,9 +34,9 @@ export const formatRelativeTime = (date) => {
 }
 
 /**
- * Format distance in km
+ * Format distance in km (e.g. "1.5km" or "500m")
  */
-export const formatDistance = (distanceInKm) => {
+export const formatDistanceKm = (distanceInKm) => {
   if (distanceInKm < 1) {
     return `${Math.round(distanceInKm * 1000)}m`
   }
