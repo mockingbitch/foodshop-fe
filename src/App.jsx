@@ -31,8 +31,10 @@ import OwnerDashboardPage from '@pages/owner/OwnerDashboardPage'
 import OwnerProfilePage from '@pages/owner/OwnerProfilePage'
 import RestaurantRegisterPage from '@pages/owner/RestaurantRegisterPage'
 import RestaurantEditPage from '@pages/owner/RestaurantEditPage'
+import OwnerRestaurantDetailPage from '@pages/owner/OwnerRestaurantDetailPage'
 import FoodItemCreatePage from '@pages/owner/FoodItemCreatePage'
 import FoodItemEditPage from '@pages/owner/FoodItemEditPage'
+import OwnerFoodDetailPage from '@pages/owner/OwnerFoodDetailPage'
 
 // Admin Pages
 import AdminLoginPage from '@pages/admin/AdminLoginPage'
@@ -43,6 +45,8 @@ import CategoryCreatePage from '@pages/admin/CategoryCreatePage'
 import CategoryEditPage from '@pages/admin/CategoryEditPage'
 import CategoryManagementPage from '@pages/admin/CategoryManagementPage'
 import NewsCreatePage from '@pages/admin/NewsCreatePage'
+import AdminNewsListPage from '@pages/admin/AdminNewsListPage'
+import NewsEditPage from '@pages/admin/NewsEditPage'
 
 // Components
 import ProtectedRoute from '@components/common/ProtectedRoute'
@@ -82,6 +86,8 @@ function App() {
               <Route path="/owner/profile" element={<OwnerProfilePage />} />
               <Route path="/owner/restaurant/register" element={<RestaurantRegisterPage />} />
               <Route path="/owner/restaurant/:id/edit" element={<RestaurantEditPage />} />
+              <Route path="/owner/restaurant/:id" element={<OwnerRestaurantDetailPage />} />
+              <Route path="/owner/restaurant/:restaurantId/food-items/:id" element={<OwnerFoodDetailPage />} />
               <Route path="/owner/food-items/create" element={<FoodItemCreatePage />} />
               <Route path="/owner/food-items/:id/edit" element={<FoodItemEditPage />} />
             </Route>
@@ -99,7 +105,9 @@ function App() {
               <Route path="/admin/categories" element={<CategoryManagementPage />} />
               <Route path="/admin/categories/create" element={<CategoryCreatePage />} />
               <Route path="/admin/categories/:id/edit" element={<CategoryEditPage />} />
+              <Route path="/admin/news" element={<AdminNewsListPage />} />
               <Route path="/admin/news/create" element={<NewsCreatePage />} />
+              <Route path="/admin/news/:id/edit" element={<NewsEditPage />} />
             </Route>
           </Route>
 

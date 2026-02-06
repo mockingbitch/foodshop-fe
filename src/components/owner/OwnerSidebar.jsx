@@ -11,7 +11,6 @@ const OwnerSidebar = ({ open = false, onClose }) => {
   const menuItems = [
     { path: '/owner/dashboard', icon: BookOpen, label: t('owner.myRestaurants') },
     { path: '/owner/restaurant/register', icon: UtensilsCrossed, label: t('owner.addRestaurant') },
-    { path: '/owner/food-items/create', icon: UtensilsCrossed, label: t('owner.addFoodItem') },
   ]
 
   const isActive = (path) => {

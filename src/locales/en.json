@@ -14,6 +14,10 @@
     "dashboard": "Dashboard",
     "search": "Search",
     "filter": "Filter",
+    "all": "All",
+    "add": "Add",
+    "actions": "Actions",
+    "clearFilters": "Clear filters",
     "sort": "Sort",
     "submit": "Submit",
     "cancel": "Cancel",
@@ -29,9 +33,11 @@
     "error": "Error",
     "success": "Success",
     "confirm": "Confirm",
+    "confirmDelete": "Are you sure you want to delete this item?",
     "language": "Language",
     "active": "Active",
     "inactive": "Inactive",
+    "allStatus": "All Status",
     "required": "is required"
   },
   "restaurant": {
@@ -47,7 +53,11 @@
     "address": "Address",
     "hours": "Opening Hours",
     "rating": "Rating",
-    "reviews": "Reviews"
+    "reviews": "Reviews",
+    "noResults": "No restaurants found for your search.",
+    "filterCountry": "Country",
+    "filterType": "Restaurant type",
+    "deliveryOnly": "Delivery only"
   },
   "food": {
     "title": "Food Items",
@@ -79,7 +89,9 @@
     "myRestaurants": "My Restaurants",
     "myFoodItems": "My Food Items",
     "addRestaurant": "Add Restaurant",
-    "addFoodItem": "Add Food Item"
+    "editRestaurant": "Edit Restaurant",
+    "addFoodItem": "Add Food Item",
+    "editFoodItem": "Edit Food Item"
   },
   "restaurantRegister": {
     "codeOptional": "Code (optional)",

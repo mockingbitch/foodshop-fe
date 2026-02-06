@@ -10,7 +10,7 @@ const AdminSidebar = () => {
     { path: '/admin/dashboard', icon: LayoutDashboard, label: t('common.dashboard') },
     { path: '/admin/restaurants', icon: Store, label: t('admin.manageRestaurants') },
     { path: '/admin/categories', icon: FolderTree, label: t('admin.manageCategories') },
-    { path: '/admin/news/create', icon: Newspaper, label: t('admin.manageNews') },
+    { path: '/admin/news', icon: Newspaper, label: t('admin.manageNews') },
   ]
 
   return (
@@ -20,7 +20,7 @@ const AdminSidebar = () => {
         <nav className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon
-            const isActive = location.pathname === item.path
+            const isActive = location.pathname === item.path || (item.path !== '/admin/dashboard' && location.pathname.startsWith(item.path + '/'))
             
             return (
               <Link

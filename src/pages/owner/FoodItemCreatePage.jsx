@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '@context/LanguageContext'
 import { useAuth } from '@context/AuthContext'
 import { restaurantApi } from '@services/api/restaurantApi'
@@ -55,6 +55,7 @@ const FoodItemCreatePage = () => {
   const { t, getMultilingualContent } = useLanguage()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const ownerId = getOwnerId(user)
   const [formData, setFormData] = useState(initialFormData)
   const [errors, setErrors] = useState({})
@@ -78,6 +79,15 @@ const FoodItemCreatePage = () => {
         setCategories([])
       })
   }, [ownerId])
+
+  const restaurantIdFromQuery = searchParams.get('restaurant_id')
+  useEffect(() => {
+    if (restaurantIdFromQuery && restaurants.length > 0) {
+      setFormData((prev) =>
+        prev.restaurant_id ? prev : { ...prev, restaurant_id: restaurantIdFromQuery }
+      )
+    }
+  }, [restaurantIdFromQuery, restaurants.length])
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target

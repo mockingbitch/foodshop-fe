@@ -14,6 +14,10 @@
     "dashboard": "Bảng điều khiển",
     "search": "Tìm kiếm",
     "filter": "Lọc",
+    "all": "Tất cả",
+    "add": "Thêm",
+    "actions": "Thao tác",
+    "clearFilters": "Xóa bộ lọc",
     "sort": "Sắp xếp",
     "submit": "Gửi",
     "cancel": "Hủy",
@@ -29,9 +33,11 @@
     "error": "Lỗi",
     "success": "Thành công",
     "confirm": "Xác nhận",
+    "confirmDelete": "Bạn có chắc muốn xóa mục này?",
     "language": "Ngôn ngữ",
     "active": "Hoạt động",
     "inactive": "Không hoạt động",
+    "allStatus": "Tất cả trạng thái",
     "required": "là bắt buộc"
   },
   "restaurant": {
@@ -47,7 +53,11 @@
     "address": "Địa chỉ",
     "hours": "Giờ mở cửa",
     "rating": "Đánh giá",
-    "reviews": "Nhận xét"
+    "reviews": "Nhận xét",
+    "noResults": "Không tìm thấy nhà hàng phù hợp với từ khóa tìm kiếm.",
+    "filterCountry": "Quốc gia",
+    "filterType": "Loại nhà hàng",
+    "deliveryOnly": "Chỉ có giao hàng"
   },
   "food": {
     "title": "Món ăn",
@@ -88,7 +98,9 @@
     "myRestaurants": "Nhà hàng của tôi",
     "myFoodItems": "Món ăn của tôi",
     "addRestaurant": "Thêm nhà hàng",
-    "addFoodItem": "Thêm món ăn"
+    "editRestaurant": "Chỉnh sửa nhà hàng",
+    "addFoodItem": "Thêm món ăn",
+    "editFoodItem": "Chỉnh sửa món ăn"
   },
   "restaurantRegister": {
     "codeOptional": "Mã (tùy chọn)",

@@ -195,3 +195,5 @@ export const CURRENCY_SYMBOLS = {
   EUR: '€',
   GBP: '£',
 }
+
+export { DEFAULT_FOOD_IMAGE } from './images.js'

@@ -5,6 +5,7 @@ import { useAuth } from '@context/AuthContext'
 import { restaurantApi } from '@services/api/restaurantApi'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
+import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { Store, UtensilsCrossed, Users, Clock, MapPin, User } from 'lucide-react'
 
 /** owner_id từ user (backend có thể dùng id, user_id, owner_id) */
@@ -180,7 +181,7 @@ const OwnerDashboardPage = () => {
                     className="w-full h-full object-cover"
                   />
                   <Link
-                    to={`/restaurants/${getRestaurantId(restaurant)}`}
+                    to={`/owner/restaurant/${getRestaurantId(restaurant)}`}
                     className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition active:opacity-100"
                   >
                     <span className="text-white font-medium text-sm sm:text-base">{t('common.view')}</span>
@@ -189,7 +190,7 @@ const OwnerDashboardPage = () => {
                 <div className="w-full sm:w-2/3 p-4 sm:p-6 flex flex-col justify-between min-w-0">
                   <div>
                     <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2 truncate">
-                      <Link to={`/restaurants/${getRestaurantId(restaurant)}`} className="hover:text-primary-600">
+                      <Link to={`/owner/restaurant/${getRestaurantId(restaurant)}`} className="hover:text-primary-600">
                         {toDisplayText(restaurant.name) || restaurant.name || t('common.noData')}
                       </Link>
                     </h2>
@@ -209,7 +210,7 @@ const OwnerDashboardPage = () => {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
-                    <Link to={`/restaurants/${getRestaurantId(restaurant)}`} className="btn btn-outline text-xs sm:text-sm flex-1 sm:flex-initial min-w-0">
+                    <Link to={`/owner/restaurant/${getRestaurantId(restaurant)}`} className="btn btn-outline text-xs sm:text-sm flex-1 sm:flex-initial min-w-0">
                       {t('common.view')}
                     </Link>
                     <Link to={`/owner/restaurant/${getRestaurantId(restaurant)}/edit`} className="btn btn-primary text-xs sm:text-sm flex-1 sm:flex-initial min-w-0">
@@ -237,8 +238,8 @@ const OwnerDashboardPage = () => {
               <div key={food.id} className="card overflow-hidden flex flex-col sm:flex-row p-0">
                 <div className="w-full sm:w-1/3 relative group min-h-[180px] sm:min-h-[200px] flex-shrink-0">
                   <img
-                    src={food.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800'}
-                    alt={food.name}
+                    src={food.image_url || food.main_image || DEFAULT_FOOD_IMAGE}
+                    alt={toDisplayText(food.name)}
                     className="w-full h-full object-cover"
                   />
                   <Link
@@ -252,15 +253,15 @@ const OwnerDashboardPage = () => {
                   <div>
                     <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2 truncate">
                       <Link to={`/food-items/${food.id}`} className="hover:text-primary-600">
-                        {food.name}
+                        {toDisplayText(food.name) || t('common.noData')}
                       </Link>
                     </h2>
                     <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 mb-3 sm:mb-4">
-                      {food.description || t('common.noData')}
+                      {toDisplayText(food.description) || t('common.noData')}
                     </p>
                     <div className="flex flex-wrap gap-x-3 gap-y-1 sm:gap-4 text-xs sm:text-sm text-gray-500">
                       <span className="font-semibold text-primary-600">{formatPrice(food.price)}</span>
-                      <span className="truncate">{food.category?.name || '—'}</span>
+                      <span className="truncate">{toDisplayText(food.category?.name ?? food.food_category?.name) || '—'}</span>
                       <span className="flex items-center gap-1">
                         <span className="inline-block w-12 sm:w-16 h-2 bg-gray-200 rounded overflow-hidden flex-shrink-0">
                           <span className="block h-full bg-primary-500 rounded" style={{ width: getRatingWidth(food.rating) }} />
