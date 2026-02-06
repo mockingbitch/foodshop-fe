@@ -4,6 +4,7 @@ import { useLanguage } from '@context/LanguageContext'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency } from '@utils/helpers'
+import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { Store, ChevronRight, Star, Leaf } from 'lucide-react'
 
 const toDisplayText = (val) => {
@@ -19,7 +20,7 @@ const toDisplayText = (val) => {
 }
 
 const getFoodImage = (item) =>
-  item?.main_image ?? item?.image_url ?? item?.images?.[0]?.url ?? 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800'
+  item?.main_image ?? item?.image_url ?? item?.images?.[0]?.url ?? DEFAULT_FOOD_IMAGE
 
 const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
 

@@ -5,6 +5,7 @@ import { restaurantApi } from '@services/api/restaurantApi'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency } from '@utils/helpers'
+import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { Store, MapPin, Phone, Mail, UtensilsCrossed, ChevronRight, Star, Edit, Plus } from 'lucide-react'
 
 const toDisplayText = (val) => {
@@ -35,7 +36,7 @@ const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
 const getRestaurantImage = (r) =>
   r?.outside_image_1 ?? r?.images?.[0]?.url ?? r?.outside_images?.[0]?.url ?? r?.image_url ?? 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'
 const getFoodImage = (item) =>
-  item?.main_image ?? item?.image_url ?? item?.images?.[0]?.url ?? 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800'
+  item?.main_image ?? item?.image_url ?? item?.images?.[0]?.url ?? DEFAULT_FOOD_IMAGE
 
 const OwnerRestaurantDetailPage = () => {
   const { id } = useParams()
@@ -155,18 +156,11 @@ const OwnerRestaurantDetailPage = () => {
             </div>
             <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100">
               <Link
-                to={`/owner/restaurant/${getRestaurantId(restaurant)}/edit`}
+                to={`/owner/restaurant/${id}/edit`}
                 className="btn btn-primary inline-flex items-center gap-2"
               >
                 <Edit size={18} />
                 {t('common.edit')}
-              </Link>
-              <Link
-                to={`/owner/food-items/create?restaurant_id=${id}`}
-                className="btn btn-outline inline-flex items-center gap-2"
-              >
-                <Plus size={18} />
-                {t('owner.addFoodItem')}
               </Link>
             </div>
           </div>
@@ -223,7 +217,7 @@ const OwnerRestaurantDetailPage = () => {
                 </p>
                 <div className="flex gap-2 mt-auto pt-2 border-t border-gray-100">
                   <Link
-                    to={`/food-items/${item.id}`}
+                    to={`/owner/restaurant/${id}/food-items/${item.id}`}
                     className="btn btn-outline text-xs flex-1 min-w-0"
                   >
                     {t('common.view')}

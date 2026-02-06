@@ -7,6 +7,7 @@ import { foodApi } from '@services/api/foodApi'
 import { categoryApi } from '@services/api/categoryApi'
 import { toast } from 'react-toastify'
 import LoadingSpinner from '@components/common/LoadingSpinner'
+import ConfirmModal from '@components/common/ConfirmModal'
 
 const getOwnerId = (user) => user?.id ?? user?.user_id ?? user?.owner_id
 const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
@@ -117,6 +118,7 @@ const FoodItemEditPage = () => {
   const [notFound, setNotFound] = useState(false)
   const [restaurants, setRestaurants] = useState([])
   const [categories, setCategories] = useState([])
+  const [showConfirm, setShowConfirm] = useState(false)
 
   useEffect(() => {
     if (!ownerId) return
@@ -205,7 +207,6 @@ const FoodItemEditPage = () => {
   }
 
   const handleDelete = async () => {
-    if (!window.confirm(t('common.confirmDelete'))) return
     setSubmitting(true)
     try {
       await foodApi.deleteFoodItem(id)
@@ -402,7 +403,7 @@ const FoodItemEditPage = () => {
             </Link>
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={() => setShowConfirm(true)}
               disabled={submitting}
               className="btn bg-red-600 hover:bg-red-700 text-white ml-auto"
             >
@@ -411,6 +412,17 @@ const FoodItemEditPage = () => {
           </div>
         </form>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleDelete}
+        title={t('common.confirmDelete')}
+        message={t('common.confirmDelete')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        variant="danger"
+      />
     </div>
   )
 }

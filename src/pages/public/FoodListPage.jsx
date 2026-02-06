@@ -5,6 +5,7 @@ import { foodApi } from '@services/api/foodApi'
 import { categoryApi } from '@services/api/categoryApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency } from '@utils/helpers'
+import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { UtensilsCrossed, Star } from 'lucide-react'
 
 const toDisplayText = (val) => {
@@ -32,7 +33,7 @@ const ensureArray = (value) => {
 }
 
 const getFoodImage = (item) =>
-  item?.main_image ?? item?.image_url ?? item?.images?.[0]?.url ?? 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800'
+  item?.main_image ?? item?.image_url ?? item?.images?.[0]?.url ?? DEFAULT_FOOD_IMAGE
 
 const DEBOUNCE_MS = 350
 

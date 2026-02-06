@@ -15,6 +15,8 @@
     "search": "Tìm kiếm",
     "filter": "Lọc",
     "all": "Tất cả",
+    "add": "Thêm",
+    "actions": "Thao tác",
     "clearFilters": "Xóa bộ lọc",
     "sort": "Sắp xếp",
     "submit": "Gửi",
@@ -35,6 +37,7 @@
     "language": "Ngôn ngữ",
     "active": "Hoạt động",
     "inactive": "Không hoạt động",
+    "allStatus": "Tất cả trạng thái",
     "required": "là bắt buộc"
   },
   "restaurant": {

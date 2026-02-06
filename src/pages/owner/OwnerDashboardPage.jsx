@@ -5,6 +5,7 @@ import { useAuth } from '@context/AuthContext'
 import { restaurantApi } from '@services/api/restaurantApi'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
+import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { Store, UtensilsCrossed, Users, Clock, MapPin, User } from 'lucide-react'
 
 /** owner_id từ user (backend có thể dùng id, user_id, owner_id) */
@@ -237,7 +238,7 @@ const OwnerDashboardPage = () => {
               <div key={food.id} className="card overflow-hidden flex flex-col sm:flex-row p-0">
                 <div className="w-full sm:w-1/3 relative group min-h-[180px] sm:min-h-[200px] flex-shrink-0">
                   <img
-                    src={food.image_url || food.main_image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800'}
+                    src={food.image_url || food.main_image || DEFAULT_FOOD_IMAGE}
                     alt={toDisplayText(food.name)}
                     className="w-full h-full object-cover"
                   />

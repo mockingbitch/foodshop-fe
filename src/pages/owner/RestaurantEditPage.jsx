@@ -82,7 +82,7 @@ const parseJsonField = (v) => {
   return v
 }
 
-const getImageUrl = (val) => (typeof val === 'string' ? val : val?.url ?? '')
+const getImageUrl = (val) => (typeof val === 'string' ? val : val?.url ?? val?.image_url ?? '')
 
 /** Lấy giá trị từ object, hỗ trợ cả snake_case và camelCase. */
 const get = (obj, snakeKey) => {
@@ -96,8 +96,10 @@ const fromRestaurant = (r, key) => get(r, key) ?? get(r?.attributes, key)
 
 const mapRestaurantToForm = (r) => {
   if (!r) return { formData: initialFormData, businessHours: initialBusinessHours }
-  const outImgs = fromRestaurant(r, 'outside_images') ?? r.images ?? []
-  const inImgs = fromRestaurant(r, 'inside_images') ?? []
+  const outImgsRaw = fromRestaurant(r, 'outside_images') ?? r.images ?? r.outside_images ?? []
+  const outImgs = Array.isArray(outImgsRaw) ? outImgsRaw : (outImgsRaw && typeof outImgsRaw === 'object' ? [outImgsRaw] : [])
+  const inImgsRaw = fromRestaurant(r, 'inside_images') ?? r.inside_images ?? []
+  const inImgs = Array.isArray(inImgsRaw) ? inImgsRaw : (inImgsRaw && typeof inImgsRaw === 'object' ? [inImgsRaw] : [])
   const nameObj = parseJsonField(fromRestaurant(r, 'name'))
   const descObj = parseJsonField(fromRestaurant(r, 'description'))
   const remarkObj = parseJsonField(fromRestaurant(r, 'remark'))
@@ -114,7 +116,7 @@ const mapRestaurantToForm = (r) => {
     email: fromRestaurant(r, 'email') ?? '',
     latitude: fromRestaurant(r, 'latitude') != null ? String(fromRestaurant(r, 'latitude')) : '',
     longitude: fromRestaurant(r, 'longitude') != null ? String(fromRestaurant(r, 'longitude')) : '',
-    outside_image_1: fromRestaurant(r, 'outside_image_1') ?? getImageUrl(outImgs[0]) ?? '',
+    outside_image_1: fromRestaurant(r, 'outside_image_1') ?? fromRestaurant(r, 'image_url') ?? getImageUrl(outImgs[0]) ?? '',
     outside_image_2: fromRestaurant(r, 'outside_image_2') ?? getImageUrl(outImgs[1]) ?? '',
     inside_image_1: fromRestaurant(r, 'inside_image_1') ?? getImageUrl(inImgs[0]) ?? '',
     inside_image_2: fromRestaurant(r, 'inside_image_2') ?? getImageUrl(inImgs[1]) ?? '',
@@ -186,15 +188,17 @@ const RestaurantEditPage = () => {
       .getRestaurantById(id)
       .then((res) => {
         const raw = res?.data ?? res
-        const restaurant = raw?.data ?? raw?.restaurant ?? raw?.result ?? raw
+        const inner = raw?.data ?? raw
+        let restaurant = inner?.restaurant ?? inner?.data ?? inner ?? raw?.restaurant ?? raw?.result ?? raw
+        if (Array.isArray(restaurant) && restaurant.length > 0) restaurant = restaurant[0]
         if (!restaurant || typeof restaurant !== 'object') {
           setNotFound(true)
           setLoading(false)
           return
         }
         const { formData: fd, businessHours: bh } = mapRestaurantToForm(restaurant)
-        setFormData({ ...fd })
-        setBusinessHours({ ...bh })
+        setFormData({ ...initialFormData, ...fd })
+        setBusinessHours({ ...initialBusinessHours, ...bh })
         setLoading(false)
       })
       .catch(() => {
