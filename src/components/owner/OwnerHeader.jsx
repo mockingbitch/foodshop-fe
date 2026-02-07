@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, User, BookOpen, UtensilsCrossed, LogOut, Globe } from 'lucide-react'
 import { useAuth } from '@context/AuthContext'
@@ -14,8 +14,20 @@ import OwnerHeaderNav from './OwnerHeaderNav'
 const OwnerHeader = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
+  const languageMenuRef = useRef(null)
   const { user, logout } = useAuth()
   const { currentLanguage, changeLanguage, t } = useLanguage()
+
+  useEffect(() => {
+    if (!languageMenuOpen) return
+    const handleClickOutside = (e) => {
+      if (languageMenuRef.current && !languageMenuRef.current.contains(e.target)) {
+        setLanguageMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [languageMenuOpen])
 
   const handleLanguageChange = (lang) => {
     changeLanguage(lang)
@@ -25,7 +37,7 @@ const OwnerHeader = () => {
   const closeMobileMenu = () => setMobileMenuOpen(false)
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
       <div className="container-custom">
         <div className="flex items-center justify-between h-14 md:h-16">
           {/* Logo */}
@@ -45,7 +57,7 @@ const OwnerHeader = () => {
 
           {/* Right: Language + Profile + Logout (+ hamburger mobile) */}
           <div className="flex items-center gap-1 sm:gap-2">
-            <div className="relative">
+            <div className="relative" ref={languageMenuRef}>
               <button
                 type="button"
                 className="p-2 text-gray-600 hover:text-primary-600 transition flex items-center space-x-1"
@@ -82,7 +94,7 @@ const OwnerHeader = () => {
                   <User size={16} className="text-primary-600" />
                 )}
               </div>
-              <span className="text-sm font-medium truncate max-w-[120px]">
+              <span className="text-sm font-medium truncate max-w-[120px] min-w-0 block" title={user?.name || user?.email || undefined}>
                 {user?.name || user?.email || 'Owner'}
               </span>
             </Link>

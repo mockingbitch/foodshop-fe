@@ -189,8 +189,8 @@ const OwnerDashboardPage = () => {
                 </div>
                 <div className="w-full sm:w-2/3 p-4 sm:p-6 flex flex-col justify-between min-w-0">
                   <div>
-                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2 truncate">
-                      <Link to={`/owner/restaurant/${getRestaurantId(restaurant)}`} className="hover:text-primary-600">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2 truncate min-w-0" title={toDisplayText(restaurant.name) || undefined}>
+                      <Link to={`/owner/restaurant/${getRestaurantId(restaurant)}`} className="hover:text-primary-600 truncate block min-w-0">
                         {toDisplayText(restaurant.name) || restaurant.name || t('common.noData')}
                       </Link>
                     </h2>

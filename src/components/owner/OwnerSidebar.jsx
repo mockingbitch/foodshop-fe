@@ -23,7 +23,7 @@ const OwnerSidebar = ({ open = false, onClose }) => {
   }
 
   const sidebarContent = (
-    <div className="p-4 sm:p-6 sticky top-0">
+    <div className="p-4 sm:p-6">
       <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-200 md:justify-start md:mb-6">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -33,8 +33,8 @@ const OwnerSidebar = ({ open = false, onClose }) => {
               <User size={24} className="text-primary-600" />
             )}
           </div>
-          <div className="min-w-0">
-            <p className="font-semibold text-gray-900 truncate">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <p className="font-semibold text-gray-900 truncate" title={user?.name || user?.email || undefined}>
               {user?.name || user?.email || 'Owner'}
             </p>
             <Link
@@ -61,14 +61,14 @@ const OwnerSidebar = ({ open = false, onClose }) => {
             key={path}
             to={path}
             onClick={handleNavClick}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition min-w-0 ${
               isActive(path)
                 ? 'bg-primary-50 text-primary-600 font-medium'
                 : 'text-gray-700 hover:bg-gray-50'
             }`}
           >
             <Icon size={20} className="flex-shrink-0" />
-            <span>{label}</span>
+            <span className="truncate">{label}</span>
           </Link>
         ))}
         <button
@@ -84,22 +84,19 @@ const OwnerSidebar = ({ open = false, onClose }) => {
 
   return (
     <>
-      {/* Backdrop mobile */}
+      {/* Backdrop: không dùng trên mobile (sidebar ẩn), chỉ cần trên md nếu có drawer */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity md:hidden ${
-          open ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        className="hidden fixed inset-0 bg-black/50 z-40 md:hidden"
         onClick={onClose}
         aria-hidden="true"
       />
-      {/* Sidebar: drawer on mobile, fixed left on desktop */}
+      {/* Sidebar: ẩn trên mobile; desktop = fixed bên trái, không cuộn theo body */}
       <aside
         className={`
-          w-64 flex-shrink-0 bg-white border-r border-gray-200 min-h-full
-          fixed md:relative inset-y-0 left-0 z-50 md:z-auto
-          transform transition-transform duration-200 ease-out
-          md:transform-none
-          ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+          hidden md:flex md:flex-col
+          w-64 bg-white border-r border-gray-200
+          fixed left-0 top-14 md:top-16 bottom-0 z-10
+          overflow-y-auto overflow-x-hidden
         `}
       >
         {sidebarContent}

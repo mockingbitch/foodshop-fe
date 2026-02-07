@@ -35,10 +35,10 @@ const OwnerHeaderNav = ({ onNavigate, variant = 'desktop' }) => {
           key={path}
           to={path}
           onClick={onNavigate}
-          className={`${baseClass} ${isActive(path) ? activeClass : inactiveClass}`}
+          className={`${baseClass} min-w-0 ${isActive(path) ? activeClass : inactiveClass}`}
         >
           <Icon size={variant === 'mobile' ? 20 : 18} className="flex-shrink-0" />
-          <span>{label}</span>
+          <span className="truncate">{label}</span>
         </Link>
       ))}
     </>

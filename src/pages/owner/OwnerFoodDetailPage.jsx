@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useLanguage } from '@context/LanguageContext'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
-import { Store, ChevronRight, Star, Leaf, Edit } from 'lucide-react'
+import { Store, ChevronRight, ChevronLeft, Star, Leaf, Edit, Hash, Users, Calendar } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -26,6 +26,7 @@ const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
 
 const OwnerFoodDetailPage = () => {
   const { restaurantId, id } = useParams()
+  const navigate = useNavigate()
   const { t } = useLanguage()
   const [food, setFood] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -43,7 +44,8 @@ const OwnerFoodDetailPage = () => {
       .getFoodItemById(id)
       .then((res) => {
         const raw = res?.data ?? res
-        const item = raw?.data ?? raw?.food_item ?? raw?.result ?? raw
+        let item = raw?.data ?? raw?.food_item ?? raw?.result ?? raw
+        if (item && typeof item === 'object' && item.food_item != null) item = item.food_item
         if (item && typeof item === 'object') setFood(item)
         else setNotFound(true)
       })
@@ -86,15 +88,21 @@ const OwnerFoodDetailPage = () => {
   const restaurantIdFromFood = typeof restaurant === 'object' ? getRestaurantId(restaurant) : restaurant
   const rid = restaurantId ?? restaurantIdFromFood
   const restaurantName = typeof restaurant === 'object' ? toDisplayText(restaurant?.name) : null
+  const rating = food.customer_rating ?? food.rating
+  const reviewCount = food.customer_review_count ?? food.review_count
 
   return (
     <div className="container-custom py-8 sm:py-12">
-      <nav className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-500 mb-6 flex-wrap">
+      <nav className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-500 mb-2 flex-wrap">
         <Link to="/owner/dashboard" className="hover:text-primary-600">{t('owner.title')}</Link>
         <ChevronRight size={14} className="flex-shrink-0" />
         {rid ? (
           <>
-            <Link to={`/owner/restaurant/${rid}`} className="hover:text-primary-600">
+            <Link
+              to={`/owner/restaurant/${rid}`}
+              className="hover:text-primary-600 truncate max-w-[140px] sm:max-w-[200px] inline-block min-w-0"
+              title={restaurantName || undefined}
+            >
               {restaurantName || t('restaurant.detail')}
             </Link>
             <ChevronRight size={14} className="flex-shrink-0" />
@@ -102,6 +110,26 @@ const OwnerFoodDetailPage = () => {
         ) : null}
         <span className="text-gray-700 truncate max-w-[180px] sm:max-w-none">{name || t('food.detail')}</span>
       </nav>
+      <div className="mb-6">
+        {rid ? (
+          <Link
+            to={`/owner/restaurant/${rid}`}
+            className="btn btn-outline inline-flex items-center gap-2"
+          >
+            <ChevronLeft size={18} />
+            {t('common.back')}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="btn btn-outline inline-flex items-center gap-2"
+          >
+            <ChevronLeft size={18} />
+            {t('common.back')}
+          </button>
+        )}
+      </div>
 
       <div className="card overflow-hidden p-0 flex flex-col md:flex-row">
         <div className="w-full md:w-1/2 lg:w-2/5 flex-shrink-0 aspect-[4/3] md:aspect-auto md:min-h-[320px]">
@@ -124,19 +152,52 @@ const OwnerFoodDetailPage = () => {
               {t('common.edit')}
             </Link>
           </div>
+          {/* Mã món, trạng thái */}
+          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mb-3">
+            {food.food_code && (
+              <span className="flex items-center gap-1.5">
+                <Hash size={14} />
+                {food.food_code}
+              </span>
+            )}
+            {food.food_code_status && (
+              <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                {food.food_code_status}
+              </span>
+            )}
+            {food.status != null && food.status !== '' && (
+              <span
+                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                  food.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                {food.status === 'active' ? t('common.active') : t('common.inactive')}
+              </span>
+            )}
+          </div>
+          {/* Giá, loại, đánh giá */}
           <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 mb-4">
             <span className="font-semibold text-primary-600 text-lg">
               {formatCurrency(food.price ?? 0, food.currency_code ?? 'VND')}
             </span>
+            {food.price_usd != null && food.currency_code === 'VND' && (
+              <span className="text-gray-500">≈ {formatCurrency(parseFloat(food.price_usd) || 0, 'USD')}</span>
+            )}
             {(food.category?.name || food.food_category?.name) && (
               <span className="text-gray-500">
-                {toDisplayText(food.category?.name ?? food.food_category?.name)}
+                {toDisplayText(food.category?.name ?? food.food_category?.name)} ({t('food.category')})
               </span>
             )}
-            {food.rating != null && (
+            {rating != null && (
               <span className="flex items-center gap-1">
                 <Star size={16} className="text-amber-500" />
-                {Number(food.rating).toFixed(1)} {t('restaurant.reviews')}
+                {Number(rating).toFixed(1)} {t('restaurant.rating')}
+              </span>
+            )}
+            {reviewCount != null && (
+              <span className="flex items-center gap-1 text-gray-500">
+                <Users size={16} />
+                {reviewCount} {t('restaurant.reviews')}
               </span>
             )}
             {food.is_vegetarian && (
@@ -145,18 +206,49 @@ const OwnerFoodDetailPage = () => {
                 Vegetarian
               </span>
             )}
+            {food.is_best_seller && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                Best seller
+              </span>
+            )}
           </div>
-          {description && (
-            <p className="text-gray-600 leading-relaxed mb-4">{description}</p>
+          {/* Mô tả */}
+          {description ? (
+            <div className="mb-4">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{t('food.detail')} (description)</p>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{description}</p>
+            </div>
+          ) : (
+            <p className="text-gray-400 text-sm italic mb-4">—</p>
           )}
-          <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
+          {/* Thông tin chi tiết */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm text-gray-600 mb-4 p-3 rounded-lg bg-gray-50 border border-gray-100">
             {food.serving_size != null && (
-              <span>{t('food.servingSize')}: {food.serving_size}</span>
+              <div>
+                <p className="text-xs text-gray-500">{t('food.servingSize')}</p>
+                <p className="font-medium">{food.serving_size}</p>
+              </div>
             )}
             {food.weight != null && (
-              <span>{t('food.weight')}: {food.weight}g</span>
+              <div>
+                <p className="text-xs text-gray-500">{t('food.weight')}</p>
+                <p className="font-medium">{food.weight}g</p>
+              </div>
+            )}
+            {food.currency_code && (
+              <div>
+                <p className="text-xs text-gray-500">Currency</p>
+                <p className="font-medium">{food.currency_code}</p>
+              </div>
+            )}
+            {food.created_at && (
+              <div>
+                <p className="text-xs text-gray-500 flex items-center gap-1"><Calendar size={12} /> Created</p>
+                <p className="font-medium">{new Date(food.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}</p>
+              </div>
             )}
           </div>
+          {/* Link nhà hàng */}
           {rid && (
             <Link
               to={`/owner/restaurant/${rid}`}

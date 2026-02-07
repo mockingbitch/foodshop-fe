@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Menu, X, Search, User, LogOut, Globe, LayoutDashboard } from 'lucide-react'
 import { useAuth } from '@context/AuthContext'
@@ -9,9 +9,21 @@ import { hasToken } from '@utils/authToken'
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
+  const languageMenuRef = useRef(null)
   const { isAuthenticated, user, logout, isOwner } = useAuth()
   const { currentLanguage, changeLanguage, t } = useLanguage()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!languageMenuOpen) return
+    const handleClickOutside = (e) => {
+      if (languageMenuRef.current && !languageMenuRef.current.contains(e.target)) {
+        setLanguageMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [languageMenuOpen])
 
   const handleLanguageChange = (lang) => {
     changeLanguage(lang)
@@ -59,7 +71,7 @@ const Header = () => {
             </button>
 
             {/* Language Selector */}
-            <div className="relative">
+            <div className="relative" ref={languageMenuRef}>
               <button
                 className="p-2 text-gray-600 hover:text-primary-600 transition flex items-center space-x-1"
                 onClick={() => setLanguageMenuOpen(!languageMenuOpen)}
