@@ -44,8 +44,15 @@ const FoodDetailPage = () => {
       .then((res) => {
         const raw = res?.data ?? res
         const item = raw?.data ?? raw?.food_item ?? raw?.result ?? raw
-        if (item && typeof item === 'object') setFood(item)
-        else setNotFound(true)
+        if (item && typeof item === 'object' && !item.food_item) {
+          setFood(item)
+        } 
+        else if (item?.food_item) {
+          setFood(item.food_item)
+        }
+        else {
+          setNotFound(true)
+        }
       })
       .catch(() => {
         setNotFound(true)
