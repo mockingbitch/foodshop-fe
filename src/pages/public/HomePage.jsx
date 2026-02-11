@@ -101,14 +101,14 @@ const HomePage = () => {
           </button>
           <div
             ref={scrollRef}
-            className="flex gap-4 overflow-x-auto pb-2 scroll-smooth scrollbar-thin"
+            className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scroll-smooth scrollbar-thin -mx-1 px-1"
             style={{ scrollbarWidth: 'thin' }}
           >
             {list.map((restaurant, idx) => (
               <Link
                 key={getRestaurantId(restaurant) ?? idx}
                 to={`/restaurants/${getRestaurantId(restaurant)}`}
-                className="flex-shrink-0 w-[280px] sm:w-[300px] rounded-xl overflow-hidden bg-white border border-gray-100 hover:shadow-lg transition-shadow"
+                className="flex-shrink-0 w-[calc((100%-1.5rem)/2.5)] min-w-[120px] sm:w-[300px] sm:min-w-[300px] rounded-xl overflow-hidden bg-white border border-gray-100 hover:shadow-lg transition-shadow"
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img
@@ -166,27 +166,28 @@ const HomePage = () => {
     <div className="min-h-[70vh]">
       {/* Search bar - on top */}
       <div className="bg-gray-50 border-b border-gray-100">
-        <div className="container-custom py-6 sm:py-8">
+        <div className="container-custom py-4 sm:py-8 px-3 sm:px-4">
           <form
             onSubmit={handleSearch}
-            className="max-w-3xl mx-auto flex flex-col sm:flex-row gap-2 sm:gap-0 bg-white rounded-full shadow-md shadow-gray-200/50 border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow"
+            className="max-w-3xl mx-auto flex flex-col sm:flex-row gap-2 sm:gap-0 bg-white rounded-2xl sm:rounded-full shadow-md shadow-gray-200/50 border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow"
           >
-            <div className="flex-1 flex items-center gap-3 px-5 py-3 sm:py-4">
+            <div className="flex-1 flex items-center gap-3 px-4 py-3 sm:px-5 sm:py-4 min-w-0">
               <Search size={20} className="text-gray-400 flex-shrink-0" />
               <input
-                type="text"
+                type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('restaurant.search')}
-                className="flex-1 min-w-0 border-0 focus:ring-0 focus:outline-none text-gray-900 placeholder-gray-400"
+                className="flex-1 min-w-0 w-0 border-0 focus:ring-0 focus:outline-none text-gray-900 placeholder-gray-400 text-base sm:text-inherit"
+                style={{ fontSize: '16px' }}
               />
             </div>
             <button
               type="submit"
-              className="px-6 py-3 sm:py-4 bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm sm:text-base transition flex items-center justify-center gap-2 shrink-0"
+              className="px-5 py-3 sm:px-6 sm:py-4 bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm sm:text-base transition flex items-center justify-center gap-2 shrink-0"
             >
-              <Search size={18} />
-              {t('common.search')}
+              <Search size={18} className="sm:hidden" />
+              <span>{t('common.search')}</span>
             </button>
           </form>
         </div>
