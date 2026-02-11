@@ -156,6 +156,9 @@ const RestaurantDetailPage = () => {
 
   const restaurantName = toDisplayText(restaurant.name)
   const description = toDisplayText(restaurant.description)
+  const bestSellerItems = foodItems.filter(
+    (i) => i.is_best_seller === true || i.is_best_seller === 1
+  )
   const showPagination = pagination.total > PER_PAGE
   const from = Math.min((pagination.currentPage - 1) * pagination.perPage + 1, pagination.total)
   const to = Math.min(pagination.currentPage * pagination.perPage, pagination.total)
@@ -239,9 +242,47 @@ const RestaurantDetailPage = () => {
         </div>
       </div>
 
-      {/* Food list with view toggle and pagination */}
+      {/* Best sellers section (mục riêng) */}
+      {bestSellerItems.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">{t('restaurant.bestSellers')}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {bestSellerItems.map((item) => (
+              <article
+                key={item.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => setPreviewFood(item)}
+                onKeyDown={(e) => e.key === 'Enter' && setPreviewFood(item)}
+                className="card overflow-hidden p-0 flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow"
+              >
+                <div className="aspect-[16/10] flex-shrink-0 bg-gray-100">
+                  <img
+                    src={getFoodImage(item)}
+                    alt={toDisplayText(item.name)}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-4 flex flex-col flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 mb-1 truncate">
+                    {toDisplayText(item.name) || t('common.noData')}
+                  </h3>
+                  <p className="text-primary-600 font-medium text-sm mb-2">
+                    {formatCurrency(getItemPrice(item), getItemCurrency(item))}
+                  </p>
+                  <p className="text-xs text-gray-500 line-clamp-2 flex-1">
+                    {toDisplayText(item.description) || '—'}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Menu / Food list with view toggle and pagination */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h2 className="text-xl font-bold text-gray-900">{t('restaurant.bestSellers')}</h2>
+        <h2 className="text-xl font-bold text-gray-900">{t('restaurant.menu')}</h2>
         {foodItems.length > 0 && (
           <div className="flex items-center gap-1 rounded-lg border border-gray-200 p-1 bg-gray-50">
             <button

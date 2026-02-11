@@ -173,6 +173,13 @@ const RestaurantMenuPage = () => {
   const currentPage = pagination.currentPage
   const lastPage = pagination.lastPage
 
+  const allMenuItems = menus.flatMap((menu) =>
+    getMenuSections(menu).flatMap((s) => s.items ?? s.food_items ?? s.foodItems ?? [])
+  )
+  const bestSellerItems = allMenuItems.filter(
+    (i) => i.is_best_seller === true || i.is_best_seller === 1
+  )
+
   return (
     <div className="container-custom py-8 sm:py-12">
       <nav className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-500 mb-6 flex-wrap">
@@ -218,6 +225,44 @@ const RestaurantMenuPage = () => {
         )}
       </div>
 
+      {/* Best sellers section (mục riêng) */}
+      {bestSellerItems.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">{t('restaurant.bestSellers')}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {bestSellerItems.map((item, itemIdx) => (
+              <article
+                key={item.id ?? itemIdx}
+                role="button"
+                tabIndex={0}
+                onClick={() => setPreviewFood(item)}
+                onKeyDown={(e) => e.key === 'Enter' && setPreviewFood(item)}
+                className="card overflow-hidden p-0 flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow"
+              >
+                <div className="aspect-[16/10] flex-shrink-0 bg-gray-100">
+                  <img
+                    src={getFoodImage(item)}
+                    alt={toDisplayText(item.name)}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-4 flex flex-col flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 mb-1 truncate">
+                    {toDisplayText(item.name) || t('common.noData')}
+                  </h3>
+                  <p className="text-primary-600 font-medium text-sm mb-2">
+                    {formatCurrency(getItemPrice(item), getItemCurrency(item))}
+                  </p>
+                  <p className="text-xs text-gray-500 line-clamp-2 flex-1">
+                    {toDisplayText(item.description) || '—'}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
       {menus.length === 0 ? (
         <div className="card p-8 sm:p-12 text-center">
           <UtensilsCrossed size={48} className="mx-auto text-gray-400 mb-4" />
@@ -229,10 +274,9 @@ const RestaurantMenuPage = () => {
         </div>
       ) : viewMode === 'grid' ? (
         <>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">{t('restaurant.menu')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {menus.flatMap((menu) =>
-            getMenuSections(menu).flatMap((s) => s.items ?? s.food_items ?? s.foodItems ?? [])
-          ).map((item, itemIdx) => (
+          {allMenuItems.map((item, itemIdx) => (
             <article
               key={item.id ?? itemIdx}
               role="button"
