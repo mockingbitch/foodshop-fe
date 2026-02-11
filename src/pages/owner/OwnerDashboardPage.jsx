@@ -27,6 +27,22 @@ const toDisplayText = (val) => {
 /** ID nhà hàng (backend có thể trả id hoặc restaurant_id) */
 const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
 
+/** Nhà hàng có thuộc owner này không (user_id / owner_id) */
+const belongsToOwner = (restaurant, ownerId) => {
+  if (!ownerId || !restaurant) return false
+  const uid = restaurant.user_id ?? restaurant.owner_id
+  return String(uid) === String(ownerId)
+}
+
+/** Món ăn có thuộc owner này không (qua restaurant nested hoặc owner_id trực tiếp) */
+const foodBelongsToOwner = (item, ownerId) => {
+  if (!ownerId || !item) return false
+  const direct = item.user_id ?? item.owner_id
+  if (direct != null && String(direct) === String(ownerId)) return true
+  const rest = item.restaurant
+  return rest && belongsToOwner(rest, ownerId)
+}
+
 const OwnerDashboardPage = () => {
   const { t } = useLanguage()
   const { user } = useAuth()
@@ -73,10 +89,17 @@ const OwnerDashboardPage = () => {
         const res = await restaurantApi.getRestaurants({ owner_id: ownerId })
         const raw = res?.data
         const list = ensureArray(raw)
-        setRestaurants(Array.isArray(list) ? list : [])
+        const filtered = Array.isArray(list)
+          ? list.filter((r) => belongsToOwner(r, ownerId))
+          : []
+        setRestaurants(filtered)
       } else {
         const response = await foodApi.getFoodItems({ owner_id: ownerId })
-        setFoodItems(ensureArray(response?.data))
+        const list = ensureArray(response?.data)
+        const filtered = Array.isArray(list)
+          ? list.filter((item) => foodBelongsToOwner(item, ownerId))
+          : []
+        setFoodItems(filtered)
       }
     } catch (error) {
       console.error('Error fetching data:', error)

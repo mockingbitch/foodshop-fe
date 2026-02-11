@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import { flushSync } from 'react-dom'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { restoreToken, setToken, clearToken, hasToken } from '@utils/authToken'
+import { restoreToken, setToken, clearToken, hasToken, getRememberMe } from '@utils/authToken'
 import { authApi } from '@services/api/authApi'
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, getErrorMessageKey } from '@constants'
 
@@ -11,7 +11,13 @@ const USER_STORAGE_KEY = 'auth_user'
 
 function getStoredUser() {
   try {
-    const raw = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(USER_STORAGE_KEY) : null
+    const storage = typeof getRememberMe === 'function' && getRememberMe() && typeof localStorage !== 'undefined'
+      ? localStorage
+      : typeof sessionStorage !== 'undefined'
+        ? sessionStorage
+        : null
+    if (!storage) return null
+    const raw = storage.getItem(USER_STORAGE_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw)
     return parsed && typeof parsed === 'object' ? parsed : null
@@ -20,11 +26,21 @@ function getStoredUser() {
   }
 }
 
-function setStoredUser(user) {
+/** @param {object|null} user - @param {boolean} [remember] - nếu không truyền thì lấy từ cookie remember_me */
+function setStoredUser(user, remember) {
   try {
-    if (typeof sessionStorage !== 'undefined') {
-      if (user) sessionStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user))
-      else sessionStorage.removeItem(USER_STORAGE_KEY)
+    const useLocal = remember ?? (typeof getRememberMe === 'function' && getRememberMe())
+    if (user) {
+      if (useLocal && typeof localStorage !== 'undefined') {
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user))
+        sessionStorage.removeItem(USER_STORAGE_KEY)
+      } else if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user))
+        localStorage.removeItem(USER_STORAGE_KEY)
+      }
+    } else {
+      if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem(USER_STORAGE_KEY)
+      if (typeof localStorage !== 'undefined') localStorage.removeItem(USER_STORAGE_KEY)
     }
   } catch {
     // ignore
@@ -78,9 +94,9 @@ export const AuthProvider = ({ children }) => {
         const inferredRole = path.startsWith('/owner') ? 'owner' : path.startsWith('/admin') ? 'admin' : userData?.role
         const nextUser = { ...userData, role: userData?.role || inferredRole }
         setUser(nextUser)
-        setStoredUser(nextUser)
+        setStoredUser(nextUser, getRememberMe())
         setIsAuthenticated(true)
-        if (tokenFromMe) setToken(tokenFromMe)
+        if (tokenFromMe) setToken(tokenFromMe, { remember: getRememberMe() })
       }
     } catch (error) {
       if (error.response?.status === 401) {
@@ -112,11 +128,12 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: 'Invalid login response' }
       }
 
-      setToken(token)
+      const remember = !!credentials.rememberMe
+      setToken(token, { remember })
       const nextUser = { ...(userData ?? {}), role: userData?.role || 'owner' }
       flushSync(() => {
         setUser(nextUser)
-        setStoredUser(nextUser)
+        setStoredUser(nextUser, remember)
         setIsAuthenticated(true)
       })
 
@@ -141,11 +158,12 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: 'Invalid login response' }
       }
 
-      setToken(token)
+      const remember = !!credentials.rememberMe
+      setToken(token, { remember })
       const nextUser = { ...(userData ?? {}), role: 'admin' }
       flushSync(() => {
         setUser(nextUser)
-        setStoredUser(nextUser)
+        setStoredUser(nextUser, remember)
         setIsAuthenticated(true)
       })
 
@@ -169,11 +187,12 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: 'Invalid register response' }
       }
 
-      setToken(token)
+      const remember = !!data.rememberMe
+      setToken(token, { remember })
       const nextUser = { ...(userData ?? {}), role: userData?.role || 'owner' }
       flushSync(() => {
         setUser(nextUser)
-        setStoredUser(nextUser)
+        setStoredUser(nextUser, remember)
         setIsAuthenticated(true)
       })
 
@@ -204,7 +223,7 @@ export const AuthProvider = ({ children }) => {
       const response = await authApi.updateOwnerProfile(data)
       const userData = response.data
       setUser(userData)
-      setStoredUser(userData)
+      setStoredUser(userData, getRememberMe())
 
       toast.success(SUCCESS_MESSAGES.UPDATE_SUCCESS)
       return { success: true }

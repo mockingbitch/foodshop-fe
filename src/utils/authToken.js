@@ -1,13 +1,16 @@
 /**
  * Access Token — lưu trong memory + cookie (để reload vẫn còn).
- * Cookie: path=/, SameSite=Lax, max-age tùy backend (mặc định 24h).
+ * Cookie: path=/, SameSite=Lax.
+ * - Ghi nhớ đăng nhập (remember): max-age 7 ngày + cookie remember_me.
+ * - Không ghi nhớ: session cookie (hết phiên khi đóng trình duyệt).
  * Lưu ý: cookie set từ JS không phải HttpOnly → JS có thể đọc (tương tự sessionStorage).
  *
  * Refresh Token — React KHÔNG lưu, nằm trong HttpOnly Cookie (backend set).
  */
 
 const COOKIE_NAME = 'access_token'
-const COOKIE_MAX_AGE = 24 * 60 * 60 // 24h (giây)
+const REMEMBER_ME_COOKIE = 'remember_me'
+const COOKIE_MAX_AGE_REMEMBER = 7 * 24 * 60 * 60 // 7 ngày (giây)
 
 let memoryToken = null
 
@@ -21,15 +24,20 @@ function getCookie(name) {
   }
 }
 
-function setCookie(name, value, maxAge = COOKIE_MAX_AGE) {
+/**
+ * @param {string} name
+ * @param {string|null} value
+ * @param {number|undefined} maxAge - giây. undefined = session cookie (đóng browser là hết).
+ */
+function setCookie(name, value, maxAge) {
   try {
     const encoded = value ? encodeURIComponent(value) : ''
-    const parts = [
-      `${name}=${encoded}`,
-      'path=/',
-      `max-age=${value ? maxAge : 0}`,
-      'SameSite=Lax',
-    ]
+    const parts = [`${name}=${encoded}`, 'path=/', 'SameSite=Lax']
+    if (value && maxAge != null && maxAge > 0) {
+      parts.push(`max-age=${maxAge}`)
+    } else if (!value) {
+      parts.push('max-age=0')
+    }
     if (typeof window !== 'undefined' && window.location?.protocol === 'https:') {
       parts.push('Secure')
     }
@@ -52,16 +60,34 @@ export const restoreToken = () => {
 
 export const getToken = () => memoryToken
 
-export const setToken = (token) => {
+/**
+ * @param {string|null} token
+ * @param {{ remember?: boolean }} [options] - remember: true = cookie 7 ngày + ghi nhớ user trong localStorage
+ */
+export const setToken = (token, options = {}) => {
   const v = token && typeof token === 'string' ? token : null
   memoryToken = v
-  if (v) setCookie(COOKIE_NAME, v)
-  else deleteCookie(COOKIE_NAME)
+  if (v) {
+    const remember = !!options.remember
+    if (remember) {
+      setCookie(COOKIE_NAME, v, COOKIE_MAX_AGE_REMEMBER)
+      setCookie(REMEMBER_ME_COOKIE, '1', COOKIE_MAX_AGE_REMEMBER)
+    } else {
+      setCookie(COOKIE_NAME, v) // session cookie, không truyền maxAge
+    }
+  } else {
+    deleteCookie(COOKIE_NAME)
+    deleteCookie(REMEMBER_ME_COOKIE)
+  }
 }
 
 export const clearToken = () => {
   memoryToken = null
   deleteCookie(COOKIE_NAME)
+  deleteCookie(REMEMBER_ME_COOKIE)
 }
 
 export const hasToken = () => !!memoryToken
+
+/** Có đang dùng chế độ "ghi nhớ đăng nhập" (cookie 7 ngày) hay không. */
+export const getRememberMe = () => !!getCookie(REMEMBER_ME_COOKIE)

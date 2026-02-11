@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { useLanguage } from '@context/LanguageContext'
 import { useAuth } from '@context/AuthContext'
 import { hasToken } from '@utils/authToken'
@@ -17,6 +18,7 @@ const OwnerLoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    rememberMe: true,
   })
   
   const [errors, setErrors] = useState({})
@@ -62,19 +64,12 @@ const OwnerLoginPage = () => {
   }
 
   const handleChange = (e) => {
-    const { name, value } = e.target
+    const { name, value, type, checked } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }))
-    
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }))
-    }
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
   }
 
   const handleSubmit = async (e) => {
@@ -184,8 +179,10 @@ const OwnerLoginPage = () => {
               <div className="flex items-center">
                 <input
                   id="remember-me"
-                  name="remember-me"
+                  name="rememberMe"
                   type="checkbox"
+                  checked={formData.rememberMe}
+                  onChange={handleChange}
                   className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
@@ -238,6 +235,7 @@ const OwnerLoginPage = () => {
           <div className="mt-6 grid grid-cols-2 gap-3">
             <button
               type="button"
+              onClick={() => toast.info(t('auth.socialLoginNotSupported'))}
               className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
             >
               <IconGoogle className="h-5 w-5" />
@@ -245,6 +243,7 @@ const OwnerLoginPage = () => {
             </button>
             <button
               type="button"
+              onClick={() => toast.info(t('auth.socialLoginNotSupported'))}
               className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
             >
               <IconFacebook className="h-5 w-5" />
