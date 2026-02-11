@@ -148,7 +148,11 @@ const FoodItemEditPage = () => {
       .getFoodItemById(id)
       .then((res) => {
         const raw = res?.data ?? res
-        const item = raw?.data ?? raw?.food_item ?? raw?.result ?? raw
+        let item = raw?.data ?? raw?.food_item ?? raw?.result ?? raw
+        // API trả về data: { food_item, extra_images, related_products } → lấy food_item
+        if (item && typeof item === 'object' && item.food_item != null) {
+          item = item.food_item
+        }
         if (item && typeof item === 'object') {
           setFormData(mapFoodToForm(item))
         } else {
@@ -398,9 +402,9 @@ const FoodItemEditPage = () => {
             <button type="submit" disabled={submitting} className="btn btn-primary">
               {submitting ? t('common.loading') : t('common.save')}
             </button>
-            <Link to="/owner/dashboard" className="btn btn-outline">
+            <button type="button" onClick={() => navigate(-1)} className="btn btn-outline">
               {t('common.cancel')}
-            </Link>
+            </button>
             <button
               type="button"
               onClick={() => setShowConfirm(true)}

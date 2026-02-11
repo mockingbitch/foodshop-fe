@@ -445,9 +445,9 @@ const RestaurantRegisterPage = () => {
             <button type="submit" disabled={submitting} className="btn btn-primary">
               {submitting ? t('common.loading') : t('common.save')}
             </button>
-            <Link to="/owner/dashboard" className="btn btn-outline">
+            <button type="button" onClick={() => navigate(-1)} className="btn btn-outline">
               {t('common.cancel')}
-            </Link>
+            </button>
           </div>
         </form>
       </div>

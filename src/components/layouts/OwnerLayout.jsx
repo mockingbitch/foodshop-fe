@@ -9,11 +9,11 @@ const OwnerLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col overflow-x-hidden">
       <OwnerHeader />
-      <div className="flex-1 flex relative">
+      <div className="flex-1 flex relative pt-14 md:pt-16">
         <OwnerSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <main className="flex-1 w-full min-w-0 flex flex-col bg-gray-50">
+        <main className="flex-1 w-full min-w-0 flex flex-col bg-gray-50 md:ml-64">
           {/* Mobile: menu gộp vào header (hamburger), không hiện nút Menu trong main */}
           <button
             type="button"

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '@context/LanguageContext'
 import { restaurantApi } from '@services/api/restaurantApi'
 import { commonApi } from '@services/api/commonApi'
@@ -65,10 +65,11 @@ const ensureArray = (value) => {
 const DEBOUNCE_MS = 350
 
 const RestaurantListPage = () => {
+  const [searchParams] = useSearchParams()
   const { t, getMultilingualContent } = useLanguage()
   const [restaurants, setRestaurants] = useState([])
   const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') ?? '')
   const [countryId, setCountryId] = useState('')
   const [restaurantTypeId, setRestaurantTypeId] = useState('')
   const [deliveryOnly, setDeliveryOnly] = useState(false)

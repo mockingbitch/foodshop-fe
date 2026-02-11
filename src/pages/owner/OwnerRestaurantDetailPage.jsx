@@ -6,7 +6,7 @@ import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
-import { Store, MapPin, Phone, Mail, UtensilsCrossed, ChevronRight, Star, Edit, Plus } from 'lucide-react'
+import { Store, MapPin, Phone, Mail, UtensilsCrossed, ChevronRight, ChevronLeft, Star, Edit, Plus, Clock, Users, Hash, Truck, Globe, User, Calendar, ExternalLink } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -38,12 +38,67 @@ const getRestaurantImage = (r) =>
 const getFoodImage = (item) =>
   item?.main_image ?? item?.image_url ?? item?.images?.[0]?.url ?? DEFAULT_FOOD_IMAGE
 
+const getImageUrl = (v) => (v && typeof v === 'object' && (v.url || v.image_url)) ? (v.url ?? v.image_url) : (typeof v === 'string' && v.trim() ? v : null)
+const collectOutsideImages = (r) => {
+  const out = []
+  if (r?.outside_image_1) out.push(getImageUrl(r.outside_image_1) ?? r.outside_image_1)
+  if (r?.outside_image_2) out.push(getImageUrl(r.outside_image_2) ?? r.outside_image_2)
+  const arr = r?.outside_images
+  if (Array.isArray(arr)) arr.forEach((item) => { const u = getImageUrl(item); if (u) out.push(u) })
+  else if (arr?.url) out.push(arr.url)
+  return out
+}
+const collectInsideImages = (r) => {
+  const out = []
+  ;['inside_image_1', 'inside_image_2', 'inside_image_3', 'inside_image_4', 'inside_image_5'].forEach((key) => {
+    const v = r?.[key]
+    if (v) out.push(getImageUrl(v) ?? v)
+  })
+  const arr = r?.inside_images
+  if (Array.isArray(arr)) arr.forEach((item) => { const u = getImageUrl(item); if (u) out.push(u) })
+  else if (arr?.url) out.push(arr.url)
+  return out
+}
+
+const DAY_LABELS = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun' }
+const formatBusinessHours = (hours) => {
+  if (hours == null) return null
+  if (typeof hours === 'string') return hours.trim() || null
+  if (typeof hours !== 'object') return null
+  const parts = []
+  Object.entries(DAY_LABELS).forEach(([key, label]) => {
+    const day = hours[key]
+    if (!day) return
+    const open = day.open !== false
+    const start = day.start ?? ''
+    const end = day.end ?? ''
+    if (open && (start || end)) parts.push(`${label} ${start}-${end}`.trim())
+    else if (!open) parts.push(`${label} closed`)
+  })
+  return parts.length ? parts.join(', ') : null
+}
+
+const formatDate = (str) => {
+  if (!str) return '—'
+  try {
+    const d = new Date(str)
+    return Number.isNaN(d.getTime()) ? str : d.toLocaleDateString(undefined, { dateStyle: 'medium' })
+  } catch {
+    return str
+  }
+}
+
+const PER_PAGE = 9
+
 const OwnerRestaurantDetailPage = () => {
   const { id } = useParams()
   const { t } = useLanguage()
   const [restaurant, setRestaurant] = useState(null)
   const [foodItems, setFoodItems] = useState([])
+  const [foodPage, setFoodPage] = useState(1)
+  const [totalFoodPages, setTotalFoodPages] = useState(1)
   const [loading, setLoading] = useState(true)
+  const [loadingFood, setLoadingFood] = useState(false)
   const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
@@ -54,28 +109,49 @@ const OwnerRestaurantDetailPage = () => {
     }
     setLoading(true)
     setNotFound(false)
-    Promise.all([
-      restaurantApi.getRestaurantById(id),
-      foodApi.getFoodItems({ restaurant_id: id, per_page: 100 }),
-    ])
-      .then(([resRes, foodRes]) => {
+    setFoodPage(1)
+    restaurantApi
+      .getRestaurantById(id)
+      .then((resRes) => {
         const rawRes = resRes?.data ?? resRes
-        const rest = rawRes?.data ?? rawRes?.restaurant ?? rawRes?.result ?? rawRes
+        let rest = rawRes?.data ?? rawRes?.restaurant ?? rawRes?.result ?? rawRes
+        if (rest && typeof rest === 'object' && rest.restaurant != null) {
+          rest = rest.restaurant
+        }
         if (rest && typeof rest === 'object') {
           setRestaurant(rest)
         } else {
           setRestaurant(null)
         }
-        const list = ensureArray(foodRes?.data)
-        setFoodItems(Array.isArray(list) ? list : [])
       })
-      .catch(() => {
-        setRestaurant(null)
-        setFoodItems([])
-        setNotFound(true)
-      })
+      .catch(() => setRestaurant(null))
       .finally(() => setLoading(false))
   }, [id])
+
+  useEffect(() => {
+    if (!id) return
+    setLoadingFood(true)
+    foodApi
+      .getFoodItems({ restaurant_id: id, per_page: PER_PAGE, page: foodPage })
+      .then((foodRes) => {
+        const raw = foodRes?.data ?? foodRes
+        const list = ensureArray(raw?.data ?? raw?.food_items ?? raw)
+        const meta = raw?.meta ?? foodRes?.data?.meta
+        setFoodItems(Array.isArray(list) ? list : [])
+        let lastPage = meta?.last_page
+        if (lastPage == null) {
+          const total = meta?.total
+          if (total != null) lastPage = Math.max(1, Math.ceil(total / PER_PAGE))
+          else lastPage = list.length >= PER_PAGE ? foodPage + 1 : foodPage
+        }
+        setTotalFoodPages(Math.max(1, lastPage))
+      })
+      .catch(() => {
+        setFoodItems([])
+        setTotalFoodPages(1)
+      })
+      .finally(() => setLoadingFood(false))
+  }, [id, foodPage])
 
   if (loading) {
     return (
@@ -108,7 +184,7 @@ const OwnerRestaurantDetailPage = () => {
         <ChevronRight size={14} className="flex-shrink-0" />
         <Link to="/owner/dashboard" className="hover:text-primary-600">{t('owner.title')}</Link>
         <ChevronRight size={14} className="flex-shrink-0" />
-        <span className="text-gray-700 truncate max-w-[180px] sm:max-w-none">{restaurantName || t('restaurant.detail')}</span>
+        <span className="text-gray-700 truncate max-w-[140px] sm:max-w-[240px] min-w-0 inline-block" title={restaurantName || undefined}>{restaurantName || t('restaurant.detail')}</span>
       </nav>
 
       {/* Restaurant info */}
@@ -122,38 +198,188 @@ const OwnerRestaurantDetailPage = () => {
             />
           </div>
           <div className="w-full md:w-3/5 p-4 sm:p-6 flex flex-col">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+            <Link
+              to={`/owner/restaurant/${id}/edit`}
+              className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 hover:text-primary-600 hover:underline block"
+            >
               {restaurantName || t('restaurant.detail')}
-            </h1>
-            <p className="text-gray-600 text-sm sm:text-base mb-4 line-clamp-3">
+            </Link>
+            {/* Mã, trạng thái */}
+            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mb-2">
+              {(restaurant.code != null && restaurant.code !== '') && (
+                <span className="flex items-center gap-1.5">
+                  <Hash size={14} className="flex-shrink-0" />
+                  {restaurant.code}
+                </span>
+              )}
+              {(restaurant.status != null && restaurant.status !== '') && (
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                    restaurant.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  {restaurant.status === 'active' ? t('common.active') : t('common.inactive')}
+                </span>
+              )}
+            </div>
+            <p className="text-gray-600 text-sm sm:text-base mb-4 whitespace-pre-wrap">
               {toDisplayText(restaurant.description) || '—'}
             </p>
-            <div className="space-y-2 text-sm text-gray-600">
-              {restaurant.address && (
-                <p className="flex items-start gap-2">
+            {/* Địa chỉ */}
+            {(restaurant.address || restaurant.city) && (
+              <div className="mb-4 p-3 rounded-lg bg-gray-50 border border-gray-100">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{t('restaurant.address')}</p>
+                <p className="flex items-start gap-2 text-sm text-gray-700">
                   <MapPin size={16} className="flex-shrink-0 mt-0.5" />
-                  <span>{restaurant.address}</span>
+                  <span>
+                    {[restaurant.address, restaurant.city].filter(Boolean).join(', ')}
+                    {restaurant.country && ` — ${toDisplayText(restaurant.country.name ?? restaurant.country.code) || restaurant.country.code}`}
+                  </span>
                 </p>
-              )}
+              </div>
+            )}
+            {/* Thông tin cơ bản: liên hệ, giờ, đánh giá */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm text-gray-600">
               {restaurant.phone && (
                 <p className="flex items-center gap-2">
                   <Phone size={16} className="flex-shrink-0" />
-                  <span>{restaurant.phone}</span>
+                  <a href={`tel:${restaurant.phone}`} className="hover:text-primary-600">{restaurant.phone}</a>
+                </p>
+              )}
+              {restaurant.zalo && (
+                <p className="flex items-center gap-2">
+                  <Phone size={16} className="flex-shrink-0" />
+                  <span>{t('restaurant.zalo')}: {restaurant.zalo}</span>
                 </p>
               )}
               {restaurant.email && (
                 <p className="flex items-center gap-2">
                   <Mail size={16} className="flex-shrink-0" />
-                  <span>{restaurant.email}</span>
+                  <a href={`mailto:${restaurant.email}`} className="hover:text-primary-600 truncate min-w-0">{restaurant.email}</a>
+                </p>
+              )}
+              {(() => {
+                const hoursStr = (restaurant.hours != null && restaurant.hours !== '') ? restaurant.hours : formatBusinessHours(restaurant.business_hours)
+                return hoursStr ? (
+                  <p className="flex items-start gap-2">
+                    <Clock size={16} className="flex-shrink-0 mt-0.5" />
+                    <span className="break-words">{hoursStr}</span>
+                  </p>
+                ) : null
+              })()}
+              {(restaurant.reviews_count != null || restaurant.review_count != null) && (
+                <p className="flex items-center gap-2">
+                  <Users size={16} className="flex-shrink-0" />
+                  <span>{restaurant.reviews_count ?? restaurant.review_count ?? 0} {t('restaurant.reviews')}</span>
                 </p>
               )}
               {restaurant.rating != null && (
                 <p className="flex items-center gap-2">
                   <Star size={16} className="text-amber-500 flex-shrink-0" />
-                  <span>{Number(restaurant.rating).toFixed(1)} {t('restaurant.reviews')}</span>
+                  <span>{Number(restaurant.rating).toFixed(1)} ({t('restaurant.rating')})</span>
+                </p>
+              )}
+              {restaurant.country && (
+                <p className="flex items-center gap-2">
+                  <Globe size={16} className="flex-shrink-0" />
+                  <span>{toDisplayText(restaurant.country.name ?? restaurant.country.name_en ?? restaurant.country.code) || restaurant.country.code || '—'}</span>
+                </p>
+              )}
+              {restaurant.restaurant_type && (
+                <p className="flex items-center gap-2">
+                  <Store size={16} className="flex-shrink-0" />
+                  <span>{toDisplayText(restaurant.restaurant_type.name ?? restaurant.restaurant_type.name_en ?? restaurant.restaurant_type.code) || restaurant.restaurant_type.code || '—'}</span>
+                </p>
+              )}
+              {restaurant.delivery_available === true && (
+                <p className="flex items-center gap-2">
+                  <Truck size={16} className="flex-shrink-0" />
+                  <span>{t('restaurant.delivery')}</span>
+                </p>
+              )}
+              {restaurant.user && (
+                <p className="flex items-start gap-2 sm:col-span-2">
+                  <User size={16} className="flex-shrink-0 mt-0.5" />
+                  <span className="min-w-0">
+                    {restaurant.user.name && <span className="block">{restaurant.user.name}</span>}
+                    {restaurant.user.email && (
+                      <a href={`mailto:${restaurant.user.email}`} className="text-primary-600 hover:underline truncate block">{restaurant.user.email}</a>
+                    )}
+                    {!restaurant.user.name && !restaurant.user.email && '—'}
+                  </span>
+                </p>
+              )}
+              {restaurant.created_at && (
+                <p className="flex items-center gap-2">
+                  <Calendar size={16} className="flex-shrink-0" />
+                  <span>Created {formatDate(restaurant.created_at)}</span>
+                </p>
+              )}
+              {restaurant.updated_at && (
+                <p className="flex items-center gap-2">
+                  <Calendar size={16} className="flex-shrink-0" />
+                  <span>Updated {formatDate(restaurant.updated_at)}</span>
+                </p>
+              )}
+              {restaurant.webpage_link && (
+                <p className="flex items-center gap-2">
+                  <ExternalLink size={16} className="flex-shrink-0" />
+                  <a href={restaurant.webpage_link} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline truncate min-w-0">{t('restaurantRegister.webpage')}</a>
+                </p>
+              )}
+              {restaurant.facebook_link && (
+                <p className="flex items-center gap-2">
+                  <ExternalLink size={16} className="flex-shrink-0" />
+                  <a href={restaurant.facebook_link} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline truncate min-w-0">{t('restaurantRegister.facebook')}</a>
+                </p>
+              )}
+              {restaurant.youtube_link && (
+                <p className="flex items-center gap-2">
+                  <ExternalLink size={16} className="flex-shrink-0" />
+                  <a href={restaurant.youtube_link} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline truncate min-w-0">{t('restaurantRegister.youtube')}</a>
                 </p>
               )}
             </div>
+            {restaurant.remark != null && restaurant.remark !== '' && (
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{t('restaurantRegister.remarkLabel')}</p>
+                <p className="text-sm text-gray-600 whitespace-pre-wrap">{toDisplayText(restaurant.remark) || restaurant.remark}</p>
+              </div>
+            )}
+            {/* Outside images */}
+            {(() => {
+              const imgs = collectOutsideImages(restaurant)
+              if (imgs.length === 0) return null
+              return (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Outside images</p>
+                  <div className="flex flex-wrap gap-2">
+                    {imgs.map((url, idx) => (
+                      <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )
+            })()}
+            {/* Inside images */}
+            {(() => {
+              const imgs = collectInsideImages(restaurant)
+              if (imgs.length === 0) return null
+              return (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Inside images</p>
+                  <div className="flex flex-wrap gap-2">
+                    {imgs.map((url, idx) => (
+                      <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )
+            })()}
             <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100">
               <Link
                 to={`/owner/restaurant/${id}/edit`}
@@ -182,7 +408,11 @@ const OwnerRestaurantDetailPage = () => {
         </Link>
       </div>
 
-      {foodItems.length === 0 ? (
+      {loadingFood ? (
+        <div className="card p-8 flex justify-center items-center min-h-[200px]">
+          <LoadingSpinner />
+        </div>
+      ) : foodItems.length === 0 ? (
         <div className="card p-8 text-center">
           <UtensilsCrossed size={40} className="mx-auto text-gray-400 mb-3" />
           <p className="text-gray-600 mb-4">{t('common.noData')}</p>
@@ -195,45 +425,72 @@ const OwnerRestaurantDetailPage = () => {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {foodItems.map((item) => (
-            <div key={item.id} className="card overflow-hidden p-0 flex flex-col">
-              <div className="aspect-[16/10] flex-shrink-0">
-                <img
-                  src={getFoodImage(item)}
-                  alt={toDisplayText(item.name)}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-4 flex flex-col flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 truncate mb-1">
-                  {toDisplayText(item.name) || t('common.noData')}
-                </h3>
-                <p className="text-primary-600 font-medium text-sm mb-2">
-                  {formatCurrency(item.price ?? 0, item.currency_code ?? 'VND')}
-                </p>
-                <p className="text-gray-500 text-xs mb-3 line-clamp-2">
-                  {toDisplayText(item.description) || toDisplayText(item.category?.name ?? item.food_category?.name) || '—'}
-                </p>
-                <div className="flex gap-2 mt-auto pt-2 border-t border-gray-100">
-                  <Link
-                    to={`/owner/restaurant/${id}/food-items/${item.id}`}
-                    className="btn btn-outline text-xs flex-1 min-w-0"
-                  >
-                    {t('common.view')}
-                  </Link>
-                  <Link
-                    to={`/owner/food-items/${item.id}/edit`}
-                    className="btn btn-primary text-xs flex-1 min-w-0 inline-flex items-center justify-center gap-1"
-                  >
-                    <Edit size={14} />
-                    {t('common.edit')}
-                  </Link>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {foodItems.map((item) => (
+              <div key={item.id} className="card overflow-hidden p-0 flex flex-col">
+                <div className="aspect-[16/10] flex-shrink-0">
+                  <img
+                    src={getFoodImage(item)}
+                    alt={toDisplayText(item.name)}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-4 flex flex-col flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 truncate mb-1">
+                    {toDisplayText(item.name) || t('common.noData')}
+                  </h3>
+                  <p className="text-primary-600 font-medium text-sm mb-2">
+                    {formatCurrency(item.price ?? 0, item.currency_code ?? 'VND')}
+                  </p>
+                  <p className="text-gray-500 text-xs mb-3 line-clamp-2">
+                    {toDisplayText(item.description) || toDisplayText(item.category?.name ?? item.food_category?.name) || '—'}
+                  </p>
+                  <div className="flex gap-2 mt-auto pt-2 border-t border-gray-100">
+                    <Link
+                      to={`/owner/restaurant/${id}/food-items/${item.id}`}
+                      className="btn btn-outline text-xs flex-1 min-w-0"
+                    >
+                      {t('common.view')}
+                    </Link>
+                    <Link
+                      to={`/owner/food-items/${item.id}/edit`}
+                      className="btn btn-primary text-xs flex-1 min-w-0 inline-flex items-center justify-center gap-1"
+                    >
+                      <Edit size={14} />
+                      {t('common.edit')}
+                    </Link>
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
+          {totalFoodPages > 1 && (
+            <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => setFoodPage((p) => Math.max(1, p - 1))}
+                disabled={foodPage <= 1 || loadingFood}
+                className="btn btn-outline inline-flex items-center gap-1"
+              >
+                <ChevronLeft size={18} />
+                {t('common.previous')}
+              </button>
+              <span className="px-3 py-2 text-sm text-gray-600">
+                {foodPage} / {totalFoodPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setFoodPage((p) => Math.min(totalFoodPages, p + 1))}
+                disabled={foodPage >= totalFoodPages || loadingFood}
+                className="btn btn-outline inline-flex items-center gap-1"
+              >
+                {t('common.next')}
+                <ChevronRight size={18} />
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   )
