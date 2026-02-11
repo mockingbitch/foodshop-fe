@@ -62,6 +62,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/restaurants" element={<RestaurantListPage />} />
             <Route path="/restaurants/search" element={<RestaurantSearchPage />} />
+            <Route path="/restaurants/:restaurantId/food-items/:id" element={<FoodDetailPage />} />
             <Route path="/restaurants/:id" element={<RestaurantDetailPage />} />
             <Route path="/restaurants/:id/menu" element={<RestaurantMenuPage />} />
             

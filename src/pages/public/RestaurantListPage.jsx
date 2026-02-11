@@ -4,7 +4,39 @@ import { useLanguage } from '@context/LanguageContext'
 import { restaurantApi } from '@services/api/restaurantApi'
 import { commonApi } from '@services/api/commonApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { Store, MapPin, Star, Filter, X } from 'lucide-react'
+import { Store, MapPin, Star, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react'
+
+const PER_PAGE = 12
+
+const getPaginationMeta = (res, listLength = 0) => {
+  const root = res?.data ?? res
+  if (!root || typeof root !== 'object') {
+    return { currentPage: 1, lastPage: 1, total: listLength, perPage: PER_PAGE }
+  }
+  let payload
+  if (
+    root.data &&
+    typeof root.data === 'object' &&
+    !Array.isArray(root.data) &&
+    (root.data.current_page != null || root.data.last_page != null || root.data.total != null)
+  ) {
+    payload = root.data
+  } else {
+    payload = root
+  }
+  const meta = payload.meta ?? payload.pagination ?? payload
+  const currentPage = Number(meta.current_page ?? meta.page ?? meta.currentPage ?? 1) || 1
+  const total = Number(meta.total) >= 0 ? Number(meta.total) : listLength
+  const perPage = Number(meta.per_page ?? meta.perPage ?? PER_PAGE) || PER_PAGE
+  let lastPage = Number(meta.last_page ?? meta.lastPage ?? meta.total_pages ?? meta.totalPages ?? 0) || 0
+  if (lastPage < 1 && total > 0 && perPage > 0) lastPage = Math.ceil(total / perPage)
+  return {
+    currentPage,
+    lastPage: lastPage >= 1 ? lastPage : 1,
+    total,
+    perPage,
+  }
+}
 
 /** Chuỗi hiển thị từ name/description (string hoặc object { en, vn, kr }) */
 const toDisplayText = (val) => {
@@ -75,6 +107,8 @@ const RestaurantListPage = () => {
   const [deliveryOnly, setDeliveryOnly] = useState(false)
   const [countries, setCountries] = useState([])
   const [restaurantTypes, setRestaurantTypes] = useState([])
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({ currentPage: 1, lastPage: 1, total: 0, perPage: PER_PAGE })
 
   useEffect(() => {
     Promise.all([commonApi.getCountries(), commonApi.getRestaurantTypes()])
@@ -91,20 +125,23 @@ const RestaurantListPage = () => {
   }, [])
 
   const fetchRestaurants = useCallback(
-    async (filters) => {
+    async (filters, pageNum = 1) => {
       setLoading(true)
       try {
-        const params = { per_page: 50 }
+        const params = { per_page: PER_PAGE, page: pageNum }
         if (filters.search?.trim()) params.search = filters.search.trim()
         if (filters.country_id) params.country_id = Number(filters.country_id)
         if (filters.restaurant_type_id) params.restaurant_type_id = Number(filters.restaurant_type_id)
         if (filters.delivery_available === true) params.delivery_available = true
         const res = await restaurantApi.getRestaurants(params)
         const list = ensureArray(res?.data)
-        setRestaurants(Array.isArray(list) ? list : [])
+        const arr = Array.isArray(list) ? list : []
+        setRestaurants(arr)
+        setPagination(getPaginationMeta(res, arr.length))
       } catch (err) {
         console.error(err)
         setRestaurants([])
+        setPagination({ currentPage: 1, lastPage: 1, total: 0, perPage: PER_PAGE })
       } finally {
         setLoading(false)
       }
@@ -113,16 +150,23 @@ const RestaurantListPage = () => {
   )
 
   useEffect(() => {
+    setPage(1)
+  }, [searchQuery, countryId, restaurantTypeId, deliveryOnly])
+
+  useEffect(() => {
     const timer = setTimeout(() => {
-      fetchRestaurants({
-        search: searchQuery,
-        country_id: countryId || undefined,
-        restaurant_type_id: restaurantTypeId || undefined,
-        delivery_available: deliveryOnly || undefined,
-      })
+      fetchRestaurants(
+        {
+          search: searchQuery,
+          country_id: countryId || undefined,
+          restaurant_type_id: restaurantTypeId || undefined,
+          delivery_available: deliveryOnly || undefined,
+        },
+        page
+      )
     }, DEBOUNCE_MS)
     return () => clearTimeout(timer)
-  }, [searchQuery, countryId, restaurantTypeId, deliveryOnly, fetchRestaurants])
+  }, [searchQuery, countryId, restaurantTypeId, deliveryOnly, page, fetchRestaurants])
 
   const hasActiveFilters = searchQuery.trim() || countryId || restaurantTypeId || deliveryOnly
   const clearFilters = () => {
@@ -133,6 +177,12 @@ const RestaurantListPage = () => {
   }
 
   const getRatingWidth = (rating) => (!rating ? '0%' : `${(rating / 5) * 100}%`)
+
+  const showPagination = pagination.total > PER_PAGE
+  const from = Math.min((pagination.currentPage - 1) * pagination.perPage + 1, pagination.total)
+  const to = Math.min(pagination.currentPage * pagination.perPage, pagination.total)
+  const currentPage = pagination.currentPage
+  const lastPage = pagination.lastPage
 
   return (
     <div className="container-custom py-8 sm:py-12">
@@ -244,6 +294,7 @@ const RestaurantListPage = () => {
           </p>
         </div>
       ) : (
+        <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {restaurants.map((restaurant, idx) => (
             <article
@@ -314,6 +365,43 @@ const RestaurantListPage = () => {
             </article>
           ))}
         </div>
+
+        {showPagination && (
+          <nav
+            className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6 bg-gray-50 rounded-lg px-4 py-4 sm:px-6"
+            aria-label="Pagination"
+          >
+            <p className="text-sm text-gray-600 order-2 sm:order-1">
+              {t('common.showing')} <span className="font-medium">{from}</span>–<span className="font-medium">{to}</span> {t('common.of')} <span className="font-medium">{pagination.total}</span>
+            </p>
+            <div className="flex items-center gap-2 order-1 sm:order-2">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage <= 1}
+                className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label={t('common.previous')}
+              >
+                <ChevronLeft size={18} />
+                {t('common.previous')}
+              </button>
+              <span className="text-sm text-gray-700 px-3 py-1.5 bg-white border border-gray-200 rounded min-w-[80px] text-center">
+                {t('common.page')} {currentPage} / {lastPage}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
+                disabled={currentPage >= lastPage}
+                className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label={t('common.next')}
+              >
+                {t('common.next')}
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          </nav>
+        )}
+        </>
       )}
     </div>
   )

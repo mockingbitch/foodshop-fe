@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useLanguage } from '@context/LanguageContext'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
-import { Store, ChevronRight, Star, Leaf } from 'lucide-react'
+import { Store, ChevronRight, ChevronLeft, Star, Leaf } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -25,7 +25,8 @@ const getFoodImage = (item) =>
 const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
 
 const FoodDetailPage = () => {
-  const { id } = useParams()
+  const { id, restaurantId: restaurantIdParam } = useParams()
+  const navigate = useNavigate()
   const { t } = useLanguage()
   const [food, setFood] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -43,7 +44,9 @@ const FoodDetailPage = () => {
       .getFoodItemById(id)
       .then((res) => {
         const raw = res?.data ?? res
-        const item = raw?.data ?? raw?.food_item ?? raw?.result ?? raw
+        let item = raw?.data ?? raw?.food_item ?? raw?.result ?? raw
+        // API trả về data: { food_item, extra_images } → lấy food_item
+        if (item && typeof item === 'object' && item.food_item != null) item = item.food_item
         if (item && typeof item === 'object') setFood(item)
         else setNotFound(true)
       })
@@ -66,9 +69,15 @@ const FoodDetailPage = () => {
       <div className="container-custom py-12">
         <div className="card p-8 text-center">
           <p className="text-gray-600 mb-4">{t('common.noData')}</p>
-          <Link to="/food-items" className="btn btn-primary">
-            {t('food.title')}
-          </Link>
+          {restaurantIdParam ? (
+            <Link to={`/restaurants/${restaurantIdParam}`} className="btn btn-primary">
+              {t('restaurant.detail')}
+            </Link>
+          ) : (
+            <Link to="/food-items" className="btn btn-primary">
+              {t('food.title')}
+            </Link>
+          )}
         </div>
       </div>
     )
@@ -77,16 +86,41 @@ const FoodDetailPage = () => {
   const name = toDisplayText(food.name)
   const description = toDisplayText(food.description)
   const restaurant = food.restaurant ?? food.restaurant_id
-  const restaurantId = typeof restaurant === 'object' ? getRestaurantId(restaurant) : restaurant
+  const restaurantIdFromFood = typeof restaurant === 'object' ? getRestaurantId(restaurant) : restaurant
+  const restaurantId = restaurantIdParam ?? restaurantIdFromFood
   const restaurantName = typeof restaurant === 'object' ? toDisplayText(restaurant?.name) : null
 
   return (
     <div className="container-custom py-8 sm:py-12">
+      <div className="mb-4">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-primary-600 transition"
+          aria-label={t('common.back')}
+        >
+          <ChevronLeft size={18} />
+          {t('common.back')}
+        </button>
+      </div>
       <nav className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-500 mb-6 flex-wrap">
         <Link to="/" className="hover:text-primary-600">{t('common.home')}</Link>
         <ChevronRight size={14} className="flex-shrink-0" />
-        <Link to="/food-items" className="hover:text-primary-600">{t('food.title')}</Link>
-        <ChevronRight size={14} className="flex-shrink-0" />
+        {restaurantIdParam ? (
+          <>
+            <Link to="/restaurants" className="hover:text-primary-600">{t('restaurant.title')}</Link>
+            <ChevronRight size={14} className="flex-shrink-0" />
+            <Link to={`/restaurants/${restaurantIdParam}`} className="hover:text-primary-600 truncate max-w-[120px] sm:max-w-[200px]">
+              {restaurantName || t('restaurant.detail')}
+            </Link>
+            <ChevronRight size={14} className="flex-shrink-0" />
+          </>
+        ) : (
+          <>
+            <Link to="/food-items" className="hover:text-primary-600">{t('food.title')}</Link>
+            <ChevronRight size={14} className="flex-shrink-0" />
+          </>
+        )}
         <span className="text-gray-700 truncate max-w-[180px] sm:max-w-none">{name || t('food.detail')}</span>
       </nav>
 
@@ -111,10 +145,14 @@ const FoodDetailPage = () => {
                 {toDisplayText(food.category?.name ?? food.food_category?.name)}
               </span>
             )}
-            {food.rating != null && (
+            {(food.rating != null || food.customer_rating != null) && (
               <span className="flex items-center gap-1">
                 <Star size={16} className="text-amber-500" />
-                {Number(food.rating).toFixed(1)} {t('restaurant.reviews')}
+                {Number(food.customer_rating ?? food.rating).toFixed(1)}
+                {food.customer_review_count != null && (
+                  <span className="text-gray-500">({food.customer_review_count} {t('restaurant.reviews')})</span>
+                )}
+                {food.customer_review_count == null && <span> {t('restaurant.reviews')}</span>}
               </span>
             )}
             {food.is_vegetarian && (
