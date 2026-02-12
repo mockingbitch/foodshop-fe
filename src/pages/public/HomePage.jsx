@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '@context/LanguageContext'
 import { restaurantApi } from '@services/api/restaurantApi'
+import { newsApi } from '@services/api/newsApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { Search, Store, MapPin, Star, ChevronRight, ChevronLeft } from 'lucide-react'
+import { stripHtml } from '@utils/helpers'
+import { Search, Store, MapPin, Star, ChevronRight, ChevronLeft, Newspaper } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -31,30 +33,42 @@ const getRestaurantImage = (restaurant) => {
 const ensureArray = (value) => {
   if (Array.isArray(value)) return value
   if (!value || typeof value !== 'object') return []
-  const raw = value.data ?? value.restaurants ?? value.items ?? value.results ?? value.list
+  const raw = value.data ?? value.restaurants ?? value.items ?? value.results ?? value.list ?? value.news
   if (Array.isArray(raw)) return raw
   if (raw && typeof raw === 'object') {
-    const nested = raw.data ?? raw.restaurants ?? raw.items ?? raw.results ?? raw.list
+    const nested = raw.data ?? raw.restaurants ?? raw.items ?? raw.results ?? raw.list ?? raw.news
     return Array.isArray(nested) ? nested : []
   }
   return []
 }
+
+const getNewsId = (item) => item?.id
+const getNewsImage = (item) =>
+  item?.featured_image ?? item?.image ?? item?.featured_image_url ?? item?.images?.[0]?.url ?? null
 
 const HomePage = () => {
   const { t } = useLanguage()
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [restaurants, setRestaurants] = useState([])
+  const [news, setNews] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    restaurantApi
-      .getRestaurants({ per_page: 24 })
-      .then((res) => {
-        const list = ensureArray(res?.data)
-        setRestaurants(Array.isArray(list) ? list : [])
+    Promise.all([
+      restaurantApi.getRestaurants({ per_page: 24 }),
+      newsApi.getNews({ type: 'news', per_page: 6 }),
+    ])
+      .then(([resRest, resNews]) => {
+        const listRest = ensureArray(resRest?.data)
+        setRestaurants(Array.isArray(listRest) ? listRest : [])
+        const listNews = ensureArray(resNews?.data)
+        setNews(Array.isArray(listNews) ? listNews : [])
       })
-      .catch(() => setRestaurants([]))
+      .catch(() => {
+        setRestaurants([])
+        setNews([])
+      })
       .finally(() => setLoading(false))
   }, [])
 
@@ -218,6 +232,54 @@ const HomePage = () => {
                 title={t('restaurant.title')}
                 list={moreRestaurants}
               />
+            )}
+            {/* News section */}
+            {news.length > 0 && (
+              <section className="mb-10">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-gray-900">{t('common.news')}</h2>
+                  <Link
+                    to="/news"
+                    className="text-primary-600 hover:text-primary-700 font-medium text-sm inline-flex items-center gap-1"
+                  >
+                    {t('common.view')} {t('common.all')}
+                    <ChevronRight size={18} />
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {news.map((item, idx) => (
+                    <Link
+                      key={getNewsId(item) ?? idx}
+                      to={`/news/${getNewsId(item)}`}
+                      className="card overflow-hidden p-0 flex flex-col h-full border border-gray-100 hover:shadow-lg transition-shadow"
+                    >
+                      <div className="aspect-[16/10] flex-shrink-0 bg-gray-100 overflow-hidden">
+                        {getNewsImage(item) ? (
+                          <img
+                            src={getNewsImage(item)}
+                            alt={toDisplayText(item.title)}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <Newspaper size={48} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4 flex flex-col flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1">
+                          {toDisplayText(item.title) || t('common.noData')}
+                        </h3>
+                        {(toDisplayText(item.excerpt) || toDisplayText(item.content)) && (
+                          <p className="text-sm text-gray-500 line-clamp-2 flex-1">
+                            {stripHtml(toDisplayText(item.excerpt) || toDisplayText(item.content)) || '—'}
+                          </p>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
             )}
           </>
         )}

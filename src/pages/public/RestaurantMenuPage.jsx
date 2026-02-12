@@ -6,39 +6,7 @@ import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency, getImageUrl } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
-import { UtensilsCrossed, Store, ChevronRight, LayoutList, LayoutGrid, ChevronLeft, X, Star, Leaf } from 'lucide-react'
-
-const PER_PAGE = 30
-
-const getPaginationMeta = (res, listLength = 0) => {
-  const root = res?.data ?? res
-  if (!root || typeof root !== 'object') {
-    return { currentPage: 1, lastPage: 1, total: listLength, perPage: PER_PAGE }
-  }
-  let payload
-  if (
-    root.data &&
-    typeof root.data === 'object' &&
-    !Array.isArray(root.data) &&
-    (root.data.current_page != null || root.data.last_page != null || root.data.total != null)
-  ) {
-    payload = root.data
-  } else {
-    payload = root
-  }
-  const meta = payload.meta ?? payload.pagination ?? payload
-  const currentPage = Number(meta.current_page ?? meta.page ?? meta.currentPage ?? 1) || 1
-  const total = Number(meta.total) >= 0 ? Number(meta.total) : listLength
-  const perPage = Number(meta.per_page ?? meta.perPage ?? PER_PAGE) || PER_PAGE
-  let lastPage = Number(meta.last_page ?? meta.lastPage ?? meta.total_pages ?? meta.totalPages ?? 0) || 0
-  if (lastPage < 1 && total > 0 && perPage > 0) lastPage = Math.ceil(total / perPage)
-  return {
-    currentPage,
-    lastPage: lastPage >= 1 ? lastPage : 1,
-    total,
-    perPage,
-  }
-}
+import { UtensilsCrossed, Store, ChevronRight, LayoutList, LayoutGrid, X, Star, Leaf } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -82,13 +50,7 @@ const RestaurantMenuPage = () => {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [viewMode, setViewMode] = useState('grid')
-  const [page, setPage] = useState(1)
-  const [pagination, setPagination] = useState({ currentPage: 1, lastPage: 1, total: 0, perPage: PER_PAGE })
   const [previewFood, setPreviewFood] = useState(null)
-
-  useEffect(() => {
-    setPage(1)
-  }, [id])
 
   useEffect(() => {
     if (!id) {
@@ -100,7 +62,7 @@ const RestaurantMenuPage = () => {
     setNotFound(false)
     Promise.all([
       restaurantApi.getRestaurantById(id),
-      foodApi.getFoodItems({ restaurant_id: id, per_page: PER_PAGE, page }),
+      foodApi.getFoodItems({ restaurant_id: id, per_page: 100 }),
     ])
       .then(([resRes, foodRes]) => {
         const rawRes = resRes?.data ?? resRes
@@ -125,16 +87,14 @@ const RestaurantMenuPage = () => {
         } else {
           setMenus([])
         }
-        setPagination(getPaginationMeta(foodRes, Array.isArray(items) ? items.length : 0))
       })
       .catch(() => {
         setRestaurant(null)
         setMenus([])
         setNotFound(true)
-        setPagination({ currentPage: 1, lastPage: 1, total: 0, perPage: PER_PAGE })
       })
       .finally(() => setLoading(false))
-  }, [id, page])
+  }, [id])
 
   const getMenuSections = (menu) => {
     const categories = menu?.categories ?? menu?.sections ?? []
@@ -167,11 +127,6 @@ const RestaurantMenuPage = () => {
   }
 
   const restaurantName = toDisplayText(restaurant.name)
-  const showPagination = pagination.total > PER_PAGE
-  const from = Math.min((pagination.currentPage - 1) * pagination.perPage + 1, pagination.total)
-  const to = Math.min(pagination.currentPage * pagination.perPage, pagination.total)
-  const currentPage = pagination.currentPage
-  const lastPage = pagination.lastPage
 
   const allMenuItems = menus.flatMap((menu) =>
     getMenuSections(menu).flatMap((s) => s.items ?? s.food_items ?? s.foodItems ?? [])
@@ -306,41 +261,6 @@ const RestaurantMenuPage = () => {
             </article>
           ))}
         </div>
-        {showPagination && (
-          <nav
-            className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6 bg-gray-50 rounded-lg px-4 py-4 sm:px-6"
-            aria-label="Pagination"
-          >
-            <p className="text-sm text-gray-600 order-2 sm:order-1">
-              {t('common.showing')} <span className="font-medium">{from}</span>–<span className="font-medium">{to}</span> {t('common.of')} <span className="font-medium">{pagination.total}</span>
-            </p>
-            <div className="flex items-center gap-2 order-1 sm:order-2">
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage <= 1}
-                className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label={t('common.previous')}
-              >
-                <ChevronLeft size={18} />
-                {t('common.previous')}
-              </button>
-              <span className="text-sm text-gray-700 px-3 py-1.5 bg-white border border-gray-200 rounded min-w-[80px] text-center">
-                {t('common.page')} {currentPage} / {lastPage}
-              </span>
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
-                disabled={currentPage >= lastPage}
-                className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label={t('common.next')}
-              >
-                {t('common.next')}
-                <ChevronRight size={18} />
-              </button>
-            </div>
-          </nav>
-        )}
         </>
       ) : (
         <>
@@ -399,41 +319,6 @@ const RestaurantMenuPage = () => {
             )
           })}
         </div>
-        {showPagination && (
-          <nav
-            className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6 bg-gray-50 rounded-lg px-4 py-4 sm:px-6"
-            aria-label="Pagination"
-          >
-            <p className="text-sm text-gray-600 order-2 sm:order-1">
-              {t('common.showing')} <span className="font-medium">{from}</span>–<span className="font-medium">{to}</span> {t('common.of')} <span className="font-medium">{pagination.total}</span>
-            </p>
-            <div className="flex items-center gap-2 order-1 sm:order-2">
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage <= 1}
-                className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label={t('common.previous')}
-              >
-                <ChevronLeft size={18} />
-                {t('common.previous')}
-              </button>
-              <span className="text-sm text-gray-700 px-3 py-1.5 bg-white border border-gray-200 rounded min-w-[80px] text-center">
-                {t('common.page')} {currentPage} / {lastPage}
-              </span>
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
-                disabled={currentPage >= lastPage}
-                className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label={t('common.next')}
-              >
-                {t('common.next')}
-                <ChevronRight size={18} />
-              </button>
-            </div>
-          </nav>
-        )}
         </>
       )}
 

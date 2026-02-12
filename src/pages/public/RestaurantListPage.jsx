@@ -214,21 +214,21 @@ const RestaurantListPage = () => {
               <Store size={18} />
             </span>
             <input
-              type="search"
+              type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('restaurant.search')}
-              className="input w-full pl-10 pr-4 py-2.5"
+              className="input w-full pl-10 pr-10 py-2.5"
               aria-label={t('restaurant.search')}
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
-                aria-label="Clear"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
+                aria-label="Clear search"
               >
-                ×
+                <X size={18} />
               </button>
             )}
           </div>

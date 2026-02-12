@@ -16,7 +16,6 @@ import HomePage from '@pages/public/HomePage'
 import RestaurantListPage from '@pages/public/RestaurantListPage'
 import RestaurantSearchPage from '@pages/public/RestaurantSearchPage'
 import RestaurantDetailPage from '@pages/public/RestaurantDetailPage'
-import RestaurantMenuPage from '@pages/public/RestaurantMenuPage'
 import FoodListPage from '@pages/public/FoodListPage'
 import FoodDetailPage from '@pages/public/FoodDetailPage'
 import FoodCategoryListPage from '@pages/public/FoodCategoryListPage'
@@ -64,7 +63,6 @@ function App() {
             <Route path="/restaurants/search" element={<RestaurantSearchPage />} />
             <Route path="/restaurants/:restaurantId/food-items/:id" element={<FoodDetailPage />} />
             <Route path="/restaurants/:id" element={<RestaurantDetailPage />} />
-            <Route path="/restaurants/:id/menu" element={<RestaurantMenuPage />} />
             
             <Route path="/food-items" element={<FoodListPage />} />
             <Route path="/food-items/:id" element={<FoodDetailPage />} />

@@ -53,6 +53,19 @@ export const truncateText = (text, maxLength = 100) => {
 }
 
 /**
+ * Strip HTML tags to get plain text (e.g. for excerpt preview from WYSIWYG content)
+ */
+export const stripHtml = (html) => {
+  if (!html || typeof html !== 'string') return ''
+  if (typeof document === 'undefined') {
+    return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+  }
+  const div = document.createElement('div')
+  div.innerHTML = html
+  return (div.textContent || div.innerText || '').replace(/\s+/g, ' ').trim()
+}
+
+/**
  * Validate email
  */
 export const isValidEmail = (email) => {

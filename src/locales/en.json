@@ -66,6 +66,7 @@
     "title": "Food Items",
     "detail": "Food Details",
     "category": "Category",
+    "otherCategory": "Other",
     "price": "Price",
     "servingSize": "Serving Size",
     "weight": "Weight",

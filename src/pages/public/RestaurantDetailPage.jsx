@@ -6,39 +6,7 @@ import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency, getImageUrl } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
-import { Store, MapPin, Star, UtensilsCrossed, ChevronRight, ChevronLeft, LayoutList, LayoutGrid, Mail, Phone, X, Leaf } from 'lucide-react'
-
-const PER_PAGE = 20
-
-const getPaginationMeta = (res, listLength = 0) => {
-  const root = res?.data ?? res
-  if (!root || typeof root !== 'object') {
-    return { currentPage: 1, lastPage: 1, total: listLength, perPage: PER_PAGE }
-  }
-  let payload
-  if (
-    root.data &&
-    typeof root.data === 'object' &&
-    !Array.isArray(root.data) &&
-    (root.data.current_page != null || root.data.last_page != null || root.data.total != null)
-  ) {
-    payload = root.data
-  } else {
-    payload = root
-  }
-  const meta = payload.meta ?? payload.pagination ?? payload
-  const currentPage = Number(meta.current_page ?? meta.page ?? meta.currentPage ?? 1) || 1
-  const total = Number(meta.total) >= 0 ? Number(meta.total) : listLength
-  const perPage = Number(meta.per_page ?? meta.perPage ?? PER_PAGE) || PER_PAGE
-  let lastPage = Number(meta.last_page ?? meta.lastPage ?? meta.total_pages ?? meta.totalPages ?? 0) || 0
-  if (lastPage < 1 && total > 0 && perPage > 0) lastPage = Math.ceil(total / perPage)
-  return {
-    currentPage,
-    lastPage: lastPage >= 1 ? lastPage : 1,
-    total,
-    perPage,
-  }
-}
+import { Store, MapPin, Star, ChevronRight, Mail, Phone, X, Leaf } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -84,6 +52,14 @@ const getItemPrice = (item) => item?.price ?? item?.unit_price ?? 0
 const getItemCurrency = (item) => item?.currency_code ?? item?.currency ?? 'VND'
 const getRatingWidth = (rating) => (!rating ? '0%' : `${(rating / 5) * 100}%`)
 
+/** Lấy id danh mục món từ item (food_category_id hoặc food_category.id) */
+const getCategoryId = (item) =>
+  item?.food_category?.id ?? item?.food_category_id ?? item?.category?.id ?? item?.category_id ?? null
+
+/** Lấy tên danh mục hiển thị */
+const getCategoryName = (item) =>
+  toDisplayText(item?.food_category?.name ?? item?.category?.name) || ''
+
 const RestaurantDetailPage = () => {
   const { id } = useParams()
   const { t } = useLanguage()
@@ -91,10 +67,8 @@ const RestaurantDetailPage = () => {
   const [foodItems, setFoodItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
-  const [viewMode, setViewMode] = useState('grid')
-  const [page, setPage] = useState(1)
-  const [pagination, setPagination] = useState({ currentPage: 1, lastPage: 1, total: 0, perPage: PER_PAGE })
   const [previewFood, setPreviewFood] = useState(null)
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null)
 
   useEffect(() => {
     if (!id) {
@@ -106,7 +80,7 @@ const RestaurantDetailPage = () => {
     setNotFound(false)
     Promise.all([
       restaurantApi.getRestaurantById(id),
-      foodApi.getFoodItems({ restaurant_id: id, per_page: PER_PAGE, page }),
+      foodApi.getFoodItems({ restaurant_id: id, per_page: 100 }),
     ])
       .then(([resRes, foodRes]) => {
         const rawRes = resRes?.data ?? resRes
@@ -121,16 +95,14 @@ const RestaurantDetailPage = () => {
         const rawFood = foodRes?.data ?? foodRes
         const items = ensureArray(rawFood)
         setFoodItems(Array.isArray(items) ? items : [])
-        setPagination(getPaginationMeta(foodRes, Array.isArray(items) ? items.length : 0))
       })
       .catch(() => {
         setRestaurant(null)
         setFoodItems([])
         setNotFound(true)
-        setPagination({ currentPage: 1, lastPage: 1, total: 0, perPage: PER_PAGE })
       })
       .finally(() => setLoading(false))
-  }, [id, page])
+  }, [id])
 
   if (loading) {
     return (
@@ -159,11 +131,45 @@ const RestaurantDetailPage = () => {
   const bestSellerItems = foodItems.filter(
     (i) => i.is_best_seller === true || i.is_best_seller === 1
   )
-  const showPagination = pagination.total > PER_PAGE
-  const from = Math.min((pagination.currentPage - 1) * pagination.perPage + 1, pagination.total)
-  const to = Math.min(pagination.currentPage * pagination.perPage, pagination.total)
-  const currentPage = pagination.currentPage
-  const lastPage = pagination.lastPage
+  // Danh sách category duy nhất từ foodItems (có id + name)
+  const categoryMap = new Map()
+  foodItems.forEach((item) => {
+    const cid = getCategoryId(item)
+    if (cid != null && !categoryMap.has(cid)) {
+      categoryMap.set(cid, getCategoryName(item) || `Category ${cid}`)
+    }
+  })
+  const categories = [{ id: null, name: t('common.all') }, ...Array.from(categoryMap.entries()).map(([id, name]) => ({ id, name }))]
+  const filteredFoodItems =
+    selectedCategoryId == null
+      ? foodItems
+      : foodItems.filter((item) => getCategoryId(item) === selectedCategoryId)
+
+  // Khi filter "Tất cả": nhóm theo category để hiển thị tên category trên mỗi nhóm (thứ tự giữ theo lần xuất hiện)
+  const categoryOrder = []
+  const categorySeen = new Set()
+  foodItems.forEach((item) => {
+    const cid = getCategoryId(item)
+    if (cid != null && !categorySeen.has(cid)) {
+      categorySeen.add(cid)
+      categoryOrder.push({ id: cid, name: categoryMap.get(cid) || getCategoryName(item) || `Category ${cid}` })
+    }
+  })
+  const groupedByCategory =
+    selectedCategoryId == null && filteredFoodItems.length > 0
+      ? (() => {
+          const groups = categoryOrder.map(({ id, name }) => ({
+            categoryId: id,
+            categoryName: name,
+            items: filteredFoodItems.filter((item) => getCategoryId(item) === id),
+          })).filter((g) => g.items.length > 0)
+          const uncategorized = filteredFoodItems.filter((item) => getCategoryId(item) == null)
+          if (uncategorized.length > 0) {
+            groups.push({ categoryId: null, categoryName: t('food.otherCategory') || 'Other', items: uncategorized })
+          }
+          return groups
+        })()
+      : null
 
   return (
     <div className="container-custom py-8 sm:py-12">
@@ -230,19 +236,136 @@ const RestaurantDetailPage = () => {
               </span>
             )}
           </div>
-          <div className="mt-auto pt-4 border-t border-gray-100">
-            <Link
-              to={`/restaurants/${id}/menu`}
-              className="btn btn-primary inline-flex items-center gap-2"
-            >
-              <UtensilsCrossed size={18} />
-              {t('restaurant.menu')}
-            </Link>
-          </div>
         </div>
       </div>
 
-      {/* Best sellers section (mục riêng) */}
+      {/* Menu / Food list: cột trái = category, cột phải = danh sách món */}
+      <div className="flex flex-col lg:flex-row gap-6 mb-8">
+        {/* Cột trái: danh mục món */}
+        {foodItems.length > 0 && categories.length > 1 && (
+          <aside className="lg:w-52 xl:w-56 flex-shrink-0">
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+              {t('food.category')}
+            </h3>
+            <nav className="bg-white rounded-lg border border-gray-200 overflow-hidden overflow-x-auto lg:overflow-visible">
+              <div className="flex lg:flex-col min-w-0">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id ?? 'all'}
+                    type="button"
+                    onClick={() => setSelectedCategoryId(cat.id)}
+                    className={`flex items-center w-full text-left px-4 py-3 border-b border-gray-100 last:border-b-0 whitespace-nowrap transition-colors ${
+                      selectedCategoryId === cat.id
+                        ? 'bg-primary-50 text-primary-700 hover:bg-primary-100'
+                        : 'text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="text-sm font-medium">{cat.name}</span>
+                  </button>
+                ))}
+              </div>
+            </nav>
+          </aside>
+        )}
+
+        {/* Cột phải: danh sách món (list + ảnh trước tên) */}
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">{t('restaurant.menu')}</h2>
+
+          {foodItems.length === 0 ? (
+            <div className="card p-6 text-center">
+              <p className="text-gray-600 mb-2">{t('common.noData')}</p>
+              <p className="text-sm text-gray-500">{t('restaurant.menu')}</p>
+            </div>
+          ) : filteredFoodItems.length === 0 ? (
+            <div className="card p-6 text-center">
+              <p className="text-gray-600 mb-2">{t('common.noData')}</p>
+              <p className="text-sm text-gray-500">{t('food.category')}</p>
+            </div>
+          ) : groupedByCategory && groupedByCategory.length > 0 ? (
+            <div className="card p-4 sm:p-6 space-y-6">
+              {groupedByCategory.map((group) => (
+                <div key={group.categoryId ?? 'uncategorized'}>
+                  <h3 className="text-base font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-200">
+                    {group.categoryName}
+                  </h3>
+                  <ul className="space-y-3">
+                    {group.items.map((item) => (
+                      <li
+                        key={item.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setPreviewFood(item)}
+                        onKeyDown={(e) => e.key === 'Enter' && setPreviewFood(item)}
+                        className="flex items-center gap-3 sm:gap-4 py-3 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50 -mx-2 px-2 rounded transition-colors"
+                      >
+                        <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-gray-100">
+                          <img
+                            src={getFoodImage(item)}
+                            alt={toDisplayText(item.name)}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="font-medium text-gray-900 block">
+                            {toDisplayText(item.name)}
+                          </span>
+                          {(toDisplayText(item.description) || item.serving_size) && (
+                            <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
+                              {toDisplayText(item.description) || item.serving_size}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex-shrink-0 text-primary-600 font-semibold">
+                          {formatCurrency(getItemPrice(item), getItemCurrency(item))}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="card p-4 sm:p-6">
+              <ul className="space-y-3">
+                {filteredFoodItems.map((item) => (
+                  <li
+                    key={item.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setPreviewFood(item)}
+                    onKeyDown={(e) => e.key === 'Enter' && setPreviewFood(item)}
+                    className="flex items-center gap-3 sm:gap-4 py-3 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50 -mx-2 px-2 rounded transition-colors"
+                  >
+                    <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-gray-100">
+                      <img
+                        src={getFoodImage(item)}
+                        alt={toDisplayText(item.name)}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="font-medium text-gray-900 block">
+                        {toDisplayText(item.name)}
+                      </span>
+                      {(toDisplayText(item.description) || item.serving_size) && (
+                        <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
+                          {toDisplayText(item.description) || item.serving_size}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex-shrink-0 text-primary-600 font-semibold">
+                      {formatCurrency(getItemPrice(item), getItemCurrency(item))}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Best Sellers section – đặt dưới list food items */}
       {bestSellerItems.length > 0 && (
         <section className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4">{t('restaurant.bestSellers')}</h2>
@@ -278,178 +401,6 @@ const RestaurantDetailPage = () => {
             ))}
           </div>
         </section>
-      )}
-
-      {/* Menu / Food list with view toggle and pagination */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h2 className="text-xl font-bold text-gray-900">{t('restaurant.menu')}</h2>
-        {foodItems.length > 0 && (
-          <div className="flex items-center gap-1 rounded-lg border border-gray-200 p-1 bg-gray-50">
-            <button
-              type="button"
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-md transition ${viewMode === 'list' ? 'bg-white shadow text-primary-600' : 'text-gray-500 hover:text-gray-700'}`}
-              title="List"
-              aria-label="List view"
-            >
-              <LayoutList size={20} />
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-md transition ${viewMode === 'grid' ? 'bg-white shadow text-primary-600' : 'text-gray-500 hover:text-gray-700'}`}
-              title="Grid"
-              aria-label="Grid view"
-            >
-              <LayoutGrid size={20} />
-            </button>
-          </div>
-        )}
-      </div>
-
-      {foodItems.length === 0 ? (
-        <div className="card p-6 text-center">
-          <p className="text-gray-600 mb-2">{t('common.noData')}</p>
-          <p className="text-sm text-gray-500 mb-4">{t('restaurant.menu')}</p>
-          <Link to={`/restaurants/${id}/menu`} className="btn btn-outline">
-            {t('restaurant.menu')}
-          </Link>
-        </div>
-      ) : viewMode === 'grid' ? (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {foodItems.map((item) => (
-              <article
-                key={item.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => setPreviewFood(item)}
-                onKeyDown={(e) => e.key === 'Enter' && setPreviewFood(item)}
-                className="card overflow-hidden p-0 flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow"
-              >
-                <div className="aspect-[16/10] flex-shrink-0 bg-gray-100">
-                  <img
-                    src={getFoodImage(item)}
-                    alt={toDisplayText(item.name)}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-4 flex flex-col flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 mb-1 truncate">
-                    {toDisplayText(item.name) || t('common.noData')}
-                  </h3>
-                  <p className="text-primary-600 font-medium text-sm mb-2">
-                    {formatCurrency(getItemPrice(item), getItemCurrency(item))}
-                  </p>
-                  <p className="text-xs text-gray-500 line-clamp-2 flex-1">
-                    {toDisplayText(item.description) || '—'}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
-          {showPagination && (
-            <nav
-              className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6 bg-gray-50 rounded-lg px-4 py-4 sm:px-6"
-              aria-label="Pagination"
-            >
-              <p className="text-sm text-gray-600 order-2 sm:order-1">
-                {t('common.showing')} <span className="font-medium">{from}</span>–<span className="font-medium">{to}</span> {t('common.of')} <span className="font-medium">{pagination.total}</span>
-              </p>
-              <div className="flex items-center gap-2 order-1 sm:order-2">
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage <= 1}
-                  className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label={t('common.previous')}
-                >
-                  <ChevronLeft size={18} />
-                  {t('common.previous')}
-                </button>
-                <span className="text-sm text-gray-700 px-3 py-1.5 bg-white border border-gray-200 rounded min-w-[80px] text-center">
-                  {t('common.page')} {currentPage} / {lastPage}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
-                  disabled={currentPage >= lastPage}
-                  className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label={t('common.next')}
-                >
-                  {t('common.next')}
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-            </nav>
-          )}
-        </>
-      ) : (
-        <>
-          <div className="card p-4 sm:p-6">
-            <ul className="space-y-3">
-              {foodItems.map((item) => (
-                <li
-                  key={item.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setPreviewFood(item)}
-                  onKeyDown={(e) => e.key === 'Enter' && setPreviewFood(item)}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 py-3 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50 -mx-2 px-2 rounded transition-colors"
-                >
-                  <div className="min-w-0 flex-1">
-                    <span className="font-medium text-gray-900">
-                      {toDisplayText(item.name)}
-                    </span>
-                    {(toDisplayText(item.description) || item.serving_size) && (
-                      <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
-                        {toDisplayText(item.description) || item.serving_size}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex-shrink-0 text-primary-600 font-semibold">
-                    {formatCurrency(getItemPrice(item), getItemCurrency(item))}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-          {showPagination && (
-            <nav
-              className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6 bg-gray-50 rounded-lg px-4 py-4 sm:px-6"
-              aria-label="Pagination"
-            >
-              <p className="text-sm text-gray-600 order-2 sm:order-1">
-                {t('common.showing')} <span className="font-medium">{from}</span>–<span className="font-medium">{to}</span> {t('common.of')} <span className="font-medium">{pagination.total}</span>
-              </p>
-              <div className="flex items-center gap-2 order-1 sm:order-2">
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage <= 1}
-                  className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label={t('common.previous')}
-                >
-                  <ChevronLeft size={18} />
-                  {t('common.previous')}
-                </button>
-                <span className="text-sm text-gray-700 px-3 py-1.5 bg-white border border-gray-200 rounded min-w-[80px] text-center">
-                  {t('common.page')} {currentPage} / {lastPage}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
-                  disabled={currentPage >= lastPage}
-                  className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label={t('common.next')}
-                >
-                  {t('common.next')}
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-            </nav>
-          )}
-        </>
       )}
 
       {previewFood && (

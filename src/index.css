@@ -105,3 +105,36 @@
 .Toastify__toast--info {
   @apply bg-blue-500;
 }
+
+/* WYSIWYG / HTML content (news, articles) */
+.content-html {
+  @apply text-gray-700 leading-relaxed;
+}
+.content-html p {
+  @apply mb-4;
+}
+.content-html h1, .content-html h2, .content-html h3, .content-html h4, .content-html h5, .content-html h6 {
+  @apply font-semibold text-gray-900 mt-6 mb-2;
+}
+.content-html h1 { @apply text-2xl; }
+.content-html h2 { @apply text-xl; }
+.content-html h3 { @apply text-lg; }
+.content-html ul, .content-html ol {
+  @apply mb-4 pl-6;
+}
+.content-html ul { @apply list-disc; }
+.content-html ol { @apply list-decimal; }
+.content-html li { @apply mb-1; }
+.content-html a {
+  @apply text-primary-600 hover:text-primary-700 underline;
+}
+.content-html img {
+  @apply max-w-full h-auto rounded-lg my-4;
+}
+.content-html blockquote {
+  @apply border-l-4 border-gray-300 pl-4 italic text-gray-600 my-4;
+}
+.content-html strong { @apply font-semibold; }
+.content-html code {
+  @apply bg-gray-100 px-1.5 py-0.5 rounded text-sm;
+}

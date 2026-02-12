@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Menu, X, Search, User, LogOut, Globe, LayoutDashboard } from 'lucide-react'
 import { useAuth } from '@context/AuthContext'
 import { useLanguage } from '@context/LanguageContext'
@@ -13,6 +13,12 @@ const Header = () => {
   const { isAuthenticated, user, logout, isOwner } = useAuth()
   const { currentLanguage, changeLanguage, t } = useLanguage()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+
+  const navLinkClass = (path) => {
+    const isActive = path === '/' ? pathname === '/' : pathname === path || pathname.startsWith(path + '/')
+    return `transition ${isActive ? 'text-primary-600 font-medium' : 'text-gray-700 hover:text-primary-600'}`
+  }
 
   useEffect(() => {
     if (!languageMenuOpen) return
@@ -46,16 +52,13 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/restaurants" className="text-gray-700 hover:text-primary-600 transition">
+            <Link to="/restaurants" className={navLinkClass('/restaurants')}>
               {t('common.restaurants')}
             </Link>
-            <Link to="/food-items" className="text-gray-700 hover:text-primary-600 transition">
-              {t('common.food')}
-            </Link>
-            <Link to="/food-categories" className="text-gray-700 hover:text-primary-600 transition">
+            <Link to="/food-categories" className={navLinkClass('/food-categories')}>
               {t('common.categories')}
             </Link>
-            <Link to="/news" className="text-gray-700 hover:text-primary-600 transition">
+            <Link to="/news" className={navLinkClass('/news')}>
               {t('common.news')}
             </Link>
           </nav>
@@ -153,28 +156,21 @@ const Header = () => {
             <nav className="flex flex-col space-y-4">
               <Link
                 to="/restaurants"
-                className="text-gray-700 hover:text-primary-600 transition"
+                className={navLinkClass('/restaurants')}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t('common.restaurants')}
               </Link>
               <Link
-                to="/food-items"
-                className="text-gray-700 hover:text-primary-600 transition"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {t('common.food')}
-              </Link>
-              <Link
                 to="/food-categories"
-                className="text-gray-700 hover:text-primary-600 transition"
+                className={navLinkClass('/food-categories')}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t('common.categories')}
               </Link>
               <Link
                 to="/news"
-                className="text-gray-700 hover:text-primary-600 transition"
+                className={navLinkClass('/news')}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t('common.news')}

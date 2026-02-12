@@ -1,841 +1,997 @@
 {
-	"info": {
-		"_postman_id": "foodshop-api-collection",
-		"name": "FoodShop API",
-		"description": "REST API cho FoodShop - Quản lý nhà hàng và món ăn.\n\n**Biến:**\n- `base_url`: URL gốc (mặc định http://localhost:8000)\n- `token`: Bearer token sau khi login (điền vào sau khi gọi Owner/Admin Login)",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"auth": {
-		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "{{token}}",
-				"type": "string"
-			}
-		]
-	},
-	"variable": [
-		{
-			"key": "base_url",
-			"value": "http://localhost:8000"
-		},
-		{
-			"key": "token",
-			"value": ""
-		},
-		{
-			"key": "id",
-			"value": "1"
-		},
-		{
-			"key": "restaurantId",
-			"value": "1"
-		},
-		{
-			"key": "foodItemId",
-			"value": "1"
-		},
-		{
-			"key": "categoryId",
-			"value": "1"
-		},
-		{
-			"key": "code",
-			"value": "en"
-		}
-	],
-	"item": [
-		{
-			"name": "Health",
-			"item": [
-				{
-					"name": "API Test",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [
-							{ "key": "Accept", "value": "application/json" }
-						],
-						"url": "{{base_url}}/api/test",
-						"description": "Kiểm tra API đang chạy."
-					}
-				}
-			]
-		},
-		{
-			"name": "Authentication",
-			"item": [
-				{
-					"name": "Register Owner",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "POST",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"Nguyen Van Owner\",\n  \"email\": \"owner@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"phone\": \"0901234567\",\n  \"address\": \"123 Nguyen Hue, Q1\",\n  \"country_id\": 1\n}"
-						},
-						"url": "{{base_url}}/api/auth/owner/register",
-						"description": "Đăng ký chủ nhà hàng. Response có `token` - copy vào biến `token` để dùng cho request cần auth."
-					}
-				},
-				{
-					"name": "Owner Login",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "POST",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"email\": \"owner@example.com\",\n  \"password\": \"password123\"\n}"
-						},
-						"url": "{{base_url}}/api/auth/owner/login",
-						"description": "Đăng nhập owner. Copy `token` từ response vào collection variable `token`."
-					}
-				},
-				{
-					"name": "Admin Login",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "POST",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
-						},
-						"url": "{{base_url}}/api/auth/admin/login"
-					}
-				},
-				{
-					"name": "Logout",
-					"request": {
-						"method": "POST",
-						"header": [
-							{ "key": "Accept", "value": "application/json" }
-						],
-						"url": "{{base_url}}/api/auth/logout",
-						"description": "Thu hồi token hiện tại. Cần Bearer token."
-					}
-				},
-				{
-					"name": "Me",
-					"request": {
-						"method": "GET",
-						"header": [
-							{ "key": "Accept", "value": "application/json" }
-						],
-						"url": "{{base_url}}/api/auth/me"
-					}
-				},
-				{
-					"name": "Update Owner Profile",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"Ten moi\",\n  \"phone\": \"0987654321\",\n  \"address\": \"Dia chi moi\",\n  \"country_id\": 1\n}"
-						},
-						"url": "{{base_url}}/api/owner/profile"
-					}
-				}
-			]
-		},
-		{
-			"name": "Reference",
-			"item": [
-				{
-					"name": "List Languages",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/languages"
-					}
-				},
-				{
-					"name": "Get Language by Code",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/languages/{{code}}"
-					}
-				},
-				{
-					"name": "List Countries",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/countries"
-					}
-				},
-				{
-					"name": "Get Country by ID",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/countries/{{id}}"
-					}
-				},
-				{
-					"name": "List Restaurant Types",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/restaurant-types"
-					}
-				}
-			]
-		},
-		{
-			"name": "Restaurants",
-			"description": "API nhà hàng: danh sách, tìm kiếm, gần đây, chi tiết, CRUD (Owner), đánh giá, menu. Create/Update/Delete cần Bearer token.",
-			"item": [
-				{
-					"name": "List Restaurants",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/restaurants?country_id=1&restaurant_type_id=1&delivery_available=true&search=&per_page=15",
-						"description": "Danh sách nhà hàng active, phân trang. Query: country_id, restaurant_type_id, delivery_available, search, per_page."
-					}
-				},
-				{
-					"name": "Search Restaurants",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/restaurants/search?name=pizza&per_page=15",
-						"description": "Tìm nhà hàng theo tên (name, per_page)."
-					}
-				},
-				{
-					"name": "Restaurants Nearby",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/restaurants/nearby?latitude=10.7769&longitude=106.7009&radius=10",
-						"description": "Nhà hàng trong bán kính (km) quanh tọa độ. Params: latitude, longitude, radius (optional 1-100)."
-					}
-				},
-				{
-					"name": "Get Restaurant",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/restaurants/{{id}}",
-						"description": "Chi tiết nhà hàng theo ID (kèm best_sellers, outside_images, inside_images)."
-					}
-				},
-				{
-					"name": "Create Restaurant",
-					"request": {
-						"method": "POST",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"country_id\": 1,\n  \"restaurant_type_id\": 1,\n  \"name\": { \"en\": \"My Restaurant\", \"vn\": \"Nha hang cua toi\" },\n  \"description\": { \"en\": \"Description\" },\n  \"city\": \"Ho Chi Minh\",\n  \"address\": \"123 Nguyen Hue\",\n  \"phone\": \"0901234567\",\n  \"zalo\": \"0901234567\",\n  \"email\": \"restaurant@example.com\",\n  \"latitude\": 10.7769,\n  \"longitude\": 106.7009,\n  \"delivery_available\": true\n}"
-						},
-						"url": "{{base_url}}/api/restaurants",
-						"description": "Tạo nhà hàng (Owner). Cần Bearer token. Status pending cho đến khi admin duyệt. Body: country_id, restaurant_type_id, name (object en/vn), city, address, phone, zalo?, email?, latitude?, longitude?, delivery_available?."
-					}
-				},
-				{
-					"name": "Update Restaurant",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": { \"en\": \"Updated Name\", \"vn\": \"Ten cap nhat\" },\n  \"city\": \"Ho Chi Minh\",\n  \"address\": \"456 Le Loi\",\n  \"phone\": \"0901234567\",\n  \"zalo\": \"0901234567\",\n  \"email\": \"restaurant@example.com\",\n  \"delivery_available\": false\n}"
-						},
-						"url": "{{base_url}}/api/restaurants/{{id}}",
-						"description": "Cập nhật nhà hàng (Owner hoặc Admin). Cần Bearer token. Body: name?, description?, city?, address?, phone?, zalo?, email?, delivery_available?."
-					}
-				},
-				{
-					"name": "Delete Restaurant",
-					"request": {
-						"method": "DELETE",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/restaurants/{{id}}",
-						"description": "Xóa nhà hàng (Owner hoặc Admin). Cần Bearer token."
-					}
-				},
-				{
-					"name": "Get Restaurant Reviews",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/restaurants/{{restaurantId}}/reviews?page=1",
-						"description": "Danh sách đánh giá đã duyệt của nhà hàng (paginate)."
-					}
-				},
-				{
-					"name": "Create Restaurant Review",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "POST",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"reviewer_name\": \"Customer Name\",\n  \"reviewer_email\": \"customer@example.com\",\n  \"rating\": 5,\n  \"comment\": \"Great food!\"\n}"
-						},
-						"url": "{{base_url}}/api/restaurants/{{restaurantId}}/reviews",
-						"description": "Tạo đánh giá cho nhà hàng. Body: reviewer_name (required), reviewer_email?, rating (1-5), comment?. Status pending đến khi admin duyệt."
-					}
-				},
-				{
-					"name": "Get Restaurant Menus",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/restaurants/{{restaurantId}}/menus",
-						"description": "Danh sách menu active của nhà hàng (theo sort_order)."
-					}
-				}
-			]
-		},
-		{
-			"name": "Food Items",
-			"item": [
-				{
-					"name": "List Food Items",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/food-items?restaurant_id=&category_id=&best_seller=&vegetarian=&search=&per_page=15"
-					}
-				},
-				{
-					"name": "Search Food Items",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/food-items/search?search=&per_page=15"
-					}
-				},
-				{
-					"name": "Food Items by Category",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/food-items/by-category/{{categoryId}}"
-					}
-				},
-				{
-					"name": "Best Seller Food Items",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/food-items/best-seller?restaurant_id=&per_page=15"
-					}
-				},
-				{
-					"name": "Get Food Item",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/food-items/{{id}}"
-					}
-				},
-				{
-					"name": "Create Food Item",
-					"request": {
-						"method": "POST",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"restaurant_id\": 1,\n  \"food_category_id\": 1,\n  \"name\": { \"en\": \"Pho Bo\", \"vn\": \"Phở bò\" },\n  \"description\": { \"en\": \"Beef noodle soup\" },\n  \"main_image\": \"https://example.com/image.jpg\",\n  \"extra_images\": [],\n  \"price\": 50000,\n  \"currency_code\": \"VND\",\n  \"serving_size\": 1,\n  \"weight\": 300,\n  \"is_vegetarian\": false\n}"
-						},
-						"url": "{{base_url}}/api/food-items"
-					}
-				},
-				{
-					"name": "Update Food Item",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": { \"en\": \"Updated Pho\" },\n  \"price\": 55000,\n  \"currency_code\": \"VND\"\n}"
-						},
-						"url": "{{base_url}}/api/food-items/{{id}}"
-					}
-				},
-				{
-					"name": "Delete Food Item",
-					"request": {
-						"method": "DELETE",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/food-items/{{id}}"
-					}
-				},
-				{
-					"name": "Confirm Food Code",
-					"request": {
-						"method": "POST",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/food-items/{{id}}/confirm-code"
-					}
-				},
-				{
-					"name": "Get Food Item Reviews",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/food-items/{{foodItemId}}/reviews"
-					}
-				},
-				{
-					"name": "Create Food Item Review",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "POST",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"reviewer_name\": \"Customer Name\",\n  \"reviewer_email\": \"customer@example.com\",\n  \"rating\": 5,\n  \"comment\": \"Delicious!\"\n}"
-						},
-						"url": "{{base_url}}/api/food-items/{{foodItemId}}/reviews"
-					}
-				}
-			]
-		},
-		{
-			"name": "Food Categories",
-			"item": [
-				{
-					"name": "List Food Categories",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/food-categories?root_only=&parent_id="
-					}
-				},
-				{
-					"name": "Get Food Category",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/food-categories/{{id}}?lang=en"
-					}
-				},
-				{
-					"name": "Create Food Category",
-					"request": {
-						"method": "POST",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"code\": \"MAIN\",\n  \"parent_id\": null,\n  \"sort_order\": 1,\n  \"translations\": [\n    { \"language_code\": \"en\", \"name\": \"Main Dishes\", \"description\": \"Main course\" },\n    { \"language_code\": \"vn\", \"name\": \"Mon chinh\" }\n  ]\n}"
-						},
-						"url": "{{base_url}}/api/food-categories"
-					}
-				},
-				{
-					"name": "Update Food Category",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"code\": \"MAIN\",\n  \"sort_order\": 2\n}"
-						},
-						"url": "{{base_url}}/api/food-categories/{{id}}"
-					}
-				},
-				{
-					"name": "Delete Food Category",
-					"request": {
-						"method": "DELETE",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/food-categories/{{id}}"
-					}
-				},
-				{
-					"name": "Add Category Translation",
-					"request": {
-						"method": "POST",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"language_code\": \"en\",\n  \"name\": \"Category Name\",\n  \"description\": \"Description\",\n  \"video_link\": \"https://youtube.com/...\"\n}"
-						},
-						"url": "{{base_url}}/api/food-categories/{{id}}/translations"
-					}
-				}
-			]
-		},
-		{
-			"name": "News",
-			"item": [
-				{
-					"name": "List News",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/news?type=news&search=&per_page=15"
-					}
-				},
-				{
-					"name": "News by Type",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/news/by-type/news"
-					}
-				},
-				{
-					"name": "Get News",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/news/{{id}}"
-					}
-				},
-				{
-					"name": "Create News",
-					"request": {
-						"method": "POST",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"type\": \"news\",\n  \"category_id\": null,\n  \"title\": { \"en\": \"Article Title\" },\n  \"content\": { \"en\": \"Full content here\" },\n  \"excerpt\": { \"en\": \"Short excerpt\" },\n  \"status\": \"draft\",\n  \"published_at\": null\n}"
-						},
-						"url": "{{base_url}}/api/news"
-					}
-				},
-				{
-					"name": "Update News",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"type\": \"news\",\n  \"title\": { \"en\": \"Updated Title\" },\n  \"content\": { \"en\": \"Updated content\" },\n  \"status\": \"published\",\n  \"published_at\": \"2025-02-02\"\n}"
-						},
-						"url": "{{base_url}}/api/news/{{id}}"
-					}
-				},
-				{
-					"name": "Delete News",
-					"request": {
-						"method": "DELETE",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/news/{{id}}"
-					}
-				}
-			]
-		},
-		{
-			"name": "Menus",
-			"item": [
-				{
-					"name": "Get Menu",
-					"request": {
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/menus/{{id}}"
-					}
-				},
-				{
-					"name": "Create Menu",
-					"request": {
-						"method": "POST",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"restaurant_id\": 1,\n  \"name\": { \"en\": \"Breakfast Menu\" },\n  \"description\": { \"en\": \"Morning dishes\" },\n  \"image\": null,\n  \"sort_order\": 1\n}"
-						},
-						"url": "{{base_url}}/api/menus"
-					}
-				},
-				{
-					"name": "Update Menu",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": { \"en\": \"Updated Menu Name\" },\n  \"sort_order\": 2\n}"
-						},
-						"url": "{{base_url}}/api/menus/{{id}}"
-					}
-				},
-				{
-					"name": "Delete Menu",
-					"request": {
-						"method": "DELETE",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/menus/{{id}}"
-					}
-				}
-			]
-		},
-		{
-			"name": "Exchange Rates",
-			"item": [
-				{
-					"name": "Get Exchange Rates",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/exchange-rates?date="
-					}
-				},
-				{
-					"name": "Convert Currency",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "POST",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"amount\": 100,\n  \"from_currency\": \"VND\",\n  \"to_currency\": \"USD\"\n}"
-						},
-						"url": "{{base_url}}/api/exchange-rates/convert"
-					}
-				}
-			]
-		},
-		{
-			"name": "Upload",
-			"item": [
-				{
-					"name": "Upload Images",
-					"request": {
-						"method": "POST",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{ "key": "images[]", "type": "file", "src": [] }
-							]
-						},
-						"url": "{{base_url}}/api/upload/images"
-					}
-				},
-				{
-					"name": "Upload Restaurant Images",
-					"request": {
-						"method": "POST",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{ "key": "outside_images[]", "type": "file", "src": [], "description": "Max 2" },
-								{ "key": "inside_images[]", "type": "file", "src": [], "description": "Max 5" }
-							]
-						},
-						"url": "{{base_url}}/api/upload/restaurant-images"
-					}
-				},
-				{
-					"name": "Upload Food Images",
-					"request": {
-						"method": "POST",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{ "key": "main_image", "type": "file", "src": [], "description": "Required" },
-								{ "key": "extra_images[]", "type": "file", "src": [], "description": "Optional, max 5" }
-							]
-						},
-						"url": "{{base_url}}/api/upload/food-images"
-					}
-				}
-			]
-		},
-		{
-			"name": "Admin",
-			"item": [
-				{
-					"name": "Dashboard Stats",
-					"request": {
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/admin/dashboard/stats",
-						"description": "Cần đăng nhập admin."
-					}
-				},
-				{
-					"name": "Admin List Restaurants",
-					"request": {
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/admin/restaurants?status=&per_page=15"
-					}
-				},
-				{
-					"name": "Admin Restaurant Food Items",
-					"request": {
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/admin/restaurants/{{restaurantId}}/food-items"
-					}
-				},
-				{
-					"name": "Admin Update Restaurant Status",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"status\": \"active\"\n}"
-						},
-						"url": "{{base_url}}/api/admin/restaurants/{{id}}/status",
-						"description": "status: active | hidden | pending"
-					}
-				},
-				{
-					"name": "Pending Food Codes",
-					"request": {
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/food-items/pending-codes"
-					}
-				},
-				{
-					"name": "Admin Update Food Item Status",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"status\": \"active\"\n}"
-						},
-						"url": "{{base_url}}/api/admin/food-items/{{id}}/status",
-						"description": "status: active | hidden | pending"
-					}
-				}
-			]
-		},
-		{
-			"name": "Search",
-			"item": [
-				{
-					"name": "Search Restaurants (alias)",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/search/restaurants?name="
-					}
-				},
-				{
-					"name": "Search Food Items (alias)",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/search/food-items?search="
-					}
-				},
-				{
-					"name": "Food Items by Category (alias)",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/search/food-items/by-category?category_id=1"
-					}
-				},
-				{
-					"name": "Restaurants by Distance (alias)",
-					"request": {
-						"auth": { "type": "noauth" },
-						"method": "GET",
-						"header": [{ "key": "Accept", "value": "application/json" }],
-						"url": "{{base_url}}/api/search/restaurants/by-distance?latitude=10.7769&longitude=106.7009&radius=10",
-						"description": "Alias của GET /api/restaurants/nearby."
-					}
-				}
-			]
-		}
-	]
+  "info": {
+    "_postman_id": "foodshop-api-collection",
+    "name": "FoodShop API",
+    "description": "REST API FoodShop - Quản lý nhà hàng, món ăn, danh mục, tin tức, đánh giá.\n\n**Biến:**\n- `base_url`: Local (mặc định http://localhost:8000)\n- `base_url_dev`: Dev/Test (https://test-site-xyz.online)\n- `token`: Bearer token (tự gán khi gọi Owner Login hoặc Admin Login)\n- **User test (khớp database/seeders/AdminUserSeeder.php):**\n  - Admin: `admin_email` / `admin_password` (admin@foodshop.com / admin123)\n  - Owner: `owner_email` / `owner_password` (owner@foodshop.com / owner123)",
+    "schema": "https://schema.postman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "base_url_dev", "value": "https://test-site-xyz.online" },
+    { "key": "token", "value": "" },
+    { "key": "admin_email", "value": "admin@foodshop.com" },
+    { "key": "admin_password", "value": "admin123" },
+    { "key": "owner_email", "value": "owner@foodshop.com" },
+    { "key": "owner_password", "value": "owner123" },
+    { "key": "id", "value": "1" },
+    { "key": "restaurantId", "value": "1" },
+    { "key": "foodItemId", "value": "1" },
+    { "key": "categoryId", "value": "1" },
+    { "key": "code", "value": "EN" },
+    { "key": "reviewId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "API Test",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/test",
+            "description": "Kiểm tra API đang chạy."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register Owner",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nguyen Van Owner\",\n  \"email\": \"owner@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"phone\": \"0901234567\",\n  \"address\": \"123 Nguyen Hue, Q1\",\n  \"country_id\": 1\n}"
+            },
+            "url": "{{base_url}}/api/auth/owner/register",
+            "description": "Đăng ký chủ nhà hàng. Response có access_token trong data."
+          }
+        },
+        {
+          "name": "Owner Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.access_token) { pm.collectionVariables.set('token', json.data.access_token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{owner_email}}\",\n  \"password\": \"{{owner_password}}\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/owner/login",
+            "description": "Đăng nhập owner. Dùng user từ AdminUserSeeder (owner@foodshop.com / owner123). Token tự lưu vào biến token."
+          }
+        },
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.access_token) { pm.collectionVariables.set('token', json.data.access_token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/admin/login",
+            "description": "Đăng nhập admin. Dùng user từ AdminUserSeeder (admin@foodshop.com / admin123). Token tự lưu vào biến token."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/auth/logout",
+            "description": "Thu hồi token. Cần Bearer token."
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/auth/me",
+            "description": "Thông tin user đang đăng nhập."
+          }
+        },
+        {
+          "name": "Update Owner Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ten moi\",\n  \"phone\": \"0987654321\",\n  \"address\": \"Dia chi moi\",\n  \"country_id\": 1\n}"
+            },
+            "url": "{{base_url}}/api/owner/profile",
+            "description": "Cập nhật profile owner. Cần Bearer token (owner)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reference",
+      "item": [
+        {
+          "name": "List Languages",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/languages"
+          }
+        },
+        {
+          "name": "Get Language by Code",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/languages/{{code}}"
+          }
+        },
+        {
+          "name": "List Countries",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/countries"
+          }
+        },
+        {
+          "name": "Get Country by ID",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/countries/{{id}}"
+          }
+        },
+        {
+          "name": "List Restaurant Types",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/restaurant-types"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Restaurants",
+      "description": "API nhà hàng: public (list, search, nearby, detail, reviews, menus); Owner (create, update, delete) cần token.",
+      "item": [
+        {
+          "name": "List Restaurants",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/restaurants?country_id=1&restaurant_type_id=1&delivery_available=&search=&per_page=15",
+            "description": "Danh sách nhà hàng active. Query: country_id, restaurant_type_id, delivery_available, search, per_page (1-100 hoặc all để bỏ phân trang)."
+          }
+        },
+        {
+          "name": "Search Restaurants",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/restaurants/search?name=pizza&per_page=15",
+            "description": "Tìm nhà hàng theo tên. per_page: 1-100 hoặc all (bỏ phân trang)."
+          }
+        },
+        {
+          "name": "Restaurants Nearby",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/restaurants/nearby?latitude=10.7769&longitude=106.7009&radius=10",
+            "description": "Nhà hàng trong bán kính (km). Params: latitude, longitude, radius (1-100)."
+          }
+        },
+        {
+          "name": "Get Restaurant",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/restaurants/{{id}}"
+          }
+        },
+        {
+          "name": "Create Restaurant",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"country_id\": 1,\n  \"restaurant_type_id\": 1,\n  \"name\": { \"en\": \"My Restaurant\", \"vn\": \"Nha hang cua toi\" },\n  \"description\": { \"en\": \"Description\" },\n  \"city\": \"Ho Chi Minh\",\n  \"address\": \"123 Nguyen Hue\",\n  \"phone\": \"0901234567\",\n  \"zalo\": \"0901234567\",\n  \"email\": \"restaurant@example.com\",\n  \"latitude\": 10.7769,\n  \"longitude\": 106.7009,\n  \"delivery_available\": true\n}"
+            },
+            "url": "{{base_url}}/api/restaurants",
+            "description": "Tạo nhà hàng (Owner). Status pending đến khi admin duyệt."
+          }
+        },
+        {
+          "name": "Update Restaurant",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": { \"en\": \"Updated Name\", \"vn\": \"Ten cap nhat\" },\n  \"city\": \"Ho Chi Minh\",\n  \"address\": \"456 Le Loi\",\n  \"phone\": \"0901234567\",\n  \"zalo\": \"0901234567\",\n  \"email\": \"restaurant@example.com\",\n  \"delivery_available\": false\n}"
+            },
+            "url": "{{base_url}}/api/restaurants/{{id}}"
+          }
+        },
+        {
+          "name": "Delete Restaurant",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/restaurants/{{id}}"
+          }
+        },
+        {
+          "name": "Get Restaurant Reviews",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/restaurants/{{restaurantId}}/reviews?page=1"
+          }
+        },
+        {
+          "name": "Create Restaurant Review",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reviewer_name\": \"Customer Name\",\n  \"reviewer_email\": \"customer@example.com\",\n  \"rating\": 5,\n  \"comment\": \"Great food!\"\n}"
+            },
+            "url": "{{base_url}}/api/restaurants/{{restaurantId}}/reviews",
+            "description": "Tạo đánh giá nhà hàng. Body: reviewer_name (required), reviewer_email?, rating (1-5), comment?. Status pending."
+          }
+        },
+        {
+          "name": "Get Restaurant Menus",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/restaurants/{{restaurantId}}/menus"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Food Items",
+      "item": [
+        {
+          "name": "List Food Items",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/food-items?restaurant_id=&category_id=&best_seller=&vegetarian=&search=&per_page=15&group_by=category",
+            "description": "Danh sách món ăn. Query: restaurant_id, category_id, best_seller, vegetarian, search, per_page (1-100 hoặc all). group_by=category (hoặc group_by_category=true): trả về data dạng [{ category, items }] để hiển thị theo nhóm danh mục."
+          }
+        },
+        {
+          "name": "List Food Items (Group by Category)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/food-items?per_page=all&group_by=category",
+            "description": "Danh sách món ăn nhóm theo category. Trả về data: [{ category, items }]. Có thể thêm restaurant_id, search, ..."
+          }
+        },
+        {
+          "name": "Search Food Items",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/food-items/search?search=&per_page=15",
+            "description": "Tìm món ăn (delegate List Food Items). per_page: 1-100 hoặc all."
+          }
+        },
+        {
+          "name": "Food Items by Category",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/food-items/by-category/{{categoryId}}"
+          }
+        },
+        {
+          "name": "Best Seller Food Items",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/food-items/best-seller?restaurant_id=&per_page=15",
+            "description": "Món bán chạy. restaurant_id (tùy chọn), per_page: 1-100 hoặc all."
+          }
+        },
+        {
+          "name": "Get Food Item",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/food-items/{{id}}"
+          }
+        },
+        {
+          "name": "Create Food Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurant_id\": 1,\n  \"food_category_id\": 1,\n  \"name\": { \"en\": \"Pho Bo\", \"vn\": \"Phở bò\" },\n  \"description\": { \"en\": \"Beef noodle soup\" },\n  \"main_image\": \"https://example.com/image.jpg\",\n  \"extra_images\": [],\n  \"price\": 50000,\n  \"currency_code\": \"VND\",\n  \"serving_size\": 1,\n  \"weight\": 300,\n  \"is_vegetarian\": false\n}"
+            },
+            "url": "{{base_url}}/api/food-items",
+            "description": "Tạo món ăn (Owner)."
+          }
+        },
+        {
+          "name": "Update Food Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": { \"en\": \"Updated Pho\" },\n  \"price\": 55000,\n  \"currency_code\": \"VND\",\n  \"is_best_seller\": true\n}"
+            },
+            "url": "{{base_url}}/api/food-items/{{id}}"
+          }
+        },
+        {
+          "name": "Delete Food Item",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/food-items/{{id}}"
+          }
+        },
+        {
+          "name": "Confirm Food Code",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/food-items/{{id}}/confirm-code",
+            "description": "Xác nhận mã món (Owner)."
+          }
+        },
+        {
+          "name": "Get Food Item Reviews",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/food-items/{{foodItemId}}/reviews"
+          }
+        },
+        {
+          "name": "Create Food Item Review",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reviewer_name\": \"Customer Name\",\n  \"reviewer_email\": \"customer@example.com\",\n  \"rating\": 5,\n  \"comment\": \"Delicious!\"\n}"
+            },
+            "url": "{{base_url}}/api/food-items/{{foodItemId}}/reviews"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Food Categories",
+      "description": "Chỉ đọc công khai. CRUD nằm trong folder Admin.",
+      "item": [
+        {
+          "name": "List Food Categories",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/food-categories?root_only=&parent_id="
+          }
+        },
+        {
+          "name": "Get Food Category",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/food-categories/{{id}}?lang=en"
+          }
+        }
+      ]
+    },
+    {
+      "name": "News",
+      "description": "Chỉ đọc công khai. CRUD nằm trong folder Admin.",
+      "item": [
+        {
+          "name": "List News",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/news?type=news&search=&per_page=15",
+            "description": "Danh sách tin đã publish. type, search, per_page (1-100 hoặc all)."
+          }
+        },
+        {
+          "name": "News by Type",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/news/by-type/news",
+            "description": "type: news | course | chef"
+          }
+        },
+        {
+          "name": "Get News",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/news/{{id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Menus",
+      "description": "Tất cả route cần Bearer token (Owner).",
+      "item": [
+        {
+          "name": "Get Menu",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/menus/{{id}}"
+          }
+        },
+        {
+          "name": "Create Menu",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurant_id\": 1,\n  \"name\": { \"en\": \"Breakfast Menu\" },\n  \"description\": { \"en\": \"Morning dishes\" },\n  \"image\": null,\n  \"sort_order\": 1,\n  \"is_active\": true\n}"
+            },
+            "url": "{{base_url}}/api/menus"
+          }
+        },
+        {
+          "name": "Update Menu",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": { \"en\": \"Updated Menu Name\" },\n  \"sort_order\": 2,\n  \"is_active\": true\n}"
+            },
+            "url": "{{base_url}}/api/menus/{{id}}"
+          }
+        },
+        {
+          "name": "Delete Menu",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/menus/{{id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Exchange Rates",
+      "item": [
+        {
+          "name": "Get Exchange Rates",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/exchange-rates?date="
+          }
+        },
+        {
+          "name": "Convert Currency",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100,\n  \"from_currency\": \"VND\",\n  \"to_currency\": \"USD\"\n}"
+            },
+            "url": "{{base_url}}/api/exchange-rates/convert"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upload",
+      "description": "Tất cả cần Bearer token.",
+      "item": [
+        {
+          "name": "Upload Images",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "images[]", "type": "file", "src": [], "description": "Một hoặc nhiều file ảnh" }
+              ]
+            },
+            "url": "{{base_url}}/api/upload/images"
+          }
+        },
+        {
+          "name": "Upload Restaurant Images",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "outside_images[]", "type": "file", "src": [], "description": "Tối đa 2 ảnh" },
+                { "key": "inside_images[]", "type": "file", "src": [], "description": "Tối đa 5 ảnh" }
+              ]
+            },
+            "url": "{{base_url}}/api/upload/restaurant-images"
+          }
+        },
+        {
+          "name": "Upload Food Images",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "main_image", "type": "file", "src": [], "description": "Ảnh chính (bắt buộc)" },
+                { "key": "extra_images[]", "type": "file", "src": [], "description": "Tối đa 5 ảnh phụ" }
+              ]
+            },
+            "url": "{{base_url}}/api/upload/food-images"
+          }
+        },
+        {
+          "name": "Upload News Images",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "featured_image", "type": "file", "src": [], "description": "Ảnh đại diện (tùy chọn)" },
+                { "key": "gallery_images[]", "type": "file", "src": [], "description": "Tối đa 10 ảnh gallery" }
+              ]
+            },
+            "url": "{{base_url}}/api/upload/news-images",
+            "description": "Upload ảnh cho news. Trả về featured_image (URL) và gallery_images (mảng URL). Dùng URL khi POST/PUT news."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Tất cả route cần đăng nhập Admin. Dùng Admin Login rồi gửi Bearer token.",
+      "item": [
+        {
+          "name": "Dashboard",
+          "item": [
+            {
+              "name": "Dashboard Stats",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/dashboard/stats"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin - Food Categories",
+          "item": [
+            {
+              "name": "List Food Categories",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/food-categories?root_only=&parent_id="
+              }
+            },
+            {
+              "name": "Get Food Category",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/food-categories/{{id}}?lang=en"
+              }
+            },
+            {
+              "name": "Create Food Category",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"maincourse\",\n  \"parent_id\": null,\n  \"sort_order\": 1,\n  \"translations\": [\n    { \"language_code\": \"EN\", \"name\": \"Main Dishes\", \"description\": \"Main course\" },\n    { \"language_code\": \"VN\", \"name\": \"Mon chinh\" }\n  ]\n}"
+                },
+                "url": "{{base_url}}/api/admin/food-categories",
+                "description": "code tối đa 10 ký tự."
+              }
+            },
+            {
+              "name": "Update Food Category",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"maincourse\",\n  \"sort_order\": 2\n}"
+                },
+                "url": "{{base_url}}/api/admin/food-categories/{{id}}"
+              }
+            },
+            {
+              "name": "Delete Food Category",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/food-categories/{{id}}"
+              }
+            },
+            {
+              "name": "Add Category Translation",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"language_code\": \"EN\",\n  \"name\": \"Category Name\",\n  \"description\": \"Description\",\n  \"video_link\": \"https://youtube.com/...\"\n}"
+                },
+                "url": "{{base_url}}/api/admin/food-categories/{{id}}/translations"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin - News",
+          "item": [
+            {
+              "name": "List News",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/news?type=news&search=&per_page=15",
+                "description": "Danh sách tin (Admin). type, search, status, per_page (1-100 hoặc all)."
+              }
+            },
+            {
+              "name": "News by Type",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/news/by-type/news"
+              }
+            },
+            {
+              "name": "Get News",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/news/{{id}}"
+              }
+            },
+            {
+              "name": "Create News",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"news\",\n  \"category_id\": null,\n  \"title\": { \"en\": \"Article Title\" },\n  \"content\": { \"en\": \"Full content here\" },\n  \"excerpt\": { \"en\": \"Short excerpt\" },\n  \"status\": \"draft\",\n  \"published_at\": null\n}"
+                },
+                "url": "{{base_url}}/api/admin/news"
+              }
+            },
+            {
+              "name": "Update News",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"news\",\n  \"title\": { \"en\": \"Updated Title\" },\n  \"content\": { \"en\": \"Updated content\" },\n  \"status\": \"published\",\n  \"published_at\": \"2025-02-02\"\n}"
+                },
+                "url": "{{base_url}}/api/admin/news/{{id}}"
+              }
+            },
+            {
+              "name": "Delete News",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/news/{{id}}"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin - Restaurants",
+          "item": [
+            {
+              "name": "List Restaurants",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/restaurants?status=&per_page=15",
+                "description": "Danh sách nhà hàng (Admin). status: active | hidden | pending. per_page: 1-100 hoặc all."
+              }
+            },
+            {
+              "name": "Restaurant Food Items",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/restaurants/{{restaurantId}}/food-items"
+              }
+            },
+            {
+              "name": "Update Restaurant Status",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"active\"\n}"
+                },
+                "url": "{{base_url}}/api/admin/restaurants/{{id}}/status",
+                "description": "status: active | hidden | pending"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin - Food Items",
+          "item": [
+            {
+              "name": "Pending Food Codes",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/food-items/pending-codes"
+              }
+            },
+            {
+              "name": "Restaurant Food Items (Admin)",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/restaurants/{{restaurantId}}/food-items"
+              }
+            },
+            {
+              "name": "Update Food Item Status",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"active\"\n}"
+                },
+                "url": "{{base_url}}/api/admin/food-items/{{id}}/status",
+                "description": "status: active | hidden | pending"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin - Reviews",
+          "item": [
+            {
+              "name": "List Reviews",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/reviews?status=&reviewable_type=&restaurant_id=&food_item_id=&per_page=15",
+                "description": "Danh sách đánh giá (Admin). status: approved | pending | rejected. reviewable_type: restaurant | food_item. per_page: 1-100 hoặc all."
+              }
+            },
+            {
+              "name": "Get Review",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/reviews/{{reviewId}}"
+              }
+            },
+            {
+              "name": "Update Review Status",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"approved\"\n}"
+                },
+                "url": "{{base_url}}/api/admin/reviews/{{reviewId}}/status",
+                "description": "status: approved | pending | rejected"
+              }
+            },
+            {
+              "name": "Delete Review",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": "{{base_url}}/api/admin/reviews/{{reviewId}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "description": "Alias routes cho search.",
+      "item": [
+        {
+          "name": "Search Restaurants",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/search/restaurants?name=pizza"
+          }
+        },
+        {
+          "name": "Search Food Items",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/search/food-items?search=pho"
+          }
+        },
+        {
+          "name": "Food Items by Category",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/search/food-items/by-category?category_id=1"
+          }
+        },
+        {
+          "name": "Restaurants by Distance",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/search/restaurants/by-distance?latitude=10.7769&longitude=106.7009&radius=10"
+          }
+        }
+      ]
+    }
+  ]
 }

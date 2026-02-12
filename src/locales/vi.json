@@ -66,6 +66,7 @@
     "title": "Món ăn",
     "detail": "Chi tiết món ăn",
     "category": "Danh mục",
+    "otherCategory": "Khác",
     "price": "Giá",
     "servingSize": "Khẩu phần",
     "weight": "Trọng lượng",
