@@ -161,6 +161,7 @@
   },
   "admin": {
     "title": "Bảng điều khiển quản trị",
+    "login": "Đăng nhập Admin",
     "manageRestaurants": "Quản lý nhà hàng",
     "manageFoodItems": "Quản lý món ăn",
     "manageCategories": "Quản lý danh mục",

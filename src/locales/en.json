@@ -161,6 +161,7 @@
   },
   "admin": {
     "title": "Admin Dashboard",
+    "login": "Admin Login",
     "manageRestaurants": "Manage Restaurants",
     "manageFoodItems": "Manage Food Items",
     "manageCategories": "Manage Categories",

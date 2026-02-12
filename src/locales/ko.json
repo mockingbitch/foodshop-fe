@@ -161,6 +161,7 @@
   },
   "admin": {
     "title": "관리자 대시보드",
+    "login": "관리자 로그인",
     "manageRestaurants": "레스토랑 관리",
     "manageFoodItems": "음식 관리",
     "manageCategories": "카테고리 관리",

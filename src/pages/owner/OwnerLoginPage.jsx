@@ -6,7 +6,7 @@ import { useAuth } from '@context/AuthContext'
 import { hasToken } from '@utils/authToken'
 
 import { REGEX_PATTERNS } from '@constants'
-import { Mail, Lock, Eye, EyeOff, Store } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, Store, Shield } from 'lucide-react'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { IconGoogle, IconFacebook } from '@components/icons'
 
@@ -93,7 +93,18 @@ const OwnerLoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 py-12 px-4 sm:px-6 lg:px-8 relative">
+      {/* Link sang trang Admin Login */}
+      <Link
+        to="/admin/login"
+        className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-2 px-3 py-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+        title={t('admin.login')}
+        aria-label={t('admin.login')}
+      >
+        <Shield size={20} className="flex-shrink-0" />
+        <span className="text-sm font-medium hidden sm:inline">{t('admin.login')}</span>
+      </Link>
+
       <div className="max-w-md w-full">
         {/* Logo/Header */}
         <div className="text-center mb-8">
