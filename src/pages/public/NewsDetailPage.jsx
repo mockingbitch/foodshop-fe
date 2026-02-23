@@ -88,9 +88,9 @@ const NewsDetailPage = () => {
         <span className="text-gray-700 truncate max-w-[200px] sm:max-w-none">{title || t('common.news')}</span>
       </nav>
 
-      <article className="card overflow-hidden p-0 max-w-4xl mx-auto">
+      <article className="card p-0 max-w-4xl mx-auto overflow-visible">
         {imageUrl && (
-          <div className="w-full aspect-[16/10] sm:aspect-[21/9] bg-gray-100 overflow-hidden">
+          <div className="w-full aspect-[16/10] sm:aspect-[21/9] bg-gray-100 overflow-hidden rounded-t-xl">
             <img
               src={imageUrl}
               alt={title}
@@ -98,8 +98,8 @@ const NewsDetailPage = () => {
             />
           </div>
         )}
-        <div className="p-6 sm:p-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+        <div className="p-6 sm:p-8 w-full min-w-0 overflow-visible box-border">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 break-words">
             {title || t('common.noData')}
           </h1>
           {publishedAt && (
@@ -112,7 +112,8 @@ const NewsDetailPage = () => {
           )}
           {contentHtml ? (
             <div
-              className="content-html"
+              className="content-html w-full min-w-0 overflow-visible"
+              style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}
               dangerouslySetInnerHTML={{ __html: contentHtml }}
             />
           ) : toDisplayText(news.excerpt) ? (

@@ -198,7 +198,7 @@ const AdminLoginPage = () => {
                   {t('common.loading')}...
                 </span>
               ) : (
-                t('auth.login')
+                t('auth.loginTitle')
               )}
             </button>
           </form>

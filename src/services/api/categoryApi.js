@@ -9,9 +9,9 @@ export const categoryApi = {
   getCategories: (params) => axios.get('/food-categories', { params }),
   getCategoryById: (id, params) => axios.get(`/food-categories/${id}`, { params }),
 
-  createCategory: (data) => axios.post('/food-categories', data),
-  updateCategory: (id, data) => axios.put(`/food-categories/${id}`, data),
-  deleteCategory: (id) => axios.delete(`/food-categories/${id}`),
+  createCategory: (data) => axios.post('/admin/food-categories', data),
+  updateCategory: (id, data) => axios.put(`/admin/food-categories/${id}`, data),
+  deleteCategory: (id) => axios.delete(`/admin/food-categories/${id}`),
   addCategoryTranslation: (id, data) =>
-    axios.post(`/food-categories/${id}/translations`, data),
+    axios.post(`/admin/food-categories/${id}/translations`, data),
 }

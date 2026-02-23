@@ -15,7 +15,7 @@ ENV VITE_DEFAULT_LANGUAGE=${VITE_DEFAULT_LANGUAGE}
 COPY package*.json ./
 
 # Install all dependencies (cần devDependencies để build)
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # Copy source
 COPY . .

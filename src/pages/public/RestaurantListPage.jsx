@@ -301,7 +301,7 @@ const RestaurantListPage = () => {
               key={getRestaurantId(restaurant) ?? idx}
               className="card overflow-hidden p-0 flex flex-col h-full"
             >
-              <div className="relative group aspect-[16/10] flex-shrink-0">
+              <div className="relative group aspect-square flex-shrink-0 rounded-t-xl overflow-hidden">
                 <img
                   src={getRestaurantImage(restaurant)}
                   alt={toDisplayText(restaurant.name)}

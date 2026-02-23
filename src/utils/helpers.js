@@ -108,12 +108,31 @@ export const isValidFileType = (file, allowedTypes) => {
 }
 
 /**
- * Get image URL
+ * Get image URL from path (relative or absolute)
  */
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return '/placeholder-image.jpg'
   if (imagePath.startsWith('http')) return imagePath
   return `${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}${imagePath}`
+}
+
+/**
+ * Parse image path/URL from upload API response
+ */
+export const getImageUrlFromUploadResponse = (res) => {
+  const data = res?.data ?? res
+  if (Array.isArray(data) && data[0]) return data[0]
+  const urls = data?.urls ?? data?.images
+  if (Array.isArray(urls) && urls[0]) return urls[0]
+  const inner = data?.data
+  if (inner && typeof inner === 'object') {
+    const arr = inner?.urls ?? inner?.images
+    if (Array.isArray(arr) && arr[0]) return arr[0]
+  }
+  const first = data?.data?.[0] ?? data?.[0]
+  if (first && typeof first === 'string') return first
+  if (first && typeof first === 'object') return first.url ?? first.path ?? first.src ?? null
+  return null
 }
 
 /**

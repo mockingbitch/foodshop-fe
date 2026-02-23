@@ -13,6 +13,9 @@ export default defineConfig(({ mode }) => {
 
   return {
   plugins: [react()],
+  optimizeDeps: {
+    include: ['react-quill-new', 'quill'],
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

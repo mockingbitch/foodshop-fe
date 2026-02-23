@@ -41,7 +41,17 @@
     "active": "Hoạt động",
     "inactive": "Không hoạt động",
     "allStatus": "Tất cả trạng thái",
-    "required": "là bắt buộc"
+    "required": "là bắt buộc",
+    "rating": "Đánh giá",
+    "status": "Trạng thái",
+    "image": "Hình ảnh",
+    "address": "Địa chỉ",
+    "upload": "Tải ảnh lên",
+    "or": "hoặc",
+    "invalidFileType": "Chỉ chấp nhận file ảnh",
+    "hidden": "Ẩn",
+    "pending": "Chờ duyệt",
+    "visible": "Hiện"
   },
   "restaurant": {
     "title": "Nhà hàng",
@@ -72,6 +82,10 @@
     "weight": "Trọng lượng",
     "addReview": "Thêm đánh giá",
     "relatedItems": "Món liên quan"
+  },
+  "news": {
+    "draft": "Bản nháp",
+    "published": "Đã xuất bản"
   },
   "auth": {
     "loginTitle": "Đăng nhập",

@@ -221,6 +221,16 @@
           }
         },
         {
+          "name": "List Restaurants (no pagination)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/restaurants?per_page=all",
+            "description": "Lấy toàn bộ nhà hàng (per_page=all)."
+          }
+        },
+        {
           "name": "Search Restaurants",
           "request": {
             "auth": { "type": "noauth" },
@@ -246,7 +256,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/restaurants/{{id}}"
+            "url": "{{base_url}}/api/restaurants/{{id}}",
+            "description": "Chi tiết nhà hàng (best_sellers, outside_images, inside_images)."
           }
         },
         {
@@ -334,8 +345,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/food-items?restaurant_id=&category_id=&best_seller=&vegetarian=&search=&per_page=15&group_by=category",
-            "description": "Danh sách món ăn. Query: restaurant_id, category_id, best_seller, vegetarian, search, per_page (1-100 hoặc all). group_by=category (hoặc group_by_category=true): trả về data dạng [{ category, items }] để hiển thị theo nhóm danh mục."
+            "url": "{{base_url}}/api/food-items?restaurant_id=&category_id=&best_seller=&vegetarian=&search=&per_page=15",
+            "description": "Danh sách món ăn. Query: restaurant_id, category_id, best_seller, vegetarian, search, per_page (1-100 hoặc all), group_by=category hoặc group_by_category=true để nhóm theo danh mục. Response mỗi item có food_category kèm name: { en, vn, kr }."
           }
         },
         {
@@ -345,7 +356,7 @@
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/api/food-items?per_page=all&group_by=category",
-            "description": "Danh sách món ăn nhóm theo category. Trả về data: [{ category, items }]. Có thể thêm restaurant_id, search, ..."
+            "description": "Danh sách món ăn nhóm theo category. Trả về data: [{ category (có name: { en, vn, kr }), items }]. Có thể thêm restaurant_id, search, ..."
           }
         },
         {
@@ -359,12 +370,23 @@
           }
         },
         {
+          "name": "List Food Items (no pagination)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/food-items?per_page=all",
+            "description": "Lấy toàn bộ món ăn (per_page=all). Mỗi item có food_category.name."
+          }
+        },
+        {
           "name": "Food Items by Category",
           "request": {
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/food-items/by-category/{{categoryId}}"
+            "url": "{{base_url}}/api/food-items/by-category/{{categoryId}}",
+            "description": "Món ăn theo category ID (path). Paginated. Mỗi item có food_category.name (en, vn, kr)."
           }
         },
         {
@@ -383,7 +405,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/food-items/{{id}}"
+            "url": "{{base_url}}/api/food-items/{{id}}",
+            "description": "Chi tiết món ăn (food_item, extra_images, related_products). food_item.food_category có name: { en, vn, kr }."
           }
         },
         {
@@ -471,7 +494,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/food-categories?root_only=&parent_id="
+            "url": "{{base_url}}/api/food-categories?root_only=&parent_id=",
+            "description": "Danh sách category (active). Query: root_only, parent_id."
           }
         },
         {
@@ -480,7 +504,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/food-categories/{{id}}?lang=en"
+            "url": "{{base_url}}/api/food-categories/{{id}}?lang=en",
+            "description": "Chi tiết category. Query: lang (en, vn, kr) để lấy translation."
           }
         }
       ]
@@ -515,7 +540,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/news/{{id}}"
+            "url": "{{base_url}}/api/news/{{id}}",
+            "description": "Chi tiết tin (tăng view_count). type: news | course | chef."
           }
         }
       ]
@@ -529,7 +555,8 @@
           "request": {
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/menus/{{id}}"
+            "url": "{{base_url}}/api/menus/{{id}}",
+            "description": "Chi tiết menu (Owner). Cần Bearer token."
           }
         },
         {
@@ -961,7 +988,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/search/restaurants?name=pizza"
+            "url": "{{base_url}}/api/search/restaurants?name=pizza&per_page=15",
+            "description": "Alias GET /api/restaurants/search. per_page: 1-100 hoặc all."
           }
         },
         {
@@ -970,7 +998,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/search/food-items?search=pho"
+            "url": "{{base_url}}/api/search/food-items?search=pho&per_page=15",
+            "description": "Alias GET /api/food-items (index). search, per_page: 1-100 hoặc all."
           }
         },
         {
@@ -979,7 +1008,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/search/food-items/by-category?category_id=1"
+            "url": "{{base_url}}/api/search/food-items/by-category?category_id=1",
+            "description": "Alias by category. Dùng category_id query hoặc GET /api/food-items/by-category/{{categoryId}}."
           }
         },
         {
@@ -988,7 +1018,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/search/restaurants/by-distance?latitude=10.7769&longitude=106.7009&radius=10"
+            "url": "{{base_url}}/api/search/restaurants/by-distance?latitude=10.7769&longitude=106.7009&radius=10",
+            "description": "Alias GET /api/restaurants/nearby. radius (km)."
           }
         }
       ]

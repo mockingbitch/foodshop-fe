@@ -41,7 +41,17 @@
     "active": "Active",
     "inactive": "Inactive",
     "allStatus": "All Status",
-    "required": "is required"
+    "required": "is required",
+    "rating": "Rating",
+    "status": "Status",
+    "image": "Image",
+    "address": "Address",
+    "upload": "Upload image",
+    "or": "or",
+    "invalidFileType": "Only image files are allowed",
+    "hidden": "Hidden",
+    "pending": "Pending",
+    "visible": "Visible"
   },
   "restaurant": {
     "title": "Restaurants",
@@ -72,6 +82,10 @@
     "weight": "Weight",
     "addReview": "Add Review",
     "relatedItems": "Related Items"
+  },
+  "news": {
+    "draft": "Draft",
+    "published": "Published"
   },
   "auth": {
     "loginTitle": "Login",

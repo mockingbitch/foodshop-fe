@@ -5,7 +5,19 @@ import { newsApi } from '@services/api/newsApi'
 import { toast } from 'react-toastify'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import ConfirmModal from '@components/common/ConfirmModal'
-import { Newspaper, Search, Edit, Plus, Trash2 } from 'lucide-react'
+import { Newspaper, Search, Edit, Plus, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
+
+const toDisplayText = (val) => {
+  if (val == null) return ''
+  if (typeof val === 'string') return val
+  if (typeof val === 'object') {
+    const v = val.vn ?? val.vi ?? val.kr ?? val.ko ?? val.en
+    if (typeof v === 'string') return v
+    const first = Object.values(val).find((x) => typeof x === 'string')
+    return first ?? ''
+  }
+  return String(val)
+}
 
 const ensureArray = (value) => {
   if (Array.isArray(value)) return value
@@ -31,6 +43,7 @@ const AdminNewsListPage = () => {
   const [deleting, setDeleting] = useState(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const [itemToDelete, setItemToDelete] = useState(null)
+  const [updating, setUpdating] = useState(new Set())
 
   const fetchNews = useCallback(async () => {
     setLoading(true)
@@ -38,7 +51,7 @@ const AdminNewsListPage = () => {
       const params = { per_page: 100 }
       if (searchQuery?.trim()) params.search = searchQuery.trim()
       if (typeFilter) params.type = typeFilter
-      const res = await newsApi.getNews(params)
+      const res = await newsApi.getAdminNews(params)
       const raw = res?.data ?? res
       const list = ensureArray(raw)
       setItems(Array.isArray(list) ? list : [])
@@ -56,6 +69,52 @@ const AdminNewsListPage = () => {
     }, DEBOUNCE_MS)
     return () => clearTimeout(timer)
   }, [searchQuery, typeFilter, fetchNews])
+
+  const buildUpdatePayload = (item, newStatus) => {
+    const titleObj = item.title && typeof item.title === 'object' && !Array.isArray(item.title)
+      ? item.title
+      : { en: toDisplayText(item.title) || '' }
+    const contentObj = item.content && typeof item.content === 'object' && !Array.isArray(item.content)
+      ? item.content
+      : { en: toDisplayText(item.content) || '' }
+    const excerptObj = item.excerpt && typeof item.excerpt === 'object' && !Array.isArray(item.excerpt)
+      ? item.excerpt
+      : { en: '' }
+    return {
+      type: item.type ?? 'news',
+      category_id: item.category_id ?? null,
+      title: titleObj,
+      content: contentObj,
+      excerpt: excerptObj,
+      status: newStatus,
+      published_at: item.published_at ?? null,
+    }
+  }
+
+  const handleStatusToggle = async (item) => {
+    const id = item.id
+    if (updating.has(id)) return
+    const current = item.status ?? 'published'
+    const newStatus = (current === 'published') ? 'draft' : 'published'
+    setUpdating((prev) => new Set(prev).add(id))
+    try {
+      const payload = buildUpdatePayload(item, newStatus)
+      await newsApi.updateNews(id, payload)
+      setItems((prev) =>
+        prev.map((i) => (i.id === id ? { ...i, status: newStatus } : i))
+      )
+      toast.success(t('common.success'))
+    } catch (error) {
+      console.error('Error updating news status:', error)
+      toast.error(t('common.error'))
+    } finally {
+      setUpdating((prev) => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
+    }
+  }
 
   const handleDeleteClick = (id) => {
     setItemToDelete(id)
@@ -153,11 +212,29 @@ const AdminNewsListPage = () => {
                       <td className="px-4 py-3 text-sm text-gray-700">{typeLabel}</td>
                       <td className="px-4 py-3">
                         <span className="font-medium text-gray-900 truncate block max-w-[200px]">
-                          {item.title || t('common.noData')}
+                          {toDisplayText(item.title) || t('common.noData')}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {item.status === 'active' ? t('common.active') : t('common.inactive')}
+                      <td className="px-4 py-3">
+                        <button
+                          type="button"
+                          onClick={() => handleStatusToggle(item)}
+                          disabled={updating.has(item.id)}
+                          className={`inline-flex items-center gap-1.5 text-sm font-medium ${
+                            item.status === 'published'
+                              ? 'text-green-600 hover:text-green-700'
+                              : 'text-gray-500 hover:text-gray-700'
+                          } ${updating.has(item.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {item.status === 'published' ? (
+                            <ToggleRight size={18} />
+                          ) : (
+                            <ToggleLeft size={18} />
+                          )}
+                          {item.status === 'published'
+                            ? t('news.published')
+                            : t('news.draft')}
+                        </button>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-2">

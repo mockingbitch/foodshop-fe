@@ -84,7 +84,7 @@ const AdminRestaurantListPage = () => {
   const handleStatusToggle = async (restaurantId, currentStatus) => {
     if (updating.has(restaurantId)) return
 
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
+    const newStatus = currentStatus === 'active' ? 'hidden' : 'active'
     setUpdating((prev) => new Set(prev).add(restaurantId))
 
     try {
@@ -139,7 +139,8 @@ const AdminRestaurantListPage = () => {
           >
             <option value="">{t('common.allStatus')}</option>
             <option value="active">{t('common.active')}</option>
-            <option value="inactive">{t('common.inactive')}</option>
+            <option value="hidden">{t('common.hidden')}</option>
+            <option value="pending">{t('common.pending')}</option>
           </select>
         </div>
       </div>
@@ -155,59 +156,97 @@ const AdminRestaurantListPage = () => {
           <p className="text-gray-600">{t('common.noData')}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {restaurants.map((restaurant) => {
-            const id = getRestaurantId(restaurant)
-            const name = toDisplayText(restaurant.name)
-            const status = restaurant.status ?? 'active'
-            const isActive = status === 'active'
-            const isUpdating = updating.has(id)
+        <div className="card overflow-hidden p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px]">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider py-3 px-4 w-16">
+                    <span className="sr-only">{t('common.image')}</span>
+                  </th>
+                  <th className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider py-3 px-4">
+                    {t('restaurant.title')}
+                  </th>
+                  <th className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider py-3 px-4 hidden sm:table-cell">
+                    {t('restaurant.address')}
+                  </th>
+                  <th className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider py-3 px-4 w-20">
+                    {t('common.rating')}
+                  </th>
+                  <th className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider py-3 px-4 w-28">
+                    {t('common.status')}
+                  </th>
+                  <th className="text-right text-xs font-semibold text-gray-600 uppercase tracking-wider py-3 px-4 w-40">
+                    {t('common.actions')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {restaurants.map((restaurant) => {
+                  const id = getRestaurantId(restaurant)
+                  const name = toDisplayText(restaurant.name)
+                  const status = restaurant.status ?? 'active'
+                  const isActive = status === 'active' // hidden | pending hiển thị như inactive
+                  const isUpdating = updating.has(id)
 
-            return (
-              <div key={id} className="card overflow-hidden p-0 flex flex-col">
-                <div className="aspect-[16/10] flex-shrink-0">
-                  <img
-                    src={getRestaurantImage(restaurant)}
-                    alt={name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-4 flex flex-col flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate mb-1">{name || t('common.noData')}</h3>
-                  {restaurant.address && (
-                    <p className="text-gray-500 text-xs mb-2 flex items-center gap-1">
-                      <MapPin size={12} />
-                      <span className="truncate">{restaurant.address}</span>
-                    </p>
-                  )}
-                  {restaurant.rating != null && (
-                    <p className="text-sm text-gray-600 mb-2 flex items-center gap-1">
-                      <Star size={14} className="text-amber-500" />
-                      {Number(restaurant.rating).toFixed(1)}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
-                    <button
-                      onClick={() => handleStatusToggle(id, status)}
-                      disabled={isUpdating}
-                      className={`flex items-center gap-2 text-sm font-medium ${
-                        isActive ? 'text-green-600 hover:text-green-700' : 'text-gray-400 hover:text-gray-600'
-                      } ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      {isActive ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
-                      <span>{isActive ? t('common.active') : t('common.inactive')}</span>
-                    </button>
-                    <Link
-                      to={`/admin/restaurants/${id}/food-items`}
-                      className="text-sm text-primary-600 hover:text-primary-700 font-medium"
-                    >
-                      {t('admin.manageFoodItems')} →
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
+                  return (
+                    <tr key={id} className="bg-white hover:bg-gray-50 transition-colors">
+                      <td className="py-3 px-4">
+                        <img
+                          src={getRestaurantImage(restaurant)}
+                          alt=""
+                          className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
+                        />
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="font-medium text-gray-900">{name || t('common.noData')}</span>
+                      </td>
+                      <td className="py-3 px-4 hidden sm:table-cell text-sm text-gray-500 max-w-[200px] truncate">
+                        {restaurant.address ? (
+                          <span className="font-normal flex items-center gap-1">
+                            <MapPin size={14} className="flex-shrink-0 text-gray-400" />
+                            {restaurant.address}
+                          </span>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        {restaurant.rating != null ? (
+                          <span className="inline-flex items-center gap-1 text-sm text-gray-700">
+                            <Star size={14} className="text-amber-500 flex-shrink-0" />
+                            {Number(restaurant.rating).toFixed(1)}
+                          </span>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <button
+                          onClick={() => handleStatusToggle(id, status)}
+                          disabled={isUpdating}
+                          className={`inline-flex items-center gap-1.5 text-sm font-medium ${
+                            isActive ? 'text-green-600 hover:text-green-700' : 'text-gray-500 hover:text-gray-700'
+                          } ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {isActive ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                          {isActive ? t('common.visible') : t('common.hidden')}
+                        </button>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <Link
+                          to={`/admin/restaurants/${id}/food-items`}
+                          className="text-sm font-medium text-primary-600 hover:text-primary-700"
+                        >
+                          {t('admin.manageFoodItems')} →
+                        </Link>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

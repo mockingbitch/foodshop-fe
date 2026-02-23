@@ -197,7 +197,7 @@ const OwnerDashboardPage = () => {
           ) : Array.isArray(restaurants) && restaurants.length > 0 ? (
             (Array.isArray(restaurants) ? restaurants : []).map((restaurant, idx) => (
               <div key={getRestaurantId(restaurant) ?? idx} className="card overflow-hidden flex flex-col sm:flex-row p-0">
-                <div className="w-full sm:w-1/3 relative group min-h-[180px] sm:min-h-[200px] flex-shrink-0">
+                <div className="w-full sm:w-1/3 relative group aspect-square sm:aspect-square sm:max-w-[200px] flex-shrink-0 rounded-l-xl overflow-hidden">
                   <img
                     src={restaurant.images?.[0]?.url || restaurant.outside_images?.[0]?.url || restaurant.image_url || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'}
                     alt={toDisplayText(restaurant.name)}

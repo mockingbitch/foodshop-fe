@@ -124,7 +124,7 @@ const HomePage = () => {
                 to={`/restaurants/${getRestaurantId(restaurant)}`}
                 className="flex-shrink-0 w-[calc((100%-1.5rem)/2.5)] min-w-[120px] sm:w-[300px] sm:min-w-[300px] rounded-xl overflow-hidden bg-white border border-gray-100 hover:shadow-lg transition-shadow"
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative aspect-square overflow-hidden rounded-t-xl">
                   <img
                     src={getRestaurantImage(restaurant)}
                     alt={toDisplayText(restaurant.name)}

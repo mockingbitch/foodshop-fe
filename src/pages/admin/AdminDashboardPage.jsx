@@ -78,20 +78,18 @@ const AdminDashboardPage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
         {statCards.map((card) => {
           const Icon = card.icon
+          const viewLink = card.link ? (
+            <span className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+              {t('common.view')} →
+            </span>
+          ) : null
           const content = (
             <div className="card p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between mb-4">
                 <div className={`${card.color} p-3 rounded-lg`}>
                   <Icon className="w-6 h-6 text-white" />
                 </div>
-                {card.link && (
-                  <Link
-                    to={card.link}
-                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
-                  >
-                    {t('common.view')} →
-                  </Link>
-                )}
+                {viewLink}
               </div>
               <h3 className="text-sm font-medium text-gray-600 mb-1">{card.label}</h3>
               <p className="text-3xl font-bold text-gray-900">{Number(card.value).toLocaleString()}</p>
