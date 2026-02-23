@@ -51,7 +51,8 @@
     "invalidFileType": "Chỉ chấp nhận file ảnh",
     "hidden": "Ẩn",
     "pending": "Chờ duyệt",
-    "visible": "Hiện"
+    "visible": "Hiện",
+    "guest": "Khách"
   },
   "restaurant": {
     "title": "Nhà hàng",
@@ -81,7 +82,17 @@
     "servingSize": "Khẩu phần",
     "weight": "Trọng lượng",
     "addReview": "Thêm đánh giá",
-    "relatedItems": "Món liên quan"
+    "relatedItems": "Món liên quan",
+    "reviews": "Đánh giá",
+    "previousReviews": "Các đánh giá trước đó",
+    "noReviews": "Chưa có đánh giá nào.",
+    "reviewComment": "Nội dung đánh giá",
+    "reviewCommentPlaceholder": "Chia sẻ trải nghiệm của bạn về món ăn này...",
+    "submitReview": "Gửi đánh giá",
+    "reviewCommentRequired": "Vui lòng nhập nội dung đánh giá",
+    "reviewerName": "Tên của bạn",
+    "reviewerNamePlaceholder": "Nhập tên hiển thị",
+    "reviewerNameRequired": "Vui lòng nhập tên của bạn"
   },
   "news": {
     "draft": "Bản nháp",

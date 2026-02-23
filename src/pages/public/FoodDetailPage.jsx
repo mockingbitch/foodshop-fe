@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useLanguage } from '@context/LanguageContext'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { formatCurrency } from '@utils/helpers'
+import { formatCurrency, getRatingStars } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
-import { Store, ChevronRight, ChevronLeft, Star, Leaf } from 'lucide-react'
+import { toast } from 'react-toastify'
+import { Store, ChevronRight, ChevronLeft, Star, Leaf, MessageSquare } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -24,6 +25,23 @@ const getFoodImage = (item) =>
 
 const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
 
+const ensureReviewsArray = (res) => {
+  const raw = res?.data ?? res
+  if (Array.isArray(raw)) return raw
+  if (raw && typeof raw === 'object') {
+    const list =
+      raw.data && Array.isArray(raw.data) ? raw.data
+      : Array.isArray(raw.reviews) ? raw.reviews
+      : Array.isArray(raw.items) ? raw.items
+      : Array.isArray(raw.results) ? raw.results
+      : raw.data?.data && Array.isArray(raw.data.data) ? raw.data.data
+      : raw.data?.reviews && Array.isArray(raw.data.reviews) ? raw.data.reviews
+      : []
+    return list
+  }
+  return []
+}
+
 const FoodDetailPage = () => {
   const { id, restaurantId: restaurantIdParam } = useParams()
   const navigate = useNavigate()
@@ -31,6 +49,10 @@ const FoodDetailPage = () => {
   const [food, setFood] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [reviews, setReviews] = useState([])
+  const [reviewsLoading, setReviewsLoading] = useState(false)
+  const [reviewForm, setReviewForm] = useState({ reviewerName: '', rating: 5, comment: '' })
+  const [submittingReview, setSubmittingReview] = useState(false)
 
   useEffect(() => {
     if (!id) {
@@ -55,6 +77,51 @@ const FoodDetailPage = () => {
       })
       .finally(() => setLoading(false))
   }, [id])
+
+  const fetchReviews = useCallback(() => {
+    if (!id) return
+    setReviewsLoading(true)
+    foodApi
+      .getFoodItemReviews(id, { per_page: 50 })
+      .then((res) => setReviews(ensureReviewsArray(res)))
+      .catch(() => setReviews([]))
+      .finally(() => setReviewsLoading(false))
+  }, [id])
+
+  useEffect(() => {
+    if (id && food) fetchReviews()
+  }, [id, food, fetchReviews])
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault()
+    if (!id || submittingReview) return
+    const reviewerName = reviewForm.reviewerName?.trim()
+    const comment = reviewForm.comment?.trim()
+    if (!reviewerName) {
+      toast.error(t('food.reviewerNameRequired') || 'Vui lòng nhập tên của bạn')
+      return
+    }
+    if (!comment) {
+      toast.error(t('food.reviewCommentRequired') || 'Vui lòng nhập nội dung đánh giá')
+      return
+    }
+    setSubmittingReview(true)
+    try {
+      await foodApi.createFoodItemReview(id, {
+        reviewer_name: reviewerName,
+        rating: Math.min(5, Math.max(1, Number(reviewForm.rating) || 5)),
+        comment,
+      })
+      toast.success(t('common.success'))
+      setReviewForm({ reviewerName: '', rating: 5, comment: '' })
+      fetchReviews()
+    } catch (err) {
+      console.error(err)
+      toast.error(err?.response?.data?.message || t('common.error'))
+    } finally {
+      setSubmittingReview(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -184,6 +251,129 @@ const FoodDetailPage = () => {
           )}
         </div>
       </div>
+
+      {/* Review section - list reviews trước đó + form thêm mới */}
+      <section className="mt-8 sm:mt-10" aria-labelledby="food-reviews-heading">
+        <h2 id="food-reviews-heading" className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <MessageSquare size={22} />
+          {t('food.reviews')}
+        </h2>
+
+        {reviewsLoading ? (
+          <div className="card p-8 flex justify-center">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <>
+            {reviews.length > 0 && (
+              <>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">{t('food.previousReviews')}</h3>
+                <ul className="space-y-4 mb-6" role="list">
+                {reviews.map((r) => {
+                  const userName = r.reviewer_name ?? r.user_name ?? r.user?.name ?? r.customer_name ?? t('common.guest')
+                  const rating = Number(r.rating ?? r.score ?? 0)
+                  const stars = getRatingStars(rating)
+                  const comment = r.comment ?? r.content ?? r.body ?? ''
+                  const createdAt = r.created_at ?? r.created_at_formatted ?? ''
+                  return (
+                    <li key={r.id ?? `${userName}-${createdAt}`} className="card p-4">
+                      <div className="flex gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 text-gray-600 font-medium">
+                          {(userName || '?').charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <span className="font-medium text-gray-900">{userName}</span>
+                            <span className="flex items-center gap-0.5 text-amber-500">
+                              {[...Array(stars.full)].map((_, i) => (
+                                <Star key={`f-${i}`} size={14} className="fill-current" />
+                              ))}
+                              {stars.half > 0 && <Star size={14} className="fill-current opacity-80" />}
+                              {[...Array(stars.empty)].map((_, i) => (
+                                <Star key={`e-${i}`} size={14} className="text-gray-300" />
+                              ))}
+                            </span>
+                            {createdAt && (
+                              <span className="text-xs text-gray-400">
+                                {typeof createdAt === 'string' && createdAt.length > 10
+                                  ? new Date(createdAt).toLocaleDateString()
+                                  : createdAt}
+                              </span>
+                            )}
+                          </div>
+                          {comment && <p className="text-gray-600 text-sm leading-relaxed">{comment}</p>}
+                        </div>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+              </>
+            )}
+            {!reviewsLoading && reviews.length === 0 && (
+              <p className="text-gray-500 text-sm mb-4">{t('food.noReviews')}</p>
+            )}
+
+            <div className="card p-4 sm:p-6">
+              <h3 className="text-base font-medium text-gray-900 mb-3">{t('food.addReview')}</h3>
+              <form onSubmit={handleSubmitReview} className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.reviewerName')}</label>
+                  <input
+                    type="text"
+                    value={reviewForm.reviewerName}
+                    onChange={(e) => setReviewForm((prev) => ({ ...prev, reviewerName: e.target.value }))}
+                    className="input w-full"
+                    placeholder={t('food.reviewerNamePlaceholder')}
+                    maxLength={100}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.rating')}</label>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setReviewForm((prev) => ({ ...prev, rating: value }))}
+                        className="p-1 rounded hover:bg-amber-50 transition"
+                        aria-label={`${value} ${t('common.rating')}`}
+                      >
+                        <Star
+                          size={28}
+                          className={
+                            value <= (reviewForm.rating || 0)
+                              ? 'text-amber-500 fill-amber-500'
+                              : 'text-gray-300'
+                          }
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.reviewComment')}</label>
+                  <textarea
+                    value={reviewForm.comment}
+                    onChange={(e) => setReviewForm((prev) => ({ ...prev, comment: e.target.value }))}
+                    className="input w-full min-h-[100px] resize-y"
+                    placeholder={t('food.reviewCommentPlaceholder')}
+                    rows={4}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={submittingReview}
+                  className="btn btn-primary inline-flex items-center gap-2"
+                >
+                  {submittingReview ? <LoadingSpinner /> : <MessageSquare size={18} />}
+                  {submittingReview ? t('common.loading') + '...' : t('food.submitReview')}
+                </button>
+              </form>
+            </div>
+          </>
+        )}
+      </section>
     </div>
   )
 }

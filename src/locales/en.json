@@ -51,7 +51,8 @@
     "invalidFileType": "Only image files are allowed",
     "hidden": "Hidden",
     "pending": "Pending",
-    "visible": "Visible"
+    "visible": "Visible",
+    "guest": "Guest"
   },
   "restaurant": {
     "title": "Restaurants",
@@ -81,7 +82,17 @@
     "servingSize": "Serving Size",
     "weight": "Weight",
     "addReview": "Add Review",
-    "relatedItems": "Related Items"
+    "relatedItems": "Related Items",
+    "reviews": "Reviews",
+    "previousReviews": "Previous reviews",
+    "noReviews": "No reviews yet.",
+    "reviewComment": "Your review",
+    "reviewCommentPlaceholder": "Share your experience with this dish...",
+    "submitReview": "Submit review",
+    "reviewCommentRequired": "Please enter your review comment",
+    "reviewerName": "Your name",
+    "reviewerNamePlaceholder": "Enter your display name",
+    "reviewerNameRequired": "Please enter your name"
   },
   "news": {
     "draft": "Draft",

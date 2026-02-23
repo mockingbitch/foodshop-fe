@@ -51,7 +51,8 @@
     "invalidFileType": "이미지 파일만 업로드 가능합니다",
     "hidden": "숨김",
     "pending": "대기 중",
-    "visible": "표시"
+    "visible": "표시",
+    "guest": "게스트"
   },
   "restaurant": {
     "title": "레스토랑",
@@ -81,7 +82,17 @@
     "servingSize": "제공량",
     "weight": "무게",
     "addReview": "리뷰 추가",
-    "relatedItems": "관련 항목"
+    "relatedItems": "관련 항목",
+    "reviews": "리뷰",
+    "previousReviews": "이전 리뷰",
+    "noReviews": "아직 리뷰가 없습니다.",
+    "reviewComment": "리뷰 내용",
+    "reviewCommentPlaceholder": "이 음식에 대한 경험을 공유해 주세요...",
+    "submitReview": "리뷰 제출",
+    "reviewCommentRequired": "리뷰 내용을 입력해 주세요",
+    "reviewerName": "이름",
+    "reviewerNamePlaceholder": "표시할 이름을 입력하세요",
+    "reviewerNameRequired": "이름을 입력해 주세요"
   },
   "news": {
     "draft": "초안",
