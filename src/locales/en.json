@@ -52,7 +52,14 @@
     "hidden": "Hidden",
     "pending": "Pending",
     "visible": "Visible",
-    "guest": "Guest"
+    "guest": "Guest",
+    "ratingNew": "New",
+    "ratingExcellent": "Excellent",
+    "ratingGood": "Good",
+    "ratingNormal": "Normal",
+    "type": "Type",
+    "titleLabel": "Title",
+    "close": "Close"
   },
   "restaurant": {
     "title": "Restaurants",
@@ -92,7 +99,15 @@
     "reviewCommentRequired": "Please enter your review comment",
     "reviewerName": "Your name",
     "reviewerNamePlaceholder": "Enter your display name",
-    "reviewerNameRequired": "Please enter your name"
+    "reviewerNameRequired": "Please enter your name",
+    "namePlaceholder": "Food name",
+    "descriptionPlaceholder": "Short description",
+    "mainImageUrl": "Main image URL",
+    "mainImagePlaceholder": "https://example.com/image.jpg",
+    "currency": "Currency",
+    "vegetarian": "Vegetarian",
+    "priceInvalid": "invalid",
+    "restaurantRequiredHint": "Go to a restaurant page and click \"Add food\"."
   },
   "news": {
     "draft": "Draft",
@@ -117,7 +132,9 @@
     "socialLoginNotSupported": "This login method is not supported yet.",
     "invalidEmail": "Invalid email address",
     "passwordMinLength": "Password must be at least 6 characters",
-    "required": "is required"
+    "required": "is required",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password"
   },
   "owner": {
     "title": "Owner Dashboard",
@@ -173,7 +190,11 @@
     "daysThu": "Thursday",
     "daysFri": "Friday",
     "daysSat": "Saturday",
-    "daysSun": "Sunday"
+    "daysSun": "Sunday",
+    "outsideImages": "Outside images",
+    "insideImages": "Inside images",
+    "created": "Created",
+    "updated": "Updated"
   },
   "errors": {
     "invalidJson": "Invalid JSON format.",

@@ -110,7 +110,7 @@ const NewsCreatePage = () => {
       <div className="card p-4 sm:p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Type <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.type')} <span className="text-red-500">*</span></label>
             <select name="type" value={formData.type} onChange={handleChange} className="input w-full">
               {NEWS_TYPES.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -120,14 +120,14 @@ const NewsCreatePage = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.titleLabel')} <span className="text-red-500">*</span></label>
             <input
               type="text"
               name="title"
               value={formData.title}
               onChange={handleChange}
               className={`input w-full ${errors.title ? 'border-red-500' : ''}`}
-              placeholder="Title"
+              placeholder={t('common.titleLabel')}
             />
             {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
           </div>

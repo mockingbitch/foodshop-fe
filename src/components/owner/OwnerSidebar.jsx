@@ -50,7 +50,7 @@ const OwnerSidebar = ({ open = false, onClose }) => {
           type="button"
           onClick={onClose}
           className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100"
-          aria-label="Close menu"
+          aria-label={t('common.close')}
         >
           <X size={20} />
         </button>

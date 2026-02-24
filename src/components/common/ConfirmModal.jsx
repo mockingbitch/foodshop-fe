@@ -1,4 +1,5 @@
 import { AlertTriangle, X } from 'lucide-react'
+import { useLanguage } from '@context/LanguageContext'
 
 /**
  * Confirm Modal Component
@@ -14,6 +15,7 @@ import { AlertTriangle, X } from 'lucide-react'
  *   />
  */
 const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText, cancelText, variant = 'danger' }) => {
+  const { t } = useLanguage()
   if (!isOpen) return null
 
   const handleConfirm = () => {
@@ -63,14 +65,14 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText,
               onClick={onClose}
               className="btn btn-outline"
             >
-              {cancelText || 'Cancel'}
+              {cancelText || t('common.cancel')}
             </button>
             <button
               type="button"
               onClick={handleConfirm}
               className={`btn ${variantStyle.button}`}
             >
-              {confirmText || 'Confirm'}
+              {confirmText || t('common.confirm')}
             </button>
           </div>
         </div>

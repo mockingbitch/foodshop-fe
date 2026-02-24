@@ -202,7 +202,7 @@ const FoodItemEditPage = () => {
       }
       await foodApi.updateFoodItem(id, payload)
       toast.success(t('common.success'))
-      navigate('/owner/dashboard', { replace: true })
+      navigate(formData.restaurant_id ? `/owner/restaurant/${formData.restaurant_id}` : '/owner/dashboard', { replace: true })
     } catch (err) {
       console.error(err)
     } finally {
@@ -215,7 +215,7 @@ const FoodItemEditPage = () => {
     try {
       await foodApi.deleteFoodItem(id)
       toast.success(t('common.success'))
-      navigate('/owner/dashboard', { replace: true })
+      navigate(formData.restaurant_id ? `/owner/restaurant/${formData.restaurant_id}` : '/owner/dashboard', { replace: true })
     } catch (err) {
       console.error(err)
     } finally {
@@ -305,7 +305,7 @@ const FoodItemEditPage = () => {
                 value={formData.name}
                 onChange={handleChange}
                 className={`input w-full ${errors.name ? 'border-red-500' : ''}`}
-                placeholder="Food name"
+                placeholder={t('food.namePlaceholder')}
               />
               {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
             </div>
@@ -317,7 +317,7 @@ const FoodItemEditPage = () => {
                 value={formData.price}
                 onChange={handleChange}
                 min="0"
-                step="1000"
+                step="any"
                 className={`input w-full ${errors.price ? 'border-red-500' : ''}`}
                 placeholder="50000"
               />
@@ -333,25 +333,25 @@ const FoodItemEditPage = () => {
               onChange={handleChange}
               rows={3}
               className="input w-full"
-              placeholder="Short description"
+              placeholder={t('food.descriptionPlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Main image URL</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.mainImageUrl')}</label>
             <input
               type="url"
               name="main_image"
               value={formData.main_image}
               onChange={handleChange}
               className="input w-full"
-              placeholder="https://example.com/image.jpg"
+              placeholder={t('food.mainImagePlaceholder')}
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.currency')}</label>
               <select name="currency_code" value={formData.currency_code} onChange={handleChange} className="input w-full">
                 <option value="VND">VND</option>
                 <option value="USD">USD</option>
@@ -394,7 +394,7 @@ const FoodItemEditPage = () => {
               className="w-4 h-4 rounded border-gray-300 text-primary-600"
             />
             <label htmlFor="is_vegetarian" className="text-sm font-medium text-gray-700">
-              Vegetarian
+              {t('food.vegetarian')}
             </label>
           </div>
 

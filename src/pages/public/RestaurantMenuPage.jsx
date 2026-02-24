@@ -371,7 +371,7 @@ const RestaurantMenuPage = () => {
                 {previewFood.is_vegetarian && (
                   <span className="inline-flex items-center gap-1 text-green-600">
                     <Leaf size={16} />
-                    Vegetarian
+                    {t('food.vegetarian')}
                   </span>
                 )}
               </div>

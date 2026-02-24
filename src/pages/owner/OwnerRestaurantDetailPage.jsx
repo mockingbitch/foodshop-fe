@@ -298,13 +298,13 @@ const OwnerRestaurantDetailPage = () => {
               {restaurant.created_at && (
                 <p className="flex items-center gap-2">
                   <Calendar size={16} className="flex-shrink-0" />
-                  <span>Created {formatDate(restaurant.created_at)}</span>
+                  <span>{t('restaurantRegister.created')} {formatDate(restaurant.created_at)}</span>
                 </p>
               )}
               {restaurant.updated_at && (
                 <p className="flex items-center gap-2">
                   <Calendar size={16} className="flex-shrink-0" />
-                  <span>Updated {formatDate(restaurant.updated_at)}</span>
+                  <span>{t('restaurantRegister.updated')} {formatDate(restaurant.updated_at)}</span>
                 </p>
               )}
               {restaurant.webpage_link && (
@@ -338,7 +338,7 @@ const OwnerRestaurantDetailPage = () => {
               if (imgs.length === 0) return null
               return (
                 <div className="mt-4 pt-4 border-t border-gray-100">
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Outside images</p>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{t('restaurantRegister.outsideImages')}</p>
                   <div className="flex flex-wrap gap-2">
                     {imgs.map((url, idx) => (
                       <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90">
@@ -355,7 +355,7 @@ const OwnerRestaurantDetailPage = () => {
               if (imgs.length === 0) return null
               return (
                 <div className="mt-4 pt-4 border-t border-gray-100">
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Inside images</p>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{t('restaurantRegister.insideImages')}</p>
                   <div className="flex flex-wrap gap-2">
                     {imgs.map((url, idx) => (
                       <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90">

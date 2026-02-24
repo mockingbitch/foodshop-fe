@@ -203,7 +203,7 @@ const OwnerFoodDetailPage = () => {
             {food.is_vegetarian && (
               <span className="inline-flex items-center gap-1 text-green-600">
                 <Leaf size={16} />
-                Vegetarian
+                {t('food.vegetarian')}
               </span>
             )}
             {food.is_best_seller && (
@@ -237,7 +237,7 @@ const OwnerFoodDetailPage = () => {
             )}
             {food.currency_code && (
               <div>
-                <p className="text-xs text-gray-500">Currency</p>
+                <p className="text-xs text-gray-500">{t('food.currency')}</p>
                 <p className="font-medium">{food.currency_code}</p>
               </div>
             )}

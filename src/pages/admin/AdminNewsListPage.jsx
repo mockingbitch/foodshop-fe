@@ -196,8 +196,8 @@ const AdminNewsListPage = () => {
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">#</th>
-                  <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Type</th>
-                  <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Title</th>
+                  <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">{t('common.type')}</th>
+                  <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">{t('common.titleLabel')}</th>
                   <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">Status</th>
                   <th className="text-right px-4 py-3 text-sm font-semibold text-gray-700">{t('common.actions')}</th>
                 </tr>

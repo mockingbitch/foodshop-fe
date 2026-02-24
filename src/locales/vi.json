@@ -52,7 +52,14 @@
     "hidden": "Ẩn",
     "pending": "Chờ duyệt",
     "visible": "Hiện",
-    "guest": "Khách"
+    "guest": "Khách",
+    "ratingNew": "Mới",
+    "ratingExcellent": "Xuất sắc",
+    "ratingGood": "Tốt",
+    "ratingNormal": "Bình thường",
+    "type": "Loại",
+    "titleLabel": "Tiêu đề",
+    "close": "Đóng"
   },
   "restaurant": {
     "title": "Nhà hàng",
@@ -92,7 +99,15 @@
     "reviewCommentRequired": "Vui lòng nhập nội dung đánh giá",
     "reviewerName": "Tên của bạn",
     "reviewerNamePlaceholder": "Nhập tên hiển thị",
-    "reviewerNameRequired": "Vui lòng nhập tên của bạn"
+    "reviewerNameRequired": "Vui lòng nhập tên của bạn",
+    "namePlaceholder": "Tên món ăn",
+    "descriptionPlaceholder": "Mô tả ngắn",
+    "mainImageUrl": "URL ảnh chính",
+    "mainImagePlaceholder": "https://example.com/image.jpg",
+    "currency": "Đơn vị tiền",
+    "vegetarian": "Chay",
+    "priceInvalid": "không hợp lệ",
+    "restaurantRequiredHint": "Vào trang nhà hàng rồi bấm \"Thêm món\"."
   },
   "news": {
     "draft": "Bản nháp",
@@ -117,7 +132,9 @@
     "socialLoginNotSupported": "Đăng nhập bằng phương thức này chưa được hỗ trợ.",
     "invalidEmail": "Email không hợp lệ",
     "passwordMinLength": "Mật khẩu phải có ít nhất 6 ký tự",
-    "required": "là bắt buộc"
+    "required": "là bắt buộc",
+    "hidePassword": "Ẩn mật khẩu",
+    "showPassword": "Hiện mật khẩu"
   },
   "errors": {
     "invalidJson": "Định dạng JSON không hợp lệ.",
@@ -182,7 +199,11 @@
     "daysThu": "Thứ Năm",
     "daysFri": "Thứ Sáu",
     "daysSat": "Thứ Bảy",
-    "daysSun": "Chủ Nhật"
+    "daysSun": "Chủ Nhật",
+    "outsideImages": "Ảnh bên ngoài",
+    "insideImages": "Ảnh bên trong",
+    "created": "Tạo lúc",
+    "updated": "Cập nhật lúc"
   },
   "admin": {
     "title": "Bảng điều khiển quản trị",
