@@ -8,7 +8,6 @@ import { hasToken } from '@utils/authToken'
 import { REGEX_PATTERNS } from '@constants'
 import { Mail, Lock, Eye, EyeOff, Store, Shield } from 'lucide-react'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { IconGoogle, IconFacebook } from '@components/icons'
 
 const OwnerLoginPage = () => {
   const { t } = useLanguage()
@@ -109,9 +108,13 @@ const OwnerLoginPage = () => {
         {/* Logo/Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg">
+            <Link
+              to="/"
+              className="w-16 h-16 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              aria-label={t('common.home')}
+            >
               <Store className="w-8 h-8 text-white" />
-            </div>
+            </Link>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {t('owner.title')}
@@ -229,38 +232,6 @@ const OwnerLoginPage = () => {
               </button>
             </div>
           </form>
-
-          {/* Divider */}
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">{t('auth.orContinueWith')}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Social Login Buttons (Optional) */}
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => toast.info(t('auth.socialLoginNotSupported'))}
-              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-            >
-              <IconGoogle className="h-5 w-5" />
-              <span className="ml-2">Google</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => toast.info(t('auth.socialLoginNotSupported'))}
-              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-            >
-              <IconFacebook className="h-5 w-5" />
-              <span className="ml-2">Facebook</span>
-            </button>
-          </div>
 
           {/* Register Link */}
           <div className="mt-6 text-center">

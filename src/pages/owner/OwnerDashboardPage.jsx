@@ -6,7 +6,7 @@ import { restaurantApi } from '@services/api/restaurantApi'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
-import { Store, UtensilsCrossed, Users, Clock, MapPin, User } from 'lucide-react'
+import { Store, UtensilsCrossed, Users, Clock, MapPin, ChevronRight } from 'lucide-react'
 
 /** owner_id từ user (backend có thể dùng id, user_id, owner_id) */
 const getOwnerId = (user) => user?.id ?? user?.user_id ?? user?.owner_id
@@ -121,6 +121,9 @@ const OwnerDashboardPage = () => {
     if (rating >= 3.5) return 'Good'
     return 'Normal'
   }
+
+  const getFoodImage = (food) =>
+    food?.main_image ?? food?.image_url ?? food?.images?.[0]?.url ?? DEFAULT_FOOD_IMAGE
 
   if (loading) {
     return (
@@ -251,59 +254,77 @@ const OwnerDashboardPage = () => {
             <div className="card p-6 sm:p-12 text-center">
               <UtensilsCrossed size={40} className="mx-auto text-gray-400 mb-3 sm:mb-4" />
               <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base">{t('common.noData')}</p>
-              <Link to="/owner/food-items/create" className="btn btn-primary inline-flex items-center gap-2 text-sm sm:text-base">
+              <Link to="/owner/dashboard" className="btn btn-primary inline-flex items-center gap-2 text-sm sm:text-base">
                 <UtensilsCrossed size={18} className="flex-shrink-0" />
                 {t('owner.addFoodItem')}
               </Link>
             </div>
           ) : (
-            (Array.isArray(foodItems) ? foodItems : []).map((food) => (
-              <div key={food.id} className="card overflow-hidden flex flex-col sm:flex-row p-0">
-                <div className="w-full sm:w-1/3 relative group min-h-[180px] sm:min-h-[200px] flex-shrink-0">
-                  <img
-                    src={food.image_url || food.main_image || DEFAULT_FOOD_IMAGE}
-                    alt={toDisplayText(food.name)}
-                    className="w-full h-full object-cover"
-                  />
-                  <Link
-                    to={`/food-items/${food.id}`}
-                    className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition active:opacity-100"
-                  >
-                    <span className="text-white font-medium text-sm sm:text-base">{t('common.view')}</span>
-                  </Link>
-                </div>
-                <div className="w-full sm:w-2/3 p-4 sm:p-6 flex flex-col justify-between min-w-0">
-                  <div>
-                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2 truncate">
-                      <Link to={`/food-items/${food.id}`} className="hover:text-primary-600">
-                        {toDisplayText(food.name) || t('common.noData')}
-                      </Link>
-                    </h2>
-                    <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 mb-3 sm:mb-4">
-                      {toDisplayText(food.description) || t('common.noData')}
-                    </p>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 sm:gap-4 text-xs sm:text-sm text-gray-500">
-                      <span className="font-semibold text-primary-600">{formatPrice(food.price)}</span>
-                      <span className="truncate">{toDisplayText(food.category?.name ?? food.food_category?.name) || '—'}</span>
-                      <span className="flex items-center gap-1">
-                        <span className="inline-block w-12 sm:w-16 h-2 bg-gray-200 rounded overflow-hidden flex-shrink-0">
-                          <span className="block h-full bg-primary-500 rounded" style={{ width: getRatingWidth(food.rating) }} />
-                        </span>
-                        {getLevel(food.rating)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
-                    <Link to={`/food-items/${food.id}`} className="btn btn-outline text-xs sm:text-sm flex-1 sm:flex-initial min-w-0">
-                      {t('common.view')}
-                    </Link>
-                    <Link to={`/owner/food-items/${food.id}/edit`} className="btn btn-primary text-xs sm:text-sm flex-1 sm:flex-initial min-w-0">
-                      {t('common.edit')}
-                    </Link>
-                  </div>
-                </div>
+            <section className="mb-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">{t('owner.myFoodItems')}</h2>
+                <Link
+                  to="/owner/dashboard"
+                  className="text-primary-600 hover:text-primary-700 font-medium text-sm inline-flex items-center gap-1"
+                >
+                  {t('owner.addFoodItem')}
+                  <ChevronRight size={18} />
+                </Link>
               </div>
-            ))
+              <div className="card p-4 sm:p-6">
+                <ul className="space-y-0">
+                  {foodItems.map((food, idx) => (
+                    <li
+                      key={food.id ?? idx}
+                      className="flex items-center gap-3 sm:gap-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 -mx-2 px-2 rounded transition-colors"
+                    >
+                      <Link
+                        to={`/food-items/${food.id}`}
+                        className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-gray-100"
+                      >
+                        <img
+                          src={getFoodImage(food)}
+                          alt={toDisplayText(food.name)}
+                          className="w-full h-full object-cover"
+                        />
+                      </Link>
+                      <div className="min-w-0 flex-1">
+                        <Link to={`/food-items/${food.id}`} className="font-medium text-gray-900 block hover:text-primary-600">
+                          {toDisplayText(food.name) || t('common.noData')}
+                        </Link>
+                        {(toDisplayText(food.description) || food.serving_size) && (
+                          <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
+                            {toDisplayText(food.description) || food.serving_size}
+                          </p>
+                        )}
+                        {toDisplayText(food.category?.name ?? food.food_category?.name) && (
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {toDisplayText(food.category?.name ?? food.food_category?.name)}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0 flex items-center gap-2 flex-wrap justify-end">
+                        <span className="text-primary-600 font-semibold">
+                          {formatPrice(food.price ?? 0)}
+                        </span>
+                        <Link
+                          to={`/food-items/${food.id}`}
+                          className="btn btn-outline text-xs py-1.5"
+                        >
+                          {t('common.view')}
+                        </Link>
+                        <Link
+                          to={`/owner/food-items/${food.id}/edit`}
+                          className="btn btn-primary text-xs py-1.5"
+                        >
+                          {t('common.edit')}
+                        </Link>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
           )}
         </div>
       )}

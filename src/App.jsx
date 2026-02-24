@@ -86,8 +86,8 @@ function App() {
               <Route path="/owner/restaurant/register" element={<RestaurantRegisterPage />} />
               <Route path="/owner/restaurant/:id/edit" element={<RestaurantEditPage />} />
               <Route path="/owner/restaurant/:id" element={<OwnerRestaurantDetailPage />} />
+              <Route path="/owner/restaurant/:restaurantId/food-items/create" element={<FoodItemCreatePage />} />
               <Route path="/owner/restaurant/:restaurantId/food-items/:id" element={<OwnerFoodDetailPage />} />
-              <Route path="/owner/food-items/create" element={<FoodItemCreatePage />} />
               <Route path="/owner/food-items/:id/edit" element={<FoodItemEditPage />} />
             </Route>
           </Route>

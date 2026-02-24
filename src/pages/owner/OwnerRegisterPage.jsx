@@ -107,9 +107,13 @@ const OwnerRegisterPage = () => {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg">
+            <Link
+              to="/"
+              className="w-16 h-16 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              aria-label={t('common.home')}
+            >
               <Store className="w-8 h-8 text-white" />
-            </div>
+            </Link>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('owner.title')}</h1>
           <p className="text-gray-600">{t('auth.registerTitle')}</p>

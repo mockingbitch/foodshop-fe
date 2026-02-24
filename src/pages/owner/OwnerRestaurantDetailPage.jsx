@@ -6,7 +6,7 @@ import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
-import { Store, MapPin, Phone, Mail, UtensilsCrossed, ChevronRight, ChevronLeft, Star, Edit, Plus, Clock, Users, Hash, Truck, Globe, User, Calendar, ExternalLink } from 'lucide-react'
+import { Store, MapPin, Phone, Mail, UtensilsCrossed, ChevronRight, Star, Edit, Plus, Clock, Users, Hash, Truck, Globe, User, Calendar, ExternalLink } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -88,15 +88,13 @@ const formatDate = (str) => {
   }
 }
 
-const PER_PAGE = 9
+const PER_PAGE = 100
 
 const OwnerRestaurantDetailPage = () => {
   const { id } = useParams()
   const { t } = useLanguage()
   const [restaurant, setRestaurant] = useState(null)
   const [foodItems, setFoodItems] = useState([])
-  const [foodPage, setFoodPage] = useState(1)
-  const [totalFoodPages, setTotalFoodPages] = useState(1)
   const [loading, setLoading] = useState(true)
   const [loadingFood, setLoadingFood] = useState(false)
   const [notFound, setNotFound] = useState(false)
@@ -109,7 +107,6 @@ const OwnerRestaurantDetailPage = () => {
     }
     setLoading(true)
     setNotFound(false)
-    setFoodPage(1)
     restaurantApi
       .getRestaurantById(id)
       .then((resRes) => {
@@ -132,26 +129,15 @@ const OwnerRestaurantDetailPage = () => {
     if (!id) return
     setLoadingFood(true)
     foodApi
-      .getFoodItems({ restaurant_id: id, per_page: PER_PAGE, page: foodPage })
+      .getFoodItems({ restaurant_id: id, per_page: PER_PAGE })
       .then((foodRes) => {
         const raw = foodRes?.data ?? foodRes
         const list = ensureArray(raw?.data ?? raw?.food_items ?? raw)
-        const meta = raw?.meta ?? foodRes?.data?.meta
         setFoodItems(Array.isArray(list) ? list : [])
-        let lastPage = meta?.last_page
-        if (lastPage == null) {
-          const total = meta?.total
-          if (total != null) lastPage = Math.max(1, Math.ceil(total / PER_PAGE))
-          else lastPage = list.length >= PER_PAGE ? foodPage + 1 : foodPage
-        }
-        setTotalFoodPages(Math.max(1, lastPage))
       })
-      .catch(() => {
-        setFoodItems([])
-        setTotalFoodPages(1)
-      })
+      .catch(() => setFoodItems([]))
       .finally(() => setLoadingFood(false))
-  }, [id, foodPage])
+  }, [id])
 
   if (loading) {
     return (
@@ -400,7 +386,7 @@ const OwnerRestaurantDetailPage = () => {
           {t('owner.myFoodItems')}
         </h2>
         <Link
-          to={`/owner/food-items/create?restaurant_id=${id}`}
+          to={`/owner/restaurant/${id}/food-items/create`}
           className="btn btn-primary text-sm inline-flex items-center gap-1.5"
         >
           <Plus size={16} />
@@ -417,7 +403,7 @@ const OwnerRestaurantDetailPage = () => {
           <UtensilsCrossed size={40} className="mx-auto text-gray-400 mb-3" />
           <p className="text-gray-600 mb-4">{t('common.noData')}</p>
           <Link
-            to={`/owner/food-items/create?restaurant_id=${id}`}
+            to={`/owner/restaurant/${id}/food-items/create`}
             className="btn btn-primary inline-flex items-center gap-2"
           >
             <Plus size={18} />
@@ -425,72 +411,63 @@ const OwnerRestaurantDetailPage = () => {
           </Link>
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="card p-4 sm:p-6">
+          <ul className="space-y-0">
             {foodItems.map((item) => (
-              <div key={item.id} className="card overflow-hidden p-0 flex flex-col">
-                <div className="aspect-[16/10] flex-shrink-0">
+              <li
+                key={item.id}
+                className="flex items-center gap-3 sm:gap-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 -mx-2 px-2 rounded transition-colors"
+              >
+                <Link
+                  to={`/owner/restaurant/${id}/food-items/${item.id}`}
+                  className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-gray-100"
+                >
                   <img
                     src={getFoodImage(item)}
                     alt={toDisplayText(item.name)}
                     className="w-full h-full object-cover"
                   />
-                </div>
-                <div className="p-4 flex flex-col flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate mb-1">
+                </Link>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    to={`/owner/restaurant/${id}/food-items/${item.id}`}
+                    className="font-medium text-gray-900 block hover:text-primary-600"
+                  >
                     {toDisplayText(item.name) || t('common.noData')}
-                  </h3>
-                  <p className="text-primary-600 font-medium text-sm mb-2">
-                    {formatCurrency(item.price ?? 0, item.currency_code ?? 'VND')}
-                  </p>
-                  <p className="text-gray-500 text-xs mb-3 line-clamp-2">
-                    {toDisplayText(item.description) || toDisplayText(item.category?.name ?? item.food_category?.name) || '—'}
-                  </p>
-                  <div className="flex gap-2 mt-auto pt-2 border-t border-gray-100">
-                    <Link
-                      to={`/owner/restaurant/${id}/food-items/${item.id}`}
-                      className="btn btn-outline text-xs flex-1 min-w-0"
-                    >
-                      {t('common.view')}
-                    </Link>
-                    <Link
-                      to={`/owner/food-items/${item.id}/edit`}
-                      className="btn btn-primary text-xs flex-1 min-w-0 inline-flex items-center justify-center gap-1"
-                    >
-                      <Edit size={14} />
-                      {t('common.edit')}
-                    </Link>
-                  </div>
+                  </Link>
+                  {(toDisplayText(item.description) || item.serving_size) && (
+                    <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
+                      {toDisplayText(item.description) || item.serving_size}
+                    </p>
+                  )}
+                  {toDisplayText(item.category?.name ?? item.food_category?.name) && (
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {toDisplayText(item.category?.name ?? item.food_category?.name)}
+                    </p>
+                  )}
                 </div>
-              </div>
+                <div className="flex-shrink-0 flex items-center gap-2 flex-wrap justify-end">
+                  <span className="text-primary-600 font-semibold">
+                    {formatCurrency(item.price ?? 0, item.currency_code ?? 'VND')}
+                  </span>
+                  <Link
+                    to={`/owner/restaurant/${id}/food-items/${item.id}`}
+                    className="btn btn-outline text-xs py-1.5"
+                  >
+                    {t('common.view')}
+                  </Link>
+                  <Link
+                    to={`/owner/food-items/${item.id}/edit`}
+                    className="btn btn-primary text-xs py-1.5 inline-flex items-center gap-1"
+                  >
+                    <Edit size={14} />
+                    {t('common.edit')}
+                  </Link>
+                </div>
+              </li>
             ))}
-          </div>
-          {totalFoodPages > 1 && (
-            <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={() => setFoodPage((p) => Math.max(1, p - 1))}
-                disabled={foodPage <= 1 || loadingFood}
-                className="btn btn-outline inline-flex items-center gap-1"
-              >
-                <ChevronLeft size={18} />
-                {t('common.previous')}
-              </button>
-              <span className="px-3 py-2 text-sm text-gray-600">
-                {foodPage} / {totalFoodPages}
-              </span>
-              <button
-                type="button"
-                onClick={() => setFoodPage((p) => Math.min(totalFoodPages, p + 1))}
-                disabled={foodPage >= totalFoodPages || loadingFood}
-                className="btn btn-outline inline-flex items-center gap-1"
-              >
-                {t('common.next')}
-                <ChevronRight size={18} />
-              </button>
-            </div>
-          )}
-        </>
+          </ul>
+        </div>
       )}
     </div>
   )

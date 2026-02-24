@@ -1,23 +1,21 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLanguage } from '@context/LanguageContext'
 import { useAuth } from '@context/AuthContext'
-import { restaurantApi } from '@services/api/restaurantApi'
 import { foodApi } from '@services/api/foodApi'
 import { categoryApi } from '@services/api/categoryApi'
 import { toast } from 'react-toastify'
 
 const getOwnerId = (user) => user?.id ?? user?.user_id ?? user?.owner_id
-const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
 
 /** Rút mảng từ response */
 const ensureArray = (value) => {
   if (Array.isArray(value)) return value
   if (!value || typeof value !== 'object') return []
-  const raw = value.data ?? value.restaurants ?? value.items ?? value.results ?? value.list ?? value.food_items ?? value.foodItems
+  const raw = value.data ?? value.items ?? value.results ?? value.list ?? value.food_items ?? value.foodItems
   if (Array.isArray(raw)) return raw
   if (raw && typeof raw === 'object') {
-    const nested = raw.data ?? raw.restaurants ?? raw.items ?? raw.results ?? raw.list ?? raw.food_items ?? raw.foodItems
+    const nested = raw.data ?? raw.items ?? raw.results ?? raw.list ?? raw.food_items ?? raw.foodItems
     return Array.isArray(nested) ? nested : []
   }
   return []
@@ -39,7 +37,6 @@ const toDisplayName = (name, getMultilingualContent) => {
 }
 
 const initialFormData = {
-  restaurant_id: '',
   food_category_id: '',
   name: '',
   description: '',
@@ -55,39 +52,20 @@ const FoodItemCreatePage = () => {
   const { t, getMultilingualContent } = useLanguage()
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const { restaurantId: restaurantIdFromUrl } = useParams()
   const ownerId = getOwnerId(user)
   const [formData, setFormData] = useState(initialFormData)
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
-  const [restaurants, setRestaurants] = useState([])
   const [categories, setCategories] = useState([])
 
   useEffect(() => {
     if (!ownerId) return
-    Promise.all([
-      restaurantApi.getRestaurants({ owner_id: ownerId }),
-      categoryApi.getCategories(),
-    ])
-      .then(([restRes, catRes]) => {
-        setRestaurants(ensureArray(restRes?.data))
-        const catRaw = catRes?.data
-        setCategories(ensureArray(catRaw))
-      })
-      .catch(() => {
-        setRestaurants([])
-        setCategories([])
-      })
+    categoryApi.getCategories().then((catRes) => {
+      const catRaw = catRes?.data
+      setCategories(ensureArray(catRaw))
+    }).catch(() => setCategories([]))
   }, [ownerId])
-
-  const restaurantIdFromQuery = searchParams.get('restaurant_id')
-  useEffect(() => {
-    if (restaurantIdFromQuery && restaurants.length > 0) {
-      setFormData((prev) =>
-        prev.restaurant_id ? prev : { ...prev, restaurant_id: restaurantIdFromQuery }
-      )
-    }
-  }, [restaurantIdFromQuery, restaurants.length])
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -97,7 +75,7 @@ const FoodItemCreatePage = () => {
 
   const validate = () => {
     const err = {}
-    if (!formData.restaurant_id) err.restaurant_id = t('common.required')
+    if (!(restaurantIdFromUrl?.trim())) err.restaurant_id = t('common.required')
     if (!formData.food_category_id) err.food_category_id = t('common.required')
     if (!formData.name?.trim()) err.name = t('common.required')
     if (!formData.price?.trim()) err.price = t('common.required')
@@ -109,11 +87,16 @@ const FoodItemCreatePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const restaurantId = restaurantIdFromUrl?.trim() || null
+    if (!restaurantId) {
+      toast.error(t('common.required') + ' (restaurant_id)')
+      return
+    }
     if (!validate() || submitting) return
     setSubmitting(true)
     try {
       const payload = {
-        restaurant_id: Number(formData.restaurant_id),
+        restaurant_id: Number(restaurantId),
         food_category_id: Number(formData.food_category_id),
         name: { en: formData.name?.trim() || '', vn: formData.name?.trim() || '' },
         description: formData.description?.trim()
@@ -145,6 +128,12 @@ const FoodItemCreatePage = () => {
           <Link to="/" className="hover:text-primary-600">{t('common.home')}</Link>
           <span>/</span>
           <Link to="/owner/dashboard" className="hover:text-primary-600">{t('owner.title')}</Link>
+          {restaurantIdFromUrl && (
+            <>
+              <span>/</span>
+              <Link to={`/owner/restaurant/${restaurantIdFromUrl}`} className="hover:text-primary-600">{t('restaurant.detail')}</Link>
+            </>
+          )}
           <span>/</span>
           <span className="text-gray-700">{t('owner.addFoodItem')}</span>
         </nav>
@@ -152,24 +141,12 @@ const FoodItemCreatePage = () => {
 
       <div className="card p-4 sm:p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('restaurant.title')} *</label>
-              <select
-                name="restaurant_id"
-                value={formData.restaurant_id}
-                onChange={handleChange}
-                className={`input w-full ${errors.restaurant_id ? 'border-red-500' : ''}`}
-              >
-                <option value="">{t('common.filter')}...</option>
-                {restaurants.map((r) => (
-                  <option key={getRestaurantId(r)} value={getRestaurantId(r)}>
-                    {toDisplayName(r.name, getMultilingualContent) || r.name_en || getRestaurantId(r)}
-                  </option>
-                ))}
-              </select>
-              {errors.restaurant_id && <p className="mt-1 text-sm text-red-600">{errors.restaurant_id}</p>}
+          {!(restaurantIdFromUrl?.trim()) && (
+            <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+              {t('common.required')}: restaurant (vào trang nhà hàng rồi bấm &quot;Thêm món&quot;.)
             </div>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.category')} *</label>
               <select
@@ -210,9 +187,8 @@ const FoodItemCreatePage = () => {
                 value={formData.price}
                 onChange={handleChange}
                 min="0"
-                step="1000"
                 className={`input w-full ${errors.price ? 'border-red-500' : ''}`}
-                placeholder="50000"
+                placeholder="1000"
               />
               {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price}</p>}
             </div>
@@ -292,7 +268,7 @@ const FoodItemCreatePage = () => {
           </div>
 
           <div className="flex gap-2 pt-2">
-            <button type="submit" disabled={submitting} className="btn btn-primary">
+            <button type="submit" disabled={submitting || !(restaurantIdFromUrl?.trim())} className="btn btn-primary">
               {submitting ? t('common.loading') : t('common.save')}
             </button>
             <button type="button" onClick={() => navigate(-1)} className="btn btn-outline">
