@@ -22,6 +22,7 @@ const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
 
 const getRestaurantImage = (restaurant) => {
   const img =
+    restaurant.main_image ??
     restaurant.outside_image_1 ??
     restaurant.images?.[0]?.url ??
     restaurant.outside_images?.[0]?.url ??

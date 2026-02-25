@@ -4,7 +4,7 @@ import { useLanguage } from '@context/LanguageContext'
 import { restaurantApi } from '@services/api/restaurantApi'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { formatCurrency } from '@utils/helpers'
+import { formatCurrency, getImageUrl } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { Store, MapPin, Phone, Mail, UtensilsCrossed, ChevronRight, Star, Edit, Plus, Clock, Users, Hash, Truck, Globe, User, Calendar, ExternalLink } from 'lucide-react'
 
@@ -33,30 +33,39 @@ const ensureArray = (value) => {
 }
 
 const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
-const getRestaurantImage = (r) =>
-  r?.outside_image_1 ?? r?.images?.[0]?.url ?? r?.outside_images?.[0]?.url ?? r?.image_url ?? 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'
+const getRestaurantImage = (r) => {
+  const raw = r?.main_image ?? r?.outside_image_1 ?? r?.images?.[0]?.url ?? r?.outside_images?.[0]?.url ?? r?.image_url ?? 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'
+  return typeof raw === 'string' && !raw.startsWith('http') ? getImageUrl(raw) : raw
+}
 const getFoodImage = (item) =>
   item?.main_image ?? item?.image_url ?? item?.images?.[0]?.url ?? DEFAULT_FOOD_IMAGE
 
-const getImageUrl = (v) => (v && typeof v === 'object' && (v.url || v.image_url)) ? (v.url ?? v.image_url) : (typeof v === 'string' && v.trim() ? v : null)
+const resolveImgUrl = (v) => {
+  if (!v) return null
+  let url = null
+  if (typeof v === 'object') url = v?.url ?? v?.image_url ?? null
+  else if (typeof v === 'string' && v.trim()) url = v
+  if (!url) return null
+  return url.startsWith('http') ? url : getImageUrl(url)
+}
 const collectOutsideImages = (r) => {
   const out = []
-  if (r?.outside_image_1) out.push(getImageUrl(r.outside_image_1) ?? r.outside_image_1)
-  if (r?.outside_image_2) out.push(getImageUrl(r.outside_image_2) ?? r.outside_image_2)
+  if (r?.outside_image_1) out.push(resolveImgUrl(r.outside_image_1) ?? r.outside_image_1)
+  if (r?.outside_image_2) out.push(resolveImgUrl(r.outside_image_2) ?? r.outside_image_2)
   const arr = r?.outside_images
-  if (Array.isArray(arr)) arr.forEach((item) => { const u = getImageUrl(item); if (u) out.push(u) })
-  else if (arr?.url) out.push(arr.url)
+  if (Array.isArray(arr)) arr.forEach((item) => { const u = resolveImgUrl(item); if (u) out.push(u) })
+  else if (arr?.url) out.push(resolveImgUrl(arr.url) ?? arr.url)
   return out
 }
 const collectInsideImages = (r) => {
   const out = []
   ;['inside_image_1', 'inside_image_2', 'inside_image_3', 'inside_image_4', 'inside_image_5'].forEach((key) => {
     const v = r?.[key]
-    if (v) out.push(getImageUrl(v) ?? v)
+    if (v) out.push(resolveImgUrl(v) ?? v)
   })
   const arr = r?.inside_images
-  if (Array.isArray(arr)) arr.forEach((item) => { const u = getImageUrl(item); if (u) out.push(u) })
-  else if (arr?.url) out.push(arr.url)
+  if (Array.isArray(arr)) arr.forEach((item) => { const u = resolveImgUrl(item); if (u) out.push(u) })
+  else if (arr?.url) out.push(resolveImgUrl(arr.url) ?? arr.url)
   return out
 }
 

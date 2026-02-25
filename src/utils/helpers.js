@@ -113,7 +113,8 @@ export const isValidFileType = (file, allowedTypes) => {
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return '/placeholder-image.jpg'
   if (imagePath.startsWith('http')) return imagePath
-  return `${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}${imagePath}`
+  const base = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api').replace(/\/api\/?$/, '')
+  return `${base}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`
 }
 
 /**

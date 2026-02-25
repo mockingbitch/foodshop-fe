@@ -18,7 +18,7 @@ export const DEFAULT_LNG = parseFloat(import.meta.env.VITE_DEFAULT_LNG) || 105.8
 export const SEARCH_RADIUS_KM = parseInt(import.meta.env.VITE_SEARCH_RADIUS_KM) || 10
 
 // App Configuration
-export const APP_NAME = import.meta.env.VITE_APP_NAME || 'Food Shop'
+export const APP_NAME = import.meta.env.VITE_APP_NAME || 'Restaurant & Food'
 export const DEFAULT_LANGUAGE = import.meta.env.VITE_DEFAULT_LANGUAGE || 'en'
 export const SUPPORTED_LANGUAGES = ['en', 'vi', 'ko']
 

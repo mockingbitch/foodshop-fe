@@ -23,6 +23,7 @@ const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
 
 const getRestaurantImage = (restaurant) => {
   const img =
+    restaurant?.main_image ??
     restaurant?.outside_image_1 ??
     restaurant?.images?.[0]?.url ??
     restaurant?.outside_images?.[0]?.url ??
@@ -246,7 +247,7 @@ const HomePage = () => {
                     <ChevronRight size={18} />
                   </Link>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-3 gap-4 sm:gap-6">
                   {news.map((item, idx) => (
                     <Link
                       key={getNewsId(item) ?? idx}

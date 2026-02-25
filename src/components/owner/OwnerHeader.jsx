@@ -46,7 +46,7 @@ const OwnerHeader = () => {
               <span className="text-white font-bold text-lg md:text-xl">FS</span>
             </div>
             <span className="font-bold text-lg md:text-xl text-gray-900 hidden sm:block">
-              Food Shop
+              Restaurant & Food
             </span>
           </Link>
 

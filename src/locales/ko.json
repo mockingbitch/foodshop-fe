@@ -78,7 +78,11 @@
     "noResults": "검색 결과가 없습니다.",
     "filterCountry": "국가",
     "filterType": "레스토랑 유형",
-    "deliveryOnly": "배달만"
+    "deliveryOnly": "배달만",
+    "findNearby": "주변 10km 찾기",
+    "locationRequired": "주변 레스토랑을 찾으려면 위치 권한이 필요합니다.",
+    "locationDenied": "위치 권한이 거부되었습니다.",
+    "locationError": "위치를 가져올 수 없습니다."
   },
   "food": {
     "title": "음식",
@@ -175,7 +179,11 @@
     "placeholderLatitude": "10.7769",
     "longitude": "경도",
     "placeholderLongitude": "106.7009",
+    "geocodePlaceholder": "좌표를 찾을 주소 입력 (예: 123 Main St, City)",
+    "geocodeButton": "좌표 찾기",
+    "geocodeError": "주소를 찾을 수 없거나 서비스를 사용할 수 없습니다",
     "imagesSection": "이미지 (URL)",
+    "mainImage": "메인 이미지",
     "outsideImage": "외부 {n}",
     "insideImage": "내부 {n}",
     "placeholderUrl": "https://...",

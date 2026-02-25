@@ -78,7 +78,11 @@
     "noResults": "Không tìm thấy nhà hàng phù hợp với từ khóa tìm kiếm.",
     "filterCountry": "Quốc gia",
     "filterType": "Loại nhà hàng",
-    "deliveryOnly": "Chỉ có giao hàng"
+    "deliveryOnly": "Chỉ có giao hàng",
+    "findNearby": "Tìm xung quanh 10km",
+    "locationRequired": "Cần quyền định vị để tìm nhà hàng gần bạn.",
+    "locationDenied": "Quyền định vị bị từ chối.",
+    "locationError": "Không thể lấy vị trí của bạn."
   },
   "food": {
     "title": "Món ăn",
@@ -175,7 +179,11 @@
     "placeholderLatitude": "10.7769",
     "longitude": "Kinh độ",
     "placeholderLongitude": "106.7009",
+    "geocodePlaceholder": "Nhập địa chỉ để lấy tọa độ (vd: 123 Nguyễn Huệ, Quận 1)",
+    "geocodeButton": "Lấy tọa độ",
+    "geocodeError": "Không tìm thấy địa chỉ hoặc dịch vụ không khả dụng",
     "imagesSection": "Hình ảnh (URL)",
+    "mainImage": "Ảnh chính",
     "outsideImage": "Bên ngoài {n}",
     "insideImage": "Bên trong {n}",
     "placeholderUrl": "https://...",

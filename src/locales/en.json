@@ -78,7 +78,11 @@
     "noResults": "No restaurants found for your search.",
     "filterCountry": "Country",
     "filterType": "Restaurant type",
-    "deliveryOnly": "Delivery only"
+    "deliveryOnly": "Delivery only",
+    "findNearby": "Find nearby (10km)",
+    "locationRequired": "Location access is required to find nearby restaurants.",
+    "locationDenied": "Location access was denied.",
+    "locationError": "Could not get your location."
   },
   "food": {
     "title": "Food Items",
@@ -166,7 +170,11 @@
     "placeholderLatitude": "10.7769",
     "longitude": "Longitude",
     "placeholderLongitude": "106.7009",
+    "geocodePlaceholder": "Enter address to get coordinates (e.g. 123 Main St, City)",
+    "geocodeButton": "Get coordinates",
+    "geocodeError": "Address not found or service unavailable",
     "imagesSection": "Images (URL)",
+    "mainImage": "Main image",
     "outsideImage": "Outside {n}",
     "insideImage": "Inside {n}",
     "placeholderUrl": "https://...",

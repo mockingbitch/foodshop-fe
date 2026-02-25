@@ -22,11 +22,41 @@ const toDisplayText = (val) => {
 
 const getRestaurantImage = (restaurant) => {
   const img =
+    restaurant?.main_image ??
     restaurant?.outside_image_1 ??
     restaurant?.images?.[0]?.url ??
     restaurant?.outside_images?.[0]?.url ??
     restaurant?.image_url
-  return img || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'
+  const raw = img || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'
+  return raw.startsWith('http') ? raw : getImageUrl(raw)
+}
+
+const resolveImgUrl = (v) => {
+  if (!v || typeof v !== 'string') return null
+  if (v.startsWith('http')) return v
+  return getImageUrl(v)
+}
+
+const collectOutsideImages = (r) => {
+  const out = []
+  if (r?.outside_image_1) out.push(resolveImgUrl(r.outside_image_1) ?? r.outside_image_1)
+  if (r?.outside_image_2) out.push(resolveImgUrl(r.outside_image_2) ?? r.outside_image_2)
+  const arr = r?.outside_images
+  if (Array.isArray(arr)) arr.forEach((item) => { const u = typeof item === 'string' ? resolveImgUrl(item) : (item?.url ?? item?.image_url); if (u) out.push(u) })
+  else if (arr?.url) out.push(resolveImgUrl(arr.url) ?? arr.url)
+  return out
+}
+
+const collectInsideImages = (r) => {
+  const out = []
+  ;['inside_image_1', 'inside_image_2', 'inside_image_3', 'inside_image_4', 'inside_image_5'].forEach((key) => {
+    const v = r?.[key]
+    if (v) out.push(resolveImgUrl(v) ?? v)
+  })
+  const arr = r?.inside_images
+  if (Array.isArray(arr)) arr.forEach((item) => { const u = typeof item === 'string' ? resolveImgUrl(item) : (item?.url ?? item?.image_url); if (u) out.push(u) })
+  else if (arr?.url) out.push(resolveImgUrl(arr.url) ?? arr.url)
+  return out
 }
 
 const getFoodImage = (item) => {
@@ -238,6 +268,41 @@ const RestaurantDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Outside & Inside images */}
+      {(() => {
+        const outImgs = collectOutsideImages(restaurant)
+        const inImgs = collectInsideImages(restaurant)
+        if (outImgs.length === 0 && inImgs.length === 0) return null
+        return (
+          <div className="md:flex gap-6 mb-8">
+            {outImgs.length > 0 && (
+              <section className="flex-1 mb-6 md:mb-0">
+                <h2 className="text-lg font-semibold text-gray-900 mb-3">{t('restaurantRegister.outsideImages')}</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {outImgs.map((url, idx) => (
+                    <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block aspect-[4/3] rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition">
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
+            {inImgs.length > 0 && (
+              <section className="flex-1">
+                <h2 className="text-lg font-semibold text-gray-900 mb-3">{t('restaurantRegister.insideImages')}</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {inImgs.map((url, idx) => (
+                    <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block aspect-[4/3] rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition">
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Menu / Food list: cột trái = category, cột phải = danh sách món */}
       <div className="flex flex-col lg:flex-row gap-6 mb-8">

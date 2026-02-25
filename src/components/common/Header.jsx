@@ -46,7 +46,7 @@ const Header = () => {
               <span className="text-white font-bold text-xl">FS</span>
             </div>
             <span className="font-bold text-xl text-gray-900 hidden sm:block">
-              Food Shop
+              Restaurant & Food
             </span>
           </Link>
 
@@ -54,9 +54,6 @@ const Header = () => {
           <nav className="hidden md:flex items-center space-x-8">
             <Link to="/restaurants" className={navLinkClass('/restaurants')}>
               {t('common.restaurants')}
-            </Link>
-            <Link to="/food-categories" className={navLinkClass('/food-categories')}>
-              {t('common.categories')}
             </Link>
             <Link to="/news" className={navLinkClass('/news')}>
               {t('common.news')}

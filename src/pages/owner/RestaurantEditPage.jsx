@@ -3,6 +3,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLanguage } from '@context/LanguageContext'
 import { restaurantApi } from '@services/api/restaurantApi'
 import { commonApi } from '@services/api/commonApi'
+import { geocodeAddress } from '@services/api/geocodeApi'
+import { DEFAULT_LAT, DEFAULT_LNG } from '@constants'
+import ImageUrlOrUpload from '@components/owner/ImageUrlOrUpload'
 import { toast } from 'react-toastify'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 
@@ -19,6 +22,8 @@ const initialFormData = {
   email: '',
   latitude: '',
   longitude: '',
+  main_image: '',
+  main_image_type: 'url',
   outside_image_1: '',
   outside_image_2: '',
   inside_image_1: '',
@@ -26,6 +31,13 @@ const initialFormData = {
   inside_image_3: '',
   inside_image_4: '',
   inside_image_5: '',
+  outside_image_1_type: 'url',
+  outside_image_2_type: 'url',
+  inside_image_1_type: 'url',
+  inside_image_2_type: 'url',
+  inside_image_3_type: 'url',
+  inside_image_4_type: 'url',
+  inside_image_5_type: 'url',
   youtube_link: '',
   facebook_link: '',
   webpage_link: '',
@@ -116,13 +128,22 @@ const mapRestaurantToForm = (r) => {
     email: fromRestaurant(r, 'email') ?? '',
     latitude: fromRestaurant(r, 'latitude') != null ? String(fromRestaurant(r, 'latitude')) : '',
     longitude: fromRestaurant(r, 'longitude') != null ? String(fromRestaurant(r, 'longitude')) : '',
-    outside_image_1: fromRestaurant(r, 'outside_image_1') ?? fromRestaurant(r, 'image_url') ?? getImageUrl(outImgs[0]) ?? '',
+    main_image: fromRestaurant(r, 'main_image') ?? fromRestaurant(r, 'image_url') ?? getImageUrl(outImgs[0]) ?? '',
+    main_image_type: fromRestaurant(r, 'main_image_type') ?? 'url',
+    outside_image_1: fromRestaurant(r, 'outside_image_1') ?? getImageUrl(outImgs[0]) ?? '',
     outside_image_2: fromRestaurant(r, 'outside_image_2') ?? getImageUrl(outImgs[1]) ?? '',
     inside_image_1: fromRestaurant(r, 'inside_image_1') ?? getImageUrl(inImgs[0]) ?? '',
     inside_image_2: fromRestaurant(r, 'inside_image_2') ?? getImageUrl(inImgs[1]) ?? '',
     inside_image_3: fromRestaurant(r, 'inside_image_3') ?? getImageUrl(inImgs[2]) ?? '',
     inside_image_4: fromRestaurant(r, 'inside_image_4') ?? getImageUrl(inImgs[3]) ?? '',
     inside_image_5: fromRestaurant(r, 'inside_image_5') ?? getImageUrl(inImgs[4]) ?? '',
+    outside_image_1_type: fromRestaurant(r, 'outside_image_1_type') ?? 'url',
+    outside_image_2_type: fromRestaurant(r, 'outside_image_2_type') ?? 'url',
+    inside_image_1_type: fromRestaurant(r, 'inside_image_1_type') ?? 'url',
+    inside_image_2_type: fromRestaurant(r, 'inside_image_2_type') ?? 'url',
+    inside_image_3_type: fromRestaurant(r, 'inside_image_3_type') ?? 'url',
+    inside_image_4_type: fromRestaurant(r, 'inside_image_4_type') ?? 'url',
+    inside_image_5_type: fromRestaurant(r, 'inside_image_5_type') ?? 'url',
     youtube_link: fromRestaurant(r, 'youtube_link') ?? '',
     facebook_link: fromRestaurant(r, 'facebook_link') ?? '',
     webpage_link: fromRestaurant(r, 'webpage_link') ?? '',
@@ -225,6 +246,20 @@ const RestaurantEditPage = () => {
     setBusinessHours(Object.fromEntries(DAY_KEYS.map((key) => [key, { ...first }])))
   }
 
+  const resolveCoordinates = async () => {
+    const lat = parseFloat(formData.latitude)
+    const lng = parseFloat(formData.longitude)
+    if (!Number.isNaN(lat) && !Number.isNaN(lng)) return { lat, lng }
+    const q = [formData.address, formData.city].filter(Boolean).join(', ')
+    if (!q) return { lat: DEFAULT_LAT, lng: DEFAULT_LNG }
+    try {
+      const result = await geocodeAddress(q)
+      return result ? { lat: result.lat, lng: result.lng } : { lat: DEFAULT_LAT, lng: DEFAULT_LNG }
+    } catch {
+      return { lat: DEFAULT_LAT, lng: DEFAULT_LNG }
+    }
+  }
+
   const dayLabelKey = (dayKey) => `restaurantRegister.days${dayKey.charAt(0).toUpperCase()}${dayKey.slice(1)}`
 
   const validate = () => {
@@ -244,6 +279,9 @@ const RestaurantEditPage = () => {
     if (!validate() || submitting || !id) return
     setSubmitting(true)
     try {
+      const { lat, lng } = await resolveCoordinates()
+      const outOutside = [formData.outside_image_1, formData.outside_image_2].filter((v) => v?.trim()).map((v) => v.trim())
+      const outInside = [formData.inside_image_1, formData.inside_image_2, formData.inside_image_3, formData.inside_image_4, formData.inside_image_5].filter((v) => v?.trim()).map((v) => v.trim())
       const businessHoursPayload = Object.fromEntries(
         Object.entries(businessHours)
           .filter(([, v]) => v.open && v.start && v.end)
@@ -263,15 +301,18 @@ const RestaurantEditPage = () => {
         phone: formData.phone?.trim() || '',
         zalo: formData.zalo?.trim() || undefined,
         email: formData.email?.trim() || undefined,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
-        ...(formData.outside_image_1?.trim() && { outside_image_1: formData.outside_image_1.trim() }),
-        ...(formData.outside_image_2?.trim() && { outside_image_2: formData.outside_image_2.trim() }),
-        ...(formData.inside_image_1?.trim() && { inside_image_1: formData.inside_image_1.trim() }),
-        ...(formData.inside_image_2?.trim() && { inside_image_2: formData.inside_image_2.trim() }),
-        ...(formData.inside_image_3?.trim() && { inside_image_3: formData.inside_image_3.trim() }),
-        ...(formData.inside_image_4?.trim() && { inside_image_4: formData.inside_image_4.trim() }),
-        ...(formData.inside_image_5?.trim() && { inside_image_5: formData.inside_image_5.trim() }),
+        latitude: lat,
+        longitude: lng,
+        main_image: formData.main_image?.trim() || null,
+        outside_image_1: formData.outside_image_1?.trim() || null,
+        outside_image_2: formData.outside_image_2?.trim() || null,
+        inside_image_1: formData.inside_image_1?.trim() || null,
+        inside_image_2: formData.inside_image_2?.trim() || null,
+        inside_image_3: formData.inside_image_3?.trim() || null,
+        inside_image_4: formData.inside_image_4?.trim() || null,
+        inside_image_5: formData.inside_image_5?.trim() || null,
+        ...(outOutside.length > 0 && { outside_images: outOutside }),
+        ...(outInside.length > 0 && { inside_images: outInside }),
         ...(formData.youtube_link?.trim() && { youtube_link: formData.youtube_link.trim() }),
         ...(formData.facebook_link?.trim() && { facebook_link: formData.facebook_link.trim() }),
         ...(formData.webpage_link?.trim() && { webpage_link: formData.webpage_link.trim() }),
@@ -390,32 +431,57 @@ const RestaurantEditPage = () => {
               <input type="email" name="email" value={formData.email} onChange={handleChange} className="input w-full" placeholder={t('restaurantRegister.placeholderEmail')} />
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('restaurantRegister.latitude')}</label>
-              <input type="text" name="latitude" value={formData.latitude} onChange={handleChange} className="input w-full" placeholder={t('restaurantRegister.placeholderLatitude')} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('restaurantRegister.longitude')}</label>
-              <input type="text" name="longitude" value={formData.longitude} onChange={handleChange} className="input w-full" placeholder={t('restaurantRegister.placeholderLongitude')} />
-            </div>
-          </div>
-
           <div className="border-t pt-4">
             <h3 className="text-sm font-semibold text-gray-800 mb-2">{t('restaurantRegister.imagesSection')}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs text-gray-600 mb-0.5">{t('restaurantRegister.outsideImage', { n: 1 })}</label>
-                <input type="url" name="outside_image_1" value={formData.outside_image_1} onChange={handleChange} className="input w-full text-sm" placeholder={t('restaurantRegister.placeholderUrl')} />
+              <div className="sm:col-span-2">
+                <ImageUrlOrUpload
+                  name="main_image"
+                  value={formData.main_image}
+                  onChange={(v) => setFormData((p) => ({ ...p, main_image: v }))}
+                  onTypeChange={(v) => setFormData((p) => ({ ...p, main_image_type: v }))}
+                  label={t('restaurantRegister.mainImage')}
+                  placeholder={t('restaurantRegister.placeholderUrl')}
+                  uploadType="restaurant"
+                  t={t}
+                />
               </div>
               <div>
-                <label className="block text-xs text-gray-600 mb-0.5">{t('restaurantRegister.outsideImage', { n: 2 })}</label>
-                <input type="url" name="outside_image_2" value={formData.outside_image_2} onChange={handleChange} className="input w-full text-sm" placeholder={t('restaurantRegister.placeholderUrl')} />
+                <ImageUrlOrUpload
+                  name="outside_image_1"
+                  value={formData.outside_image_1}
+                  onChange={(v) => setFormData((p) => ({ ...p, outside_image_1: v }))}
+                  onTypeChange={(v) => setFormData((p) => ({ ...p, outside_image_1_type: v }))}
+                  label={t('restaurantRegister.outsideImage', { n: 1 })}
+                  placeholder={t('restaurantRegister.placeholderUrl')}
+                  uploadType="restaurant"
+                  t={t}
+                />
+              </div>
+              <div>
+                <ImageUrlOrUpload
+                  name="outside_image_2"
+                  value={formData.outside_image_2}
+                  onChange={(v) => setFormData((p) => ({ ...p, outside_image_2: v }))}
+                  onTypeChange={(v) => setFormData((p) => ({ ...p, outside_image_2_type: v }))}
+                  label={t('restaurantRegister.outsideImage', { n: 2 })}
+                  placeholder={t('restaurantRegister.placeholderUrl')}
+                  uploadType="restaurant"
+                  t={t}
+                />
               </div>
               {[1, 2, 3, 4, 5].map((n) => (
                 <div key={n}>
-                  <label className="block text-xs text-gray-600 mb-0.5">{t('restaurantRegister.insideImage', { n })}</label>
-                  <input type="url" name={`inside_image_${n}`} value={formData[`inside_image_${n}`]} onChange={handleChange} className="input w-full text-sm" placeholder={t('restaurantRegister.placeholderUrl')} />
+                  <ImageUrlOrUpload
+                    name={`inside_image_${n}`}
+                    value={formData[`inside_image_${n}`]}
+                    onChange={(v) => setFormData((p) => ({ ...p, [`inside_image_${n}`]: v }))}
+                    onTypeChange={(v) => setFormData((p) => ({ ...p, [`inside_image_${n}_type`]: v }))}
+                    label={t('restaurantRegister.insideImage', { n })}
+                    placeholder={t('restaurantRegister.placeholderUrl')}
+                    uploadType="restaurant"
+                    t={t}
+                  />
                 </div>
               ))}
             </div>

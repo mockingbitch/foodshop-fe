@@ -11,7 +11,7 @@ const Footer = ({ compact = false }) => {
       <footer className="bg-gray-900 text-gray-300 border-t border-gray-800">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-3">
           <p className="text-xs sm:text-sm text-center text-gray-400">
-            &copy; {currentYear} Food Shop. All rights reserved.
+            &copy; {currentYear} Restaurant & Food. All rights reserved.
           </p>
         </div>
       </footer>
@@ -24,7 +24,7 @@ const Footer = ({ compact = false }) => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* About */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Food Shop</h3>
+            <h3 className="text-white font-semibold text-lg mb-4">Restaurant & Food</h3>
             <p className="text-sm leading-relaxed">
               Discover amazing restaurants and delicious food near you. 
               Connect directly with restaurant owners for the best experience.
@@ -117,7 +117,7 @@ const Footer = ({ compact = false }) => {
 
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 text-sm text-center">
-          <p>&copy; {currentYear} Food Shop. All rights reserved.</p>
+          <p>&copy; {currentYear} Restaurant & Food. All rights reserved.</p>
         </div>
       </div>
     </footer>
