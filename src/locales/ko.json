@@ -64,6 +64,7 @@
   "restaurant": {
     "title": "레스토랑",
     "search": "레스토랑 검색",
+    "searchByFood": "음식 검색...",
     "nearby": "근처 레스토랑",
     "detail": "레스토랑 상세정보",
     "menu": "메뉴",

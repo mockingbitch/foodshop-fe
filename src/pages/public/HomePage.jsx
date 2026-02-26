@@ -192,7 +192,7 @@ const HomePage = () => {
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t('restaurant.search')}
+                placeholder={t('restaurant.searchByFood')}
                 className="flex-1 min-w-0 w-0 border-0 focus:ring-0 focus:outline-none text-gray-900 placeholder-gray-400 text-base sm:text-inherit"
                 style={{ fontSize: '16px' }}
               />

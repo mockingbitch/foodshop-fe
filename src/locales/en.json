@@ -64,6 +64,7 @@
   "restaurant": {
     "title": "Restaurants",
     "search": "Search Restaurants",
+    "searchByFood": "Search by food...",
     "nearby": "Nearby Restaurants",
     "detail": "Restaurant Details",
     "menu": "Menu",

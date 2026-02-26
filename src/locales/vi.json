@@ -64,6 +64,7 @@
   "restaurant": {
     "title": "Nhà hàng",
     "search": "Tìm kiếm nhà hàng",
+    "searchByFood": "Tìm món ăn...",
     "nearby": "Nhà hàng gần đây",
     "detail": "Chi tiết nhà hàng",
     "menu": "Thực đơn",

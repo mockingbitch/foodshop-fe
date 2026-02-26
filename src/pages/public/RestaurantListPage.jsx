@@ -104,6 +104,7 @@ const RestaurantListPage = () => {
   const [restaurants, setRestaurants] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') ?? '')
+  const [appliedSearch, setAppliedSearch] = useState(() => searchParams.get('search') ?? '')
   const [countryId, setCountryId] = useState('')
   const [restaurantTypeId, setRestaurantTypeId] = useState('')
   const [deliveryOnly, setDeliveryOnly] = useState(false)
@@ -206,15 +207,20 @@ const RestaurantListPage = () => {
     }
   }
 
+  const handleSearchClick = () => {
+    setAppliedSearch(searchQuery.trim())
+    setPage(1)
+  }
+
   useEffect(() => {
     setPage(1)
-  }, [searchQuery, countryId, restaurantTypeId, deliveryOnly, nearbyMode])
+  }, [appliedSearch, countryId, restaurantTypeId, deliveryOnly, nearbyMode])
 
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchRestaurants(
         {
-          search: searchQuery,
+          search: appliedSearch || undefined,
           country_id: countryId || undefined,
           restaurant_type_id: restaurantTypeId || undefined,
           delivery_available: deliveryOnly || undefined,
@@ -226,11 +232,12 @@ const RestaurantListPage = () => {
       )
     }, DEBOUNCE_MS)
     return () => clearTimeout(timer)
-  }, [searchQuery, countryId, restaurantTypeId, deliveryOnly, nearbyMode, userLat, userLng, page, fetchRestaurants])
+  }, [appliedSearch, countryId, restaurantTypeId, deliveryOnly, nearbyMode, userLat, userLng, page, fetchRestaurants])
 
-  const hasActiveFilters = searchQuery.trim() || countryId || restaurantTypeId || deliveryOnly || nearbyMode
+  const hasActiveFilters = appliedSearch || countryId || restaurantTypeId || deliveryOnly || nearbyMode
   const clearFilters = () => {
     setSearchQuery('')
+    setAppliedSearch('')
     setCountryId('')
     setRestaurantTypeId('')
     setDeliveryOnly(false)
@@ -258,30 +265,41 @@ const RestaurantListPage = () => {
 
       {/* Search & Filters */}
       <div className="mb-6 sm:mb-8 space-y-4">
-        {/* Search bar - prominent */}
-        <div className="relative group">
-          <Search
-            size={20}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary-500 transition-colors pointer-events-none"
-          />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t('restaurant.search')}
-            className="input w-full pl-12 pr-12 py-3.5 text-base rounded-xl border-gray-200 bg-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow placeholder:text-gray-400"
-            aria-label={t('restaurant.search')}
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-              aria-label="Clear search"
-            >
-              <X size={18} />
-            </button>
-          )}
+        {/* Search by food - input + button */}
+        <div className="flex gap-2 sm:gap-3">
+          <div className="relative group flex-1">
+            <Search
+              size={20}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary-500 transition-colors pointer-events-none"
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
+              placeholder={t('restaurant.searchByFood')}
+              className="input w-full pl-12 pr-12 py-3.5 text-base rounded-xl border-gray-200 bg-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow placeholder:text-gray-400"
+              aria-label={t('restaurant.searchByFood')}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                aria-label="Clear search"
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={handleSearchClick}
+            className="btn btn-primary py-3.5 px-8 rounded-xl inline-flex items-center gap-2 font-medium whitespace-nowrap"
+          >
+            <Search size={20} />
+            {t('common.search')}
+          </button>
         </div>
 
         {/* Filter card */}
