@@ -5,6 +5,7 @@ import { useAuth } from '@context/AuthContext'
 import { restaurantApi } from '@services/api/restaurantApi'
 import { foodApi } from '@services/api/foodApi'
 import { categoryApi } from '@services/api/categoryApi'
+import { formatPriceInput, parsePriceValue } from '@utils/helpers'
 import { toast } from 'react-toastify'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import ConfirmModal from '@components/common/ConfirmModal'
@@ -97,7 +98,7 @@ const mapFoodToForm = (item) => {
     name: pickFirst(nameObj),
     description: pickFirst(descObj),
     main_image: fromItem(item, 'main_image') ?? item.image_url ?? '',
-    price: fromItem(item, 'price') != null ? String(fromItem(item, 'price')) : '',
+    price: fromItem(item, 'price') != null ? formatPriceInput(String(fromItem(item, 'price'))) : '',
     currency_code: fromItem(item, 'currency_code') ?? item.currency ?? 'VND',
     serving_size: fromItem(item, 'serving_size') != null ? String(fromItem(item, 'serving_size')) : '1',
     weight: fromItem(item, 'weight') != null ? String(fromItem(item, 'weight')) : '',
@@ -165,7 +166,8 @@ const FoodItemEditPage = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
-    setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
+    const finalValue = name === 'price' ? formatPriceInput(value) : (type === 'checkbox' ? checked : value)
+    setFormData((prev) => ({ ...prev, [name]: finalValue }))
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }))
   }
 
@@ -175,7 +177,7 @@ const FoodItemEditPage = () => {
     if (!formData.food_category_id) err.food_category_id = t('common.required')
     if (!formData.name?.trim()) err.name = t('common.required')
     if (!formData.price?.trim()) err.price = t('common.required')
-    const priceNum = parseFloat(formData.price)
+    const priceNum = parsePriceValue(formData.price)
     if (formData.price?.trim() && (isNaN(priceNum) || priceNum < 0)) err.price = t('food.price') + ' invalid'
     setErrors(err)
     return Object.keys(err).length === 0
@@ -194,7 +196,7 @@ const FoodItemEditPage = () => {
           ? { en: formData.description.trim(), vn: formData.description.trim() }
           : undefined,
         main_image: formData.main_image?.trim() || undefined,
-        price: parseFloat(formData.price) || 0,
+        price: parsePriceValue(formData.price) || 0,
         currency_code: formData.currency_code?.trim() || 'VND',
         serving_size: parseInt(formData.serving_size, 10) || 1,
         weight: formData.weight?.trim() ? parseInt(formData.weight, 10) : undefined,
@@ -312,14 +314,13 @@ const FoodItemEditPage = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.price')} *</label>
               <input
-                type="number"
+                type="text"
                 name="price"
                 value={formData.price}
                 onChange={handleChange}
-                min="0"
-                step="any"
+                inputMode="numeric"
                 className={`input w-full ${errors.price ? 'border-red-500' : ''}`}
-                placeholder="50000"
+                placeholder="50,000"
               />
               {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price}</p>}
             </div>

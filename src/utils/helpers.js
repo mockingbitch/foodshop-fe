@@ -2,6 +2,30 @@ import { format, formatDistance, formatRelative } from 'date-fns'
 import { CURRENCY_SYMBOLS, REGEX_PATTERNS } from '@constants'
 
 /**
+ * Format price input with thousands separator (e.g. 1000000 -> 1,000,000)
+ * Chỉ dùng khi nhập: quá 3 số thì thêm dấu ,
+ */
+export const formatPriceInput = (value) => {
+  if (value == null || value === '') return ''
+  const str = String(value)
+  const parts = str.split('.')
+  const intPart = parts[0].replace(/\D/g, '')
+  const decPart = parts[1] != null ? parts[1].replace(/\D/g, '') : ''
+  if (intPart === '') return decPart ? `0.${decPart}` : ''
+  const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return decPart ? `${formatted}.${decPart}` : formatted
+}
+
+/**
+ * Parse price string to number (remove commas)
+ */
+export const parsePriceValue = (value) => {
+  if (value == null || value === '') return NaN
+  const cleaned = String(value).replace(/,/g, '')
+  return parseFloat(cleaned)
+}
+
+/**
  * Format currency with symbol
  */
 export const formatCurrency = (amount, currency = 'USD') => {

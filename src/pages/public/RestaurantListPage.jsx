@@ -112,6 +112,7 @@ const RestaurantListPage = () => {
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState({ currentPage: 1, lastPage: 1, total: 0, perPage: PER_PAGE })
   const [nearbyMode, setNearbyMode] = useState(false)
+  const [nearbyIntent, setNearbyIntent] = useState(false)
   const [userLat, setUserLat] = useState(null)
   const [userLng, setUserLng] = useState(null)
   const [locationError, setLocationError] = useState(null)
@@ -136,35 +137,21 @@ const RestaurantListPage = () => {
       setLoading(true)
       setLocationError(null)
       try {
+        const params = { per_page: PER_PAGE, page: pageNum }
+        if (filters.search?.trim()) params.search = filters.search.trim()
+        if (filters.country_id) params.country_id = Number(filters.country_id)
+        if (filters.restaurant_type_id) params.restaurant_type_id = Number(filters.restaurant_type_id)
+        if (filters.delivery_available === true) params.delivery_available = true
         if (filters.nearbyMode && filters.lat != null && filters.lng != null) {
-          const params = {
-            latitude: filters.lat,
-            longitude: filters.lng,
-            radius: SEARCH_RADIUS_KM,
-            per_page: PER_PAGE,
-            page: pageNum,
-          }
-          if (filters.search?.trim()) params.search = filters.search.trim()
-          if (filters.country_id) params.country_id = Number(filters.country_id)
-          if (filters.restaurant_type_id) params.restaurant_type_id = Number(filters.restaurant_type_id)
-          if (filters.delivery_available === true) params.delivery_available = true
-          const res = await restaurantApi.getNearbyRestaurants(params)
-          const list = ensureArray(res?.data)
-          const arr = Array.isArray(list) ? list : []
-          setRestaurants(arr)
-          setPagination(getPaginationMeta(res, arr.length))
-        } else {
-          const params = { per_page: PER_PAGE, page: pageNum }
-          if (filters.search?.trim()) params.search = filters.search.trim()
-          if (filters.country_id) params.country_id = Number(filters.country_id)
-          if (filters.restaurant_type_id) params.restaurant_type_id = Number(filters.restaurant_type_id)
-          if (filters.delivery_available === true) params.delivery_available = true
-          const res = await restaurantApi.getRestaurants(params)
-          const list = ensureArray(res?.data)
-          const arr = Array.isArray(list) ? list : []
-          setRestaurants(arr)
-          setPagination(getPaginationMeta(res, arr.length))
+          params.lat = filters.lat
+          params.lng = filters.lng
+          params.radius = SEARCH_RADIUS_KM
         }
+        const res = await restaurantApi.getRestaurants(params)
+        const list = ensureArray(res?.data)
+        const arr = Array.isArray(list) ? list : []
+        setRestaurants(arr)
+        setPagination(getPaginationMeta(res, arr.length))
       } catch (err) {
         console.error(err)
         setRestaurants([])
@@ -188,11 +175,13 @@ const RestaurantListPage = () => {
         setUserLat(pos.coords.latitude)
         setUserLng(pos.coords.longitude)
         setNearbyMode(true)
+        setNearbyIntent(false)
         setPage(1)
         setGettingLocation(false)
       },
       (err) => {
         setGettingLocation(false)
+        setNearbyIntent(false)
         if (err.code === 1) { // PERMISSION_DENIED
           setLocationError(t('restaurant.locationDenied'))
         } else {
@@ -201,6 +190,20 @@ const RestaurantListPage = () => {
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     )
+  }
+
+  const handleNearbyChange = (e) => {
+    if (e.target.checked) {
+      setNearbyIntent(true)
+      handleFindNearby()
+    } else {
+      setNearbyMode(false)
+      setNearbyIntent(false)
+      setUserLat(null)
+      setUserLng(null)
+      setLocationError(null)
+      setPage(1)
+    }
   }
 
   useEffect(() => {
@@ -232,6 +235,7 @@ const RestaurantListPage = () => {
     setRestaurantTypeId('')
     setDeliveryOnly(false)
     setNearbyMode(false)
+    setNearbyIntent(false)
     setUserLat(null)
     setUserLng(null)
     setLocationError(null)
@@ -239,7 +243,7 @@ const RestaurantListPage = () => {
 
   const getRatingWidth = (rating) => (!rating ? '0%' : `${(rating / 5) * 100}%`)
 
-  const showPagination = !nearbyMode && pagination.total > PER_PAGE
+  const showPagination = pagination.total > PER_PAGE
   const from = Math.min((pagination.currentPage - 1) * pagination.perPage + 1, pagination.total)
   const to = Math.min(pagination.currentPage * pagination.perPage, pagination.total)
   const currentPage = pagination.currentPage
@@ -343,42 +347,50 @@ const RestaurantListPage = () => {
                 </select>
               </div>
 
-              {/* Delivery & Nearby */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:col-span-2">
-                <label className="flex items-center gap-2 cursor-pointer py-2.5">
+              {/* Delivery */}
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                  <Truck size={16} className="text-gray-400" />
+                  {t('restaurant.deliveryOnly')}
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer h-[42px]">
                   <input
                     type="checkbox"
                     checked={deliveryOnly}
                     onChange={(e) => setDeliveryOnly(e.target.checked)}
                     className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
-                  <Truck size={18} className="text-gray-500" />
                   <span className="text-sm font-medium text-gray-700">{t('restaurant.deliveryOnly')}</span>
                 </label>
+              </div>
 
-                <div className="flex flex-col gap-1">
-                  <button
-                    type="button"
-                    onClick={handleFindNearby}
+              {/* Find nearby */}
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                  <Navigation size={16} className="text-gray-400" />
+                  {t('restaurant.findNearby')}
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer h-[42px]">
+                  <input
+                    type="checkbox"
+                    checked={nearbyMode || (gettingLocation && nearbyIntent)}
+                    onChange={handleNearbyChange}
                     disabled={gettingLocation}
-                    className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all min-w-[140px] ${
-                      nearbyMode
-                        ? 'bg-primary-600 text-white shadow-sm hover:bg-primary-700'
-                        : 'border-2 border-primary-500 text-primary-600 hover:bg-primary-50'
-                    } ${gettingLocation ? 'opacity-70 cursor-wait' : ''}`}
-                  >
-                    <Navigation size={18} />
-                    {gettingLocation ? t('common.loading') : t('restaurant.findNearby')}
-                  </button>
-                  {nearbyMode && (
-                    <span className="text-xs text-primary-600 font-medium text-center">
-                      {t('restaurant.nearby')} ({SEARCH_RADIUS_KM}km)
-                    </span>
+                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50"
+                  />
+                  <span className="text-sm font-medium text-gray-700">{t('restaurant.findNearby')}</span>
+                  {gettingLocation && (
+                    <span className="text-xs text-gray-500">({t('common.loading')})</span>
                   )}
-                  {locationError && (
-                    <p className="text-xs text-red-600">{locationError}</p>
-                  )}
-                </div>
+                </label>
+                {nearbyMode && (
+                  <span className="text-xs text-primary-600 font-medium">
+                    {t('restaurant.nearby')} ({SEARCH_RADIUS_KM}km)
+                  </span>
+                )}
+                {locationError && (
+                  <p className="text-xs text-red-600">{locationError}</p>
+                )}
               </div>
             </div>
           </div>

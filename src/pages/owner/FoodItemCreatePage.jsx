@@ -4,6 +4,7 @@ import { useLanguage } from '@context/LanguageContext'
 import { useAuth } from '@context/AuthContext'
 import { foodApi } from '@services/api/foodApi'
 import { categoryApi } from '@services/api/categoryApi'
+import { formatPriceInput, parsePriceValue } from '@utils/helpers'
 import { toast } from 'react-toastify'
 
 const getOwnerId = (user) => user?.id ?? user?.user_id ?? user?.owner_id
@@ -69,7 +70,8 @@ const FoodItemCreatePage = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
-    setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
+    const finalValue = name === 'price' ? formatPriceInput(value) : (type === 'checkbox' ? checked : value)
+    setFormData((prev) => ({ ...prev, [name]: finalValue }))
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }))
   }
 
@@ -79,7 +81,7 @@ const FoodItemCreatePage = () => {
     if (!formData.food_category_id) err.food_category_id = t('common.required')
     if (!formData.name?.trim()) err.name = t('common.required')
     if (!formData.price?.trim()) err.price = t('common.required')
-    const priceNum = parseFloat(formData.price)
+    const priceNum = parsePriceValue(formData.price)
     if (formData.price?.trim() && (isNaN(priceNum) || priceNum < 0)) err.price = t('food.price') + ' ' + (t('food.priceInvalid') || 'invalid')
     setErrors(err)
     return Object.keys(err).length === 0
@@ -104,7 +106,7 @@ const FoodItemCreatePage = () => {
           : undefined,
         main_image: formData.main_image?.trim() || undefined,
         extra_images: [],
-        price: parseFloat(formData.price) || 0,
+        price: parsePriceValue(formData.price) || 0,
         currency_code: formData.currency_code?.trim() || 'VND',
         serving_size: parseInt(formData.serving_size, 10) || 1,
         weight: formData.weight?.trim() ? parseInt(formData.weight, 10) : undefined,
@@ -182,14 +184,13 @@ const FoodItemCreatePage = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.price')} *</label>
               <input
-                type="number"
+                type="text"
                 name="price"
                 value={formData.price}
                 onChange={handleChange}
-                min="0"
-                step="any"
+                inputMode="numeric"
                 className={`input w-full ${errors.price ? 'border-red-500' : ''}`}
-                placeholder="1000"
+                placeholder="50,000"
               />
               {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price}</p>}
             </div>
