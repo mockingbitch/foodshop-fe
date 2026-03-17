@@ -279,7 +279,7 @@ const RestaurantDetailPage = () => {
             {outImgs.length > 0 && (
               <section className="flex-1 mb-6 md:mb-0">
                 <h2 className="text-lg font-semibold text-gray-900 mb-3">{t('restaurantRegister.outsideImages')}</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {outImgs.map((url, idx) => (
                     <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block aspect-[4/3] rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition">
                       <img src={url} alt="" className="w-full h-full object-cover" />
@@ -291,7 +291,7 @@ const RestaurantDetailPage = () => {
             {inImgs.length > 0 && (
               <section className="flex-1">
                 <h2 className="text-lg font-semibold text-gray-900 mb-3">{t('restaurantRegister.insideImages')}</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {inImgs.map((url, idx) => (
                     <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block aspect-[4/3] rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition">
                       <img src={url} alt="" className="w-full h-full object-cover" />
@@ -434,7 +434,7 @@ const RestaurantDetailPage = () => {
       {bestSellerItems.length > 0 && (
         <section className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4">{t('restaurant.bestSellers')}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {bestSellerItems.map((item) => (
               <article
                 key={item.id}

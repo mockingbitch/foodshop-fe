@@ -388,7 +388,7 @@ const RestaurantRegisterPage = () => {
 
           <div className="border-t pt-4">
             <h3 className="text-sm font-semibold text-gray-800 mb-2">{t('restaurantRegister.socialSection')}</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <div>
                 <label className="block text-xs text-gray-600 mb-0.5">{t('restaurantRegister.youtube')}</label>
                 <input type="url" name="youtube_link" value={formData.youtube_link} onChange={handleChange} className="input w-full text-sm" placeholder={t('restaurantRegister.placeholderYoutube')} />

@@ -111,7 +111,7 @@ const AdminDashboardPage = () => {
       {/* Quick Actions */}
       <div className="card p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
             to="/admin/restaurants"
             className="btn btn-outline flex items-center justify-center gap-2"

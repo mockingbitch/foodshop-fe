@@ -247,7 +247,7 @@ const HomePage = () => {
                     <ChevronRight size={18} />
                   </Link>
                 </div>
-                <div className="grid grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-4 gap-4 sm:gap-6">
                   {news.map((item, idx) => (
                     <Link
                       key={getNewsId(item) ?? idx}

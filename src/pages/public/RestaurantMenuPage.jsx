@@ -184,7 +184,7 @@ const RestaurantMenuPage = () => {
       {bestSellerItems.length > 0 && (
         <section className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4">{t('restaurant.bestSellers')}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {bestSellerItems.map((item, itemIdx) => (
               <article
                 key={item.id ?? itemIdx}
@@ -230,7 +230,7 @@ const RestaurantMenuPage = () => {
       ) : viewMode === 'grid' ? (
         <>
         <h2 className="text-xl font-bold text-gray-900 mb-4">{t('restaurant.menu')}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {allMenuItems.map((item, itemIdx) => (
             <article
               key={item.id ?? itemIdx}
