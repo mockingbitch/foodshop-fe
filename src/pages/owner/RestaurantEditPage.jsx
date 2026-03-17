@@ -249,15 +249,19 @@ const RestaurantEditPage = () => {
   const resolveCoordinates = async () => {
     const lat = parseFloat(formData.latitude)
     const lng = parseFloat(formData.longitude)
-    if (!Number.isNaN(lat) && !Number.isNaN(lng)) return { lat, lng }
     const q = [formData.address, formData.city].filter(Boolean).join(', ')
-    if (!q) return { lat: DEFAULT_LAT, lng: DEFAULT_LNG }
-    try {
-      const result = await geocodeAddress(q)
-      return result ? { lat: result.lat, lng: result.lng } : { lat: DEFAULT_LAT, lng: DEFAULT_LNG }
-    } catch {
-      return { lat: DEFAULT_LAT, lng: DEFAULT_LNG }
+    // Ưu tiên geocode theo địa chỉ khi update để luôn cập nhật tọa độ theo address/city.
+    if (q) {
+      try {
+        const result = await geocodeAddress(q)
+        if (result) return { lat: result.lat, lng: result.lng }
+      } catch {
+        // ignore: fallback phía dưới
+      }
     }
+    // Nếu geocode fail thì fallback theo input hoặc default.
+    if (!Number.isNaN(lat) && !Number.isNaN(lng)) return { lat, lng }
+    return { lat: DEFAULT_LAT, lng: DEFAULT_LNG }
   }
 
   const dayLabelKey = (dayKey) => `restaurantRegister.days${dayKey.charAt(0).toUpperCase()}${dayKey.slice(1)}`
@@ -280,6 +284,8 @@ const RestaurantEditPage = () => {
     setSubmitting(true)
     try {
       const { lat, lng } = await resolveCoordinates()
+      // Đồng bộ lại state để lần sau/hiển thị khác dùng đúng tọa độ mới.
+      setFormData((prev) => ({ ...prev, latitude: String(lat), longitude: String(lng) }))
       const outOutside = [formData.outside_image_1, formData.outside_image_2].filter((v) => v?.trim()).map((v) => v.trim())
       const outInside = [formData.inside_image_1, formData.inside_image_2, formData.inside_image_3, formData.inside_image_4, formData.inside_image_5].filter((v) => v?.trim()).map((v) => v.trim())
       const businessHoursPayload = Object.fromEntries(
@@ -324,7 +330,7 @@ const RestaurantEditPage = () => {
       }
       await restaurantApi.updateRestaurant(id, payload)
       toast.success(t('common.success'))
-      navigate('/owner/dashboard', { replace: true })
+      navigate(`/owner/restaurant/${id}`, { replace: true })
     } catch (err) {
       console.error(err)
     } finally {
