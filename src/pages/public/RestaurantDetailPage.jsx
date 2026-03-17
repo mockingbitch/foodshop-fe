@@ -98,6 +98,7 @@ const RestaurantDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [previewFood, setPreviewFood] = useState(null)
+  const [previewImage, setPreviewImage] = useState(null)
   const [selectedCategoryId, setSelectedCategoryId] = useState(null)
 
   useEffect(() => {
@@ -211,43 +212,43 @@ const RestaurantDetailPage = () => {
         <span className="text-gray-700 truncate max-w-[180px] sm:max-w-none">{restaurantName || t('restaurant.detail')}</span>
       </nav>
 
-      {/* Restaurant info */}
-      <div className="card overflow-hidden p-0 flex flex-col md:flex-row mb-8">
-        <div className="w-full md:w-2/5 flex-shrink-0 aspect-[16/10] md:aspect-auto md:min-h-[280px] bg-gray-100">
+      {/* Restaurant info (header) - giữ layout như cũ nhưng gọn hơn */}
+      <div className="card overflow-hidden p-0 flex flex-col md:flex-row mb-5">
+        <div className="w-full md:w-[28%] flex-shrink-0 aspect-[16/10] md:aspect-auto md:min-h-[180px] bg-gray-100">
           <img
             src={getRestaurantImage(restaurant)}
             alt={restaurantName}
             className="w-full h-full object-cover"
           />
         </div>
-        <div className="w-full md:w-3/5 p-6 sm:p-8 flex flex-col">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+        <div className="w-full md:w-[72%] p-3 sm:p-4 flex flex-col">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">
             {restaurantName || t('restaurant.detail')}
           </h1>
           {description && (
-            <p className="text-gray-600 leading-relaxed mb-4">{description}</p>
+            <p className="text-gray-600 leading-relaxed mb-2 line-clamp-1">{description}</p>
           )}
-          <div className="space-y-2 text-sm text-gray-600 mb-4">
+          <div className="space-y-1 text-xs sm:text-sm text-gray-600 mb-2">
             {restaurant.address && (
               <p className="flex items-start gap-2 min-w-0">
-                <MapPin size={18} className="flex-shrink-0 mt-0.5 text-gray-500" />
-                <span>{restaurant.address}{restaurant.city ? `, ${restaurant.city}` : ''}</span>
+                <MapPin size={14} className="flex-shrink-0 mt-0.5 text-gray-500" />
+                <span className="break-words">{restaurant.address}{restaurant.city ? `, ${restaurant.city}` : ''}</span>
               </p>
             )}
             {restaurant.phone && (
               <p className="flex items-center gap-2">
-                <Phone size={18} className="flex-shrink-0 text-gray-500" />
+                <Phone size={14} className="flex-shrink-0 text-gray-500" />
                 <a href={`tel:${restaurant.phone}`} className="hover:text-primary-600">{restaurant.phone}</a>
               </p>
             )}
             {restaurant.email && (
               <p className="flex items-center gap-2">
-                <Mail size={18} className="flex-shrink-0 text-gray-500" />
-                <a href={`mailto:${restaurant.email}`} className="hover:text-primary-600">{restaurant.email}</a>
+                <Mail size={14} className="flex-shrink-0 text-gray-500" />
+                <a href={`mailto:${restaurant.email}`} className="hover:text-primary-600 break-all">{restaurant.email}</a>
               </p>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-4 text-sm mb-4">
+          <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
             {restaurant.rating != null && (
               <span className="flex items-center gap-1.5">
                 <span className="inline-block w-16 h-2 bg-gray-200 rounded overflow-hidden">
@@ -256,7 +257,7 @@ const RestaurantDetailPage = () => {
                     style={{ width: getRatingWidth(restaurant.rating) }}
                   />
                 </span>
-                <Star size={18} className="text-amber-500 flex-shrink-0" />
+                <Star size={14} className="text-amber-500 flex-shrink-0" />
                 <span className="font-medium">{Number(restaurant.rating).toFixed(1)}</span>
               </span>
             )}
@@ -269,33 +270,45 @@ const RestaurantDetailPage = () => {
         </div>
       </div>
 
-      {/* Outside & Inside images */}
+      {/* Outside & Inside images - gọn hơn */}
       {(() => {
         const outImgs = collectOutsideImages(restaurant)
         const inImgs = collectInsideImages(restaurant)
         if (outImgs.length === 0 && inImgs.length === 0) return null
         return (
-          <div className="md:flex gap-6 mb-8">
+          <div className="md:flex gap-6 mb-6">
             {outImgs.length > 0 && (
-              <section className="flex-1 mb-6 md:mb-0">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3">{t('restaurantRegister.outsideImages')}</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <section className="flex-1 mb-5 md:mb-0">
+                <h2 className="text-base font-semibold text-gray-900 mb-2">{t('restaurantRegister.outsideImages')}</h2>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                   {outImgs.map((url, idx) => (
-                    <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block aspect-[4/3] rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition">
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setPreviewImage(url)}
+                      className="block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition bg-white"
+                      aria-label={t('common.view') || 'View'}
+                    >
                       <img src={url} alt="" className="w-full h-full object-cover" />
-                    </a>
+                    </button>
                   ))}
                 </div>
               </section>
             )}
             {inImgs.length > 0 && (
               <section className="flex-1">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3">{t('restaurantRegister.insideImages')}</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <h2 className="text-base font-semibold text-gray-900 mb-2">{t('restaurantRegister.insideImages')}</h2>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                   {inImgs.map((url, idx) => (
-                    <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block aspect-[4/3] rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition">
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setPreviewImage(url)}
+                      className="block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition bg-white"
+                      aria-label={t('common.view') || 'View'}
+                    >
                       <img src={url} alt="" className="w-full h-full object-cover" />
-                    </a>
+                    </button>
                   ))}
                 </div>
               </section>
@@ -543,6 +556,37 @@ const RestaurantDetailPage = () => {
                   {t('common.view')} {t('food.detail')}
                 </Link>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
+          onClick={() => setPreviewImage(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('common.view') || 'Preview image'}
+        >
+          <div
+            className="relative bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setPreviewImage(null)}
+              className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow text-gray-600 hover:text-gray-900 transition"
+              aria-label={t('common.close') || 'Close'}
+            >
+              <X size={20} />
+            </button>
+            <div className="bg-black flex items-center justify-center">
+              <img
+                src={previewImage}
+                alt=""
+                className="max-h-[90vh] w-auto object-contain"
+              />
             </div>
           </div>
         </div>

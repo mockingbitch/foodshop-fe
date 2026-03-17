@@ -5,7 +5,7 @@ import { restaurantApi } from '@services/api/restaurantApi'
 import { SEARCH_RADIUS_KM } from '@constants'
 import { commonApi } from '@services/api/commonApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { Store, MapPin, Star, Filter, X, ChevronLeft, ChevronRight, Navigation, Search, Globe, UtensilsCrossed, Truck } from 'lucide-react'
+import { Store, MapPin, Star, Filter, X, ChevronLeft, ChevronRight, Navigation, Search, Globe, Truck } from 'lucide-react'
 
 const PER_PAGE = 12
 
@@ -96,20 +96,16 @@ const ensureArray = (value) => {
   return []
 }
 
-const DEBOUNCE_MS = 350
-
 const RestaurantListPage = () => {
   const [searchParams] = useSearchParams()
   const { t, getMultilingualContent } = useLanguage()
   const [restaurants, setRestaurants] = useState([])
   const [loading, setLoading] = useState(true)
+  // Draft filters (UI state) - đổi UI KHÔNG gọi API
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') ?? '')
-  const [appliedSearch, setAppliedSearch] = useState(() => searchParams.get('search') ?? '')
   const [countryId, setCountryId] = useState('')
-  const [restaurantTypeId, setRestaurantTypeId] = useState('')
   const [deliveryOnly, setDeliveryOnly] = useState(false)
   const [countries, setCountries] = useState([])
-  const [restaurantTypes, setRestaurantTypes] = useState([])
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState({ currentPage: 1, lastPage: 1, total: 0, perPage: PER_PAGE })
   const [nearbyMode, setNearbyMode] = useState(false)
@@ -119,17 +115,24 @@ const RestaurantListPage = () => {
   const [locationError, setLocationError] = useState(null)
   const [gettingLocation, setGettingLocation] = useState(false)
 
+  // Applied filters - chỉ cập nhật khi bấm nút tìm kiếm (mới gọi API)
+  const [appliedFilters, setAppliedFilters] = useState(() => ({
+    search: (searchParams.get('search') ?? '').trim() || '',
+    country_id: '',
+    delivery_available: false,
+    nearbyMode: false,
+    lat: null,
+    lng: null,
+  }))
+
   useEffect(() => {
-    Promise.all([commonApi.getCountries(), commonApi.getRestaurantTypes()])
-      .then(([countriesRes, typesRes]) => {
+    Promise.all([commonApi.getCountries()])
+      .then(([countriesRes]) => {
         const countryList = Array.isArray(countriesRes?.data) ? countriesRes.data : (countriesRes?.data?.data ?? countriesRes?.data?.countries ?? [])
-        const typeList = Array.isArray(typesRes?.data) ? typesRes.data : (typesRes?.data?.data ?? typesRes?.data ?? [])
         setCountries(Array.isArray(countryList) ? countryList : [])
-        setRestaurantTypes(Array.isArray(typeList) ? typeList : [])
       })
       .catch(() => {
         setCountries([])
-        setRestaurantTypes([])
       })
   }, [])
 
@@ -141,14 +144,15 @@ const RestaurantListPage = () => {
         const params = { per_page: PER_PAGE, page: pageNum }
         if (filters.search?.trim()) params.search = filters.search.trim()
         if (filters.country_id) params.country_id = Number(filters.country_id)
-        if (filters.restaurant_type_id) params.restaurant_type_id = Number(filters.restaurant_type_id)
         if (filters.delivery_available === true) params.delivery_available = true
         if (filters.nearbyMode && filters.lat != null && filters.lng != null) {
           params.lat = filters.lat
           params.lng = filters.lng
           params.radius = SEARCH_RADIUS_KM
         }
-        const res = await restaurantApi.getRestaurants(params)
+        // Khi bấm nút submit tìm kiếm, ưu tiên gọi endpoint /restaurants/search.
+        // Backend có thể vẫn hỗ trợ các params filter giống list.
+        const res = await restaurantApi.searchRestaurants(params)
         const list = ensureArray(res?.data)
         const arr = Array.isArray(list) ? list : []
         setRestaurants(arr)
@@ -208,44 +212,54 @@ const RestaurantListPage = () => {
   }
 
   const handleSearchClick = () => {
-    setAppliedSearch(searchQuery.trim())
+    setAppliedFilters({
+      search: searchQuery.trim(),
+      country_id: countryId || '',
+      delivery_available: !!deliveryOnly,
+      nearbyMode: !!nearbyMode,
+      lat: nearbyMode ? userLat : null,
+      lng: nearbyMode ? userLng : null,
+    })
     setPage(1)
   }
 
   useEffect(() => {
-    setPage(1)
-  }, [appliedSearch, countryId, restaurantTypeId, deliveryOnly, nearbyMode])
+    fetchRestaurants(
+      {
+        search: appliedFilters.search || undefined,
+        country_id: appliedFilters.country_id || undefined,
+        delivery_available: appliedFilters.delivery_available || undefined,
+        nearbyMode: appliedFilters.nearbyMode,
+        lat: appliedFilters.lat,
+        lng: appliedFilters.lng,
+      },
+      page
+    )
+  }, [appliedFilters, page, fetchRestaurants])
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchRestaurants(
-        {
-          search: appliedSearch || undefined,
-          country_id: countryId || undefined,
-          restaurant_type_id: restaurantTypeId || undefined,
-          delivery_available: deliveryOnly || undefined,
-          nearbyMode,
-          lat: userLat,
-          lng: userLng,
-        },
-        page
-      )
-    }, DEBOUNCE_MS)
-    return () => clearTimeout(timer)
-  }, [appliedSearch, countryId, restaurantTypeId, deliveryOnly, nearbyMode, userLat, userLng, page, fetchRestaurants])
-
-  const hasActiveFilters = appliedSearch || countryId || restaurantTypeId || deliveryOnly || nearbyMode
+  const hasActiveFilters =
+    appliedFilters.search ||
+    appliedFilters.country_id ||
+    appliedFilters.delivery_available ||
+    appliedFilters.nearbyMode
   const clearFilters = () => {
     setSearchQuery('')
-    setAppliedSearch('')
     setCountryId('')
-    setRestaurantTypeId('')
     setDeliveryOnly(false)
     setNearbyMode(false)
     setNearbyIntent(false)
     setUserLat(null)
     setUserLng(null)
     setLocationError(null)
+    setAppliedFilters({
+      search: '',
+      country_id: '',
+      delivery_available: false,
+      nearbyMode: false,
+      lat: null,
+      lng: null,
+    })
+    setPage(1)
   }
 
   const getRatingWidth = (rating) => (!rating ? '0%' : `${(rating / 5) * 100}%`)
@@ -265,43 +279,6 @@ const RestaurantListPage = () => {
 
       {/* Search & Filters */}
       <div className="mb-6 sm:mb-8 space-y-4">
-        {/* Search by food - input + button */}
-        <div className="flex gap-2 sm:gap-3">
-          <div className="relative group flex-1">
-            <Search
-              size={20}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary-500 transition-colors pointer-events-none"
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
-              placeholder={t('restaurant.searchByFood')}
-              className="input w-full pl-12 pr-12 py-3.5 text-base rounded-xl border-gray-200 bg-white shadow-sm hover:shadow-md focus:shadow-md transition-shadow placeholder:text-gray-400"
-              aria-label={t('restaurant.searchByFood')}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                aria-label="Clear search"
-              >
-                <X size={18} />
-              </button>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={handleSearchClick}
-            className="btn btn-primary py-3.5 px-8 rounded-xl inline-flex items-center gap-2 font-medium whitespace-nowrap"
-          >
-            <Search size={20} />
-            {t('common.search')}
-          </button>
-        </div>
-
         {/* Filter card */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="p-4 sm:p-5">
@@ -322,94 +299,113 @@ const RestaurantListPage = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Country */}
+            <div className="space-y-4">
+              {/* Search keyword (1 hàng) */}
               <div className="space-y-1.5">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
-                  <Globe size={16} className="text-gray-400" />
-                  {t('restaurant.filterCountry')}
+                  <Search size={16} className="text-gray-400" />
+                  {t('restaurant.searchByFood')}
                 </label>
-                <select
-                  value={countryId}
-                  onChange={(e) => setCountryId(e.target.value)}
-                  className="input w-full py-2.5 rounded-lg border-gray-200 focus:border-primary-400"
-                  aria-label={t('restaurant.filterCountry')}
-                >
-                  <option value="">{t('common.all')}</option>
-                  {countries.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {toDisplayName(c.name, getMultilingualContent) || c.name_en || c.code || c.id}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Restaurant type */}
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
-                  <UtensilsCrossed size={16} className="text-gray-400" />
-                  {t('restaurant.filterType')}
-                </label>
-                <select
-                  value={restaurantTypeId}
-                  onChange={(e) => setRestaurantTypeId(e.target.value)}
-                  className="input w-full py-2.5 rounded-lg border-gray-200 focus:border-primary-400"
-                  aria-label={t('restaurant.filterType')}
-                >
-                  <option value="">{t('common.all')}</option>
-                  {restaurantTypes.map((rt) => (
-                    <option key={rt.id} value={rt.id}>
-                      {toDisplayName(rt.name, getMultilingualContent) || rt.name_en || rt.type || rt.id}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Delivery */}
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
-                  <Truck size={16} className="text-gray-400" />
-                  {t('restaurant.deliveryOnly')}
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer h-[42px]">
+                <div className="relative group">
                   <input
-                    type="checkbox"
-                    checked={deliveryOnly}
-                    onChange={(e) => setDeliveryOnly(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
+                    placeholder={t('restaurant.searchByFood')}
+                    className="input w-full pr-10 py-2.5 rounded-lg border-gray-200 focus:border-primary-400"
+                    aria-label={t('restaurant.searchByFood')}
                   />
-                  <span className="text-sm font-medium text-gray-700">{t('restaurant.deliveryOnly')}</span>
-                </label>
-              </div>
-
-              {/* Find nearby */}
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
-                  <Navigation size={16} className="text-gray-400" />
-                  {t('restaurant.findNearby')}
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer h-[42px]">
-                  <input
-                    type="checkbox"
-                    checked={nearbyMode || (gettingLocation && nearbyIntent)}
-                    onChange={handleNearbyChange}
-                    disabled={gettingLocation}
-                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50"
-                  />
-                  <span className="text-sm font-medium text-gray-700">{t('restaurant.findNearby')}</span>
-                  {gettingLocation && (
-                    <span className="text-xs text-gray-500">({t('common.loading')})</span>
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                      aria-label="Clear search"
+                    >
+                      <X size={16} />
+                    </button>
                   )}
-                </label>
-                {nearbyMode && (
-                  <span className="text-xs text-primary-600 font-medium">
-                    {t('restaurant.nearby')} ({SEARCH_RADIUS_KM}km)
-                  </span>
-                )}
-                {locationError && (
-                  <p className="text-xs text-red-600">{locationError}</p>
-                )}
+                </div>
               </div>
+
+              {/* Country + Delivery + Find nearby (cùng 1 hàng) */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                    <Globe size={16} className="text-gray-400" />
+                    {t('restaurant.filterCountry')}
+                  </label>
+                  <select
+                    value={countryId}
+                    onChange={(e) => setCountryId(e.target.value)}
+                    className="input w-full py-2.5 rounded-lg border-gray-200 focus:border-primary-400"
+                    aria-label={t('restaurant.filterCountry')}
+                  >
+                    <option value="">{t('common.all')}</option>
+                    {countries.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {toDisplayName(c.name, getMultilingualContent) || c.name_en || c.code || c.id}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                    <Truck size={16} className="text-gray-400" />
+                    {t('restaurant.deliveryOnly')}
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer h-[42px]">
+                    <input
+                      type="checkbox"
+                      checked={deliveryOnly}
+                      onChange={(e) => setDeliveryOnly(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">{t('restaurant.deliveryOnly')}</span>
+                  </label>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                    <Navigation size={16} className="text-gray-400" />
+                    {t('restaurant.findNearby')}
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer h-[42px]">
+                    <input
+                      type="checkbox"
+                      checked={nearbyMode || (gettingLocation && nearbyIntent)}
+                      onChange={handleNearbyChange}
+                      disabled={gettingLocation}
+                      className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50"
+                    />
+                    <span className="text-sm font-medium text-gray-700">{t('restaurant.findNearby')}</span>
+                    {gettingLocation && (
+                      <span className="text-xs text-gray-500">({t('common.loading')})</span>
+                    )}
+                  </label>
+                  {nearbyMode && (
+                    <span className="text-xs text-primary-600 font-medium">
+                      {t('restaurant.nearby')} ({SEARCH_RADIUS_KM}km)
+                    </span>
+                  )}
+                  {locationError && (
+                    <p className="text-xs text-red-600">{locationError}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                onClick={handleSearchClick}
+                className="btn btn-primary inline-flex items-center gap-2 font-medium"
+              >
+                <Search size={18} />
+                {t('common.search')}
+              </button>
             </div>
           </div>
         </div>
