@@ -58,7 +58,7 @@ const HomePage = () => {
   useEffect(() => {
     Promise.all([
       restaurantApi.getRestaurants({ per_page: 24 }),
-      newsApi.getNews({ type: 'news', per_page: 6 }),
+      newsApi.getNews({ type: 'news', per_page: 4 }),
     ])
       .then(([resRest, resNews]) => {
         const listRest = ensureArray(resRest?.data)
@@ -247,8 +247,8 @@ const HomePage = () => {
                     <ChevronRight size={18} />
                   </Link>
                 </div>
-                <div className="grid grid-cols-4 gap-4 sm:gap-6">
-                  {news.map((item, idx) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                  {news.slice(0, 4).map((item, idx) => (
                     <Link
                       key={getNewsId(item) ?? idx}
                       to={`/news/${getNewsId(item)}`}

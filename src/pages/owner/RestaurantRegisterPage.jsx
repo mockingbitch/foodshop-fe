@@ -121,6 +121,8 @@ const RestaurantRegisterPage = () => {
     if (!q) return { lat: DEFAULT_LAT, lng: DEFAULT_LNG }
     try {
       const result = await geocodeAddress(q)
+      console.log(result);
+      
       return result ? { lat: result.lat, lng: result.lng } : { lat: DEFAULT_LAT, lng: DEFAULT_LNG }
     } catch {
       return { lat: DEFAULT_LAT, lng: DEFAULT_LNG }

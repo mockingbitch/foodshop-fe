@@ -44,6 +44,13 @@ export default defineConfig(({ mode }) => {
         target: proxyTarget,
         changeOrigin: true,
       },
+      // Dev only: proxy Google Maps APIs to avoid browser CORS during development.
+      '/google-maps': {
+        target: 'https://maps.googleapis.com',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (p) => p.replace(/^\/google-maps/, ''),
+      },
     },
   },
   build: {
