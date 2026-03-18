@@ -9,6 +9,7 @@ import { formatPriceInput, parsePriceValue } from '@utils/helpers'
 import { toast } from 'react-toastify'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import ConfirmModal from '@components/common/ConfirmModal'
+import ImageUrlOrUpload from '@components/owner/ImageUrlOrUpload'
 
 const getOwnerId = (user) => user?.id ?? user?.user_id ?? user?.owner_id
 const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
@@ -339,14 +340,15 @@ const FoodItemEditPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.mainImageUrl')}</label>
-            <input
-              type="url"
+            <ImageUrlOrUpload
               name="main_image"
               value={formData.main_image}
-              onChange={handleChange}
-              className="input w-full"
+              onChange={(url) => setFormData((prev) => ({ ...prev, main_image: url }))}
+              label={t('food.mainImageUrl')}
               placeholder={t('food.mainImagePlaceholder')}
+              uploadType="food"
+              t={t}
+              disabled={submitting}
             />
           </div>
 

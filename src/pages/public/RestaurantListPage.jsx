@@ -5,7 +5,7 @@ import { restaurantApi } from '@services/api/restaurantApi'
 import { SEARCH_RADIUS_KM } from '@constants'
 import { commonApi } from '@services/api/commonApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { Store, MapPin, Star, Filter, X, ChevronLeft, ChevronRight, Navigation, Search, Globe, Truck } from 'lucide-react'
+import { Store, MapPin, Star, X, ChevronLeft, ChevronRight, Navigation, Search, Globe, Truck } from 'lucide-react'
 
 const PER_PAGE = 12
 
@@ -237,30 +237,7 @@ const RestaurantListPage = () => {
     )
   }, [appliedFilters, page, fetchRestaurants])
 
-  const hasActiveFilters =
-    appliedFilters.search ||
-    appliedFilters.country_id ||
-    appliedFilters.delivery_available ||
-    appliedFilters.nearbyMode
-  const clearFilters = () => {
-    setSearchQuery('')
-    setCountryId('')
-    setDeliveryOnly(false)
-    setNearbyMode(false)
-    setNearbyIntent(false)
-    setUserLat(null)
-    setUserLng(null)
-    setLocationError(null)
-    setAppliedFilters({
-      search: '',
-      country_id: '',
-      delivery_available: false,
-      nearbyMode: false,
-      lat: null,
-      lng: null,
-    })
-    setPage(1)
-  }
+  // Filter header + clear button removed by request.
 
   const getRatingWidth = (rating) => (!rating ? '0%' : `${(rating / 5) * 100}%`)
 
@@ -282,23 +259,6 @@ const RestaurantListPage = () => {
         {/* Filter card */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="p-4 sm:p-5">
-            <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-4">
-              <div className="flex items-center gap-2 text-gray-700">
-                <Filter size={18} className="text-primary-500" />
-                <span className="text-sm font-medium">{t('common.filter')}</span>
-              </div>
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-primary-600 hover:bg-primary-50 transition-colors"
-                >
-                  <X size={14} />
-                  {t('common.clearFilters')}
-                </button>
-              )}
-            </div>
-
             <div className="space-y-4">
               {/* Search keyword (1 hàng) */}
               <div className="space-y-1.5">
@@ -329,8 +289,8 @@ const RestaurantListPage = () => {
                 </div>
               </div>
 
-              {/* Country + Delivery + Find nearby (cùng 1 hàng) */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Country + Delivery + Find nearby + Submit (cùng 1 hàng) */}
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-start">
                 <div className="space-y-1.5">
                   <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
                     <Globe size={16} className="text-gray-400" />
@@ -381,9 +341,6 @@ const RestaurantListPage = () => {
                       className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50"
                     />
                     <span className="text-sm font-medium text-gray-700">{t('restaurant.findNearby')}</span>
-                    {gettingLocation && (
-                      <span className="text-xs text-gray-500">({t('common.loading')})</span>
-                    )}
                   </label>
                   {nearbyMode && (
                     <span className="text-xs text-primary-600 font-medium">
@@ -394,18 +351,18 @@ const RestaurantListPage = () => {
                     <p className="text-xs text-red-600">{locationError}</p>
                   )}
                 </div>
-              </div>
-            </div>
 
-            <div className="mt-5 flex justify-end">
-              <button
-                type="button"
-                onClick={handleSearchClick}
-                className="btn btn-primary inline-flex items-center gap-2 font-medium"
-              >
-                <Search size={18} />
-                {t('common.search')}
-              </button>
+                <div className="lg:flex lg:justify-end">
+                  <button
+                    type="button"
+                    onClick={handleSearchClick}
+                    className="btn btn-primary w-full lg:w-auto inline-flex items-center justify-center gap-2 font-medium"
+                  >
+                    <Search size={18} />
+                    {t('common.search')}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -420,7 +377,9 @@ const RestaurantListPage = () => {
           <Store size={48} className="mx-auto text-gray-400 mb-4" />
           <p className="text-gray-600 mb-2">{t('common.noData')}</p>
           <p className="text-sm text-gray-500">
-            {hasActiveFilters ? t('restaurant.noResults') : null}
+            {(appliedFilters.search || appliedFilters.country_id || appliedFilters.delivery_available || appliedFilters.nearbyMode)
+              ? t('restaurant.noResults')
+              : null}
           </p>
         </div>
       ) : (
