@@ -21,10 +21,23 @@ const toDisplayText = (val) => {
 const getNewsImage = (item) =>
   item?.featured_image ?? item?.image ?? item?.featured_image_url ?? item?.images?.[0]?.url ?? null
 
+const ensureArray = (value) => {
+  if (Array.isArray(value)) return value
+  if (!value || typeof value !== 'object') return []
+  const raw = value.data ?? value.items ?? value.results ?? value.list ?? value.news
+  if (Array.isArray(raw)) return raw
+  if (raw && typeof raw === 'object') {
+    const nested = raw.data ?? raw.items ?? raw.results ?? raw.list ?? raw.news
+    return Array.isArray(nested) ? nested : []
+  }
+  return []
+}
+
 const NewsDetailPage = () => {
   const { id } = useParams()
   const { t } = useLanguage()
   const [news, setNews] = useState(null)
+  const [latestNews, setLatestNews] = useState([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
@@ -36,16 +49,23 @@ const NewsDetailPage = () => {
     }
     setLoading(true)
     setNotFound(false)
-    newsApi
-      .getNewsById(id)
-      .then((res) => {
-        const raw = res?.data ?? res
+    Promise.all([
+      newsApi.getNewsById(id),
+      newsApi.getNews({ per_page: 5 }),
+    ])
+      .then(([detailRes, listRes]) => {
+        const raw = detailRes?.data ?? detailRes
         const item = raw?.data ?? raw?.news ?? raw?.result ?? raw
         if (item && typeof item === 'object' && !Array.isArray(item)) {
           setNews(item)
         } else {
           setNotFound(true)
         }
+
+        const listRaw = listRes?.data ?? listRes
+        const list = ensureArray(listRaw)
+        const filtered = (Array.isArray(list) ? list : []).filter((x) => String(x?.id ?? '') !== String(id))
+        setLatestNews(filtered.slice(0, 5))
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false))
@@ -88,39 +108,93 @@ const NewsDetailPage = () => {
         <span className="text-gray-700 truncate max-w-[200px] sm:max-w-none">{title || t('common.news')}</span>
       </nav>
 
-      <article className="card p-0 max-w-4xl mx-auto overflow-visible">
-        {imageUrl && (
-          <div className="w-full aspect-[16/10] sm:aspect-[21/9] bg-gray-100 overflow-hidden rounded-t-xl">
-            <img
-              src={imageUrl}
-              alt={title}
-              className="w-full h-full object-cover"
-            />
+      <div className="grid grid-cols-1 lg:grid-cols-[320px,1fr] gap-6 items-start">
+        {/* Left column: latest 5 news */}
+        <aside className="lg:sticky lg:top-20">
+          <div className="card p-4 sm:p-5">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
+                {t('common.news')}
+              </h2>
+              <Link to="/news" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                {t('common.view')} {t('common.all')}
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {latestNews.slice(0, 5).map((item) => {
+                const itemTitle = toDisplayText(item?.title) || t('common.noData')
+                const itemImage = getNewsImage(item)
+                const date = item?.published_at ?? item?.created_at ?? item?.date
+                return (
+                  <Link
+                    key={item?.id}
+                    to={`/news/${item?.id}`}
+                    className="flex gap-3 p-2 rounded-lg hover:bg-gray-50 transition min-w-0"
+                  >
+                    <div className="w-16 h-16 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+                      {itemImage ? (
+                        <img src={itemImage} alt={itemTitle} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <Newspaper size={22} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold text-gray-900 line-clamp-2">
+                        {itemTitle}
+                      </div>
+                      {date && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          {formatDate(date, 'PPP')}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                )
+              })}
+              {latestNews.length === 0 && (
+                <p className="text-sm text-gray-500">{t('common.noData')}</p>
+              )}
+            </div>
           </div>
-        )}
-        <div className="p-6 sm:p-8 w-full min-w-0 overflow-visible box-border">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 break-words">
-            {title || t('common.noData')}
-          </h1>
-          {publishedAt && (
-            <p className="text-sm text-gray-500 mb-6">
-              {formatDate(publishedAt, 'PPP')}
-            </p>
+        </aside>
+
+        {/* Right column: detail */}
+        <article className="card p-0 overflow-visible">
+          {imageUrl && (
+            <div className="w-full aspect-[16/10] sm:aspect-[21/9] bg-gray-100 overflow-hidden rounded-t-xl">
+              <img
+                src={imageUrl}
+                alt={title}
+                className="w-full h-full object-cover"
+              />
+            </div>
           )}
-          {toDisplayText(news.excerpt) && !contentHtml && (
-            <p className="text-gray-600 mb-6">{toDisplayText(news.excerpt)}</p>
-          )}
-          {contentHtml ? (
-            <div
-              className="content-html w-full min-w-0 overflow-visible"
-              style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}
-              dangerouslySetInnerHTML={{ __html: contentHtml }}
-            />
-          ) : toDisplayText(news.excerpt) ? (
-            <p className="text-gray-600">{toDisplayText(news.excerpt)}</p>
-          ) : null}
-        </div>
-      </article>
+          <div className="p-6 sm:p-8 w-full min-w-0 overflow-visible box-border">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 break-words">
+              {title || t('common.noData')}
+            </h1>
+            {publishedAt && (
+              <p className="text-sm text-gray-500 mb-6">
+                {formatDate(publishedAt, 'PPP')}
+              </p>
+            )}
+            {toDisplayText(news.excerpt) && !contentHtml && (
+              <p className="text-gray-600 mb-6">{toDisplayText(news.excerpt)}</p>
+            )}
+            {contentHtml ? (
+              <div
+                className="content-html w-full min-w-0 overflow-visible"
+                style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}
+                dangerouslySetInnerHTML={{ __html: contentHtml }}
+              />
+            ) : toDisplayText(news.excerpt) ? (
+              <p className="text-gray-600">{toDisplayText(news.excerpt)}</p>
+            ) : null}
+          </div>
+        </article>
+      </div>
     </div>
   )
 }

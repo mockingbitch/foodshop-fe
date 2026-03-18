@@ -214,12 +214,19 @@ const RestaurantDetailPage = () => {
 
       {/* Restaurant info (header) - giữ layout như cũ nhưng gọn hơn */}
       <div className="card overflow-hidden p-0 flex flex-col md:flex-row mb-5">
-        <div className="w-full md:w-[28%] flex-shrink-0 aspect-[16/10] md:aspect-auto md:min-h-[180px] bg-gray-100">
-          <img
-            src={getRestaurantImage(restaurant)}
-            alt={restaurantName}
-            className="w-full h-full object-cover"
-          />
+        <div className="w-full md:w-[28%] flex-shrink-0 bg-gray-100 h-[126px] sm:h-[140px] md:h-[126px]">
+          <button
+            type="button"
+            onClick={() => setPreviewImage(getRestaurantImage(restaurant))}
+            className="block w-full"
+            aria-label={t('common.view') || 'View'}
+          >
+            <img
+              src={getRestaurantImage(restaurant)}
+              alt={restaurantName}
+              className="block w-full object-cover"
+            />
+          </button>
         </div>
         <div className="w-full md:w-[72%] p-3 sm:p-4 flex flex-col">
           <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">
@@ -267,34 +274,40 @@ const RestaurantDetailPage = () => {
               </span>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Outside & Inside images - gọn hơn */}
-      {(() => {
-        const outImgs = collectOutsideImages(restaurant)
-        const inImgs = collectInsideImages(restaurant)
-        if (outImgs.length === 0 && inImgs.length === 0) return null
-        return (
-          <div className="md:flex gap-6 mb-6">
-            {outImgs.length > 0 && (
-              <section className="flex-1 mb-5 md:mb-0">
-                <h2 className="text-base font-semibold text-gray-900 mb-2">{t('restaurantRegister.outsideImages')}</h2>
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                  {outImgs.map((url, idx) => (
+          {(() => {
+            const outImgs = collectOutsideImages(restaurant)
+            if (outImgs.length === 0) return null
+            return (
+              <div className="mt-3">
+                <div className="text-xs font-semibold text-gray-700 mb-2">
+                  {t('restaurantRegister.outsideImages')}
+                </div>
+                <div className="grid grid-cols-8 sm:grid-cols-10 gap-1">
+                  {outImgs.slice(0, 10).map((url, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => setPreviewImage(url)}
-                      className="block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition bg-white"
+                      className="block aspect-square rounded overflow-hidden border border-gray-200 hover:opacity-90 transition bg-white"
                       aria-label={t('common.view') || 'View'}
                     >
                       <img src={url} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
-              </section>
-            )}
+              </div>
+            )
+          })()}
+        </div>
+      </div>
+
+      {/* Outside & Inside images - gọn hơn */}
+      {(() => {
+        const inImgs = collectInsideImages(restaurant)
+        if (inImgs.length === 0) return null
+        return (
+          <div className="md:flex gap-6 mb-6">
             {inImgs.length > 0 && (
               <section className="flex-1">
                 <h2 className="text-base font-semibold text-gray-900 mb-2">{t('restaurantRegister.insideImages')}</h2>

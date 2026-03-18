@@ -58,7 +58,7 @@ const HomePage = () => {
   useEffect(() => {
     Promise.all([
       restaurantApi.getRestaurants({ per_page: 24 }),
-      newsApi.getNews({ type: 'news', per_page: 4 }),
+      newsApi.getNews({ per_page: 4 }),
     ])
       .then(([resRest, resNews]) => {
         const listRest = ensureArray(resRest?.data)

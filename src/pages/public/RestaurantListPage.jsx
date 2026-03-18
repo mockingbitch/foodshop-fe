@@ -342,11 +342,6 @@ const RestaurantListPage = () => {
                     />
                     <span className="text-sm font-medium text-gray-700">{t('restaurant.findNearby')}</span>
                   </label>
-                  {nearbyMode && (
-                    <span className="text-xs text-primary-600 font-medium">
-                      {t('restaurant.nearby')} ({SEARCH_RADIUS_KM}km)
-                    </span>
-                  )}
                   {locationError && (
                     <p className="text-xs text-red-600">{locationError}</p>
                   )}
