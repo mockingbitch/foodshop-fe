@@ -80,6 +80,8 @@
     "filterCountry": "Quốc gia",
     "filterType": "Loại nhà hàng",
     "deliveryOnly": "Chỉ có giao hàng",
+    "deliveryAvailableYes": "Có giao hàng",
+    "deliveryAvailableNo": "Không giao hàng",
     "findNearby": "Tìm xung quanh 10km",
     "locationRequired": "Cần quyền định vị để tìm nhà hàng gần bạn.",
     "locationDenied": "Quyền định vị bị từ chối.",
@@ -117,6 +119,12 @@
   "news": {
     "draft": "Bản nháp",
     "published": "Đã xuất bản"
+  },
+  "footer": {
+    "aboutLine1": "Khám phá những nhà hàng tuyệt vời và món ăn ngon gần bạn.",
+    "aboutLine2": "Kết nối trực tiếp với chủ nhà hàng để có trải nghiệm tốt nhất.",
+    "contact": "Liên hệ",
+    "copyright": "Restaurant & Food. Tất cả các quyền được bảo lưu."
   },
   "auth": {
     "loginTitle": "Đăng nhập",

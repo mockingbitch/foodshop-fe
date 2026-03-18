@@ -80,6 +80,8 @@
     "filterCountry": "국가",
     "filterType": "레스토랑 유형",
     "deliveryOnly": "배달만",
+    "deliveryAvailableYes": "배달 가능",
+    "deliveryAvailableNo": "배달 불가",
     "findNearby": "주변 10km 찾기",
     "locationRequired": "주변 레스토랑을 찾으려면 위치 권한이 필요합니다.",
     "locationDenied": "위치 권한이 거부되었습니다.",
@@ -117,6 +119,12 @@
   "news": {
     "draft": "초안",
     "published": "게시됨"
+  },
+  "footer": {
+    "aboutLine1": "내 주변의 멋진 레스토랑과 맛있는 음식을 찾아보세요.",
+    "aboutLine2": "최고의 경험을 위해 레스토랑 사장님과 직접 연결하세요.",
+    "contact": "문의",
+    "copyright": "Restaurant & Food. All rights reserved."
   },
   "auth": {
     "loginTitle": "로그인",

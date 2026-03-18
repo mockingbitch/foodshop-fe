@@ -80,6 +80,8 @@
     "filterCountry": "Country",
     "filterType": "Restaurant type",
     "deliveryOnly": "Delivery only",
+    "deliveryAvailableYes": "Delivery available",
+    "deliveryAvailableNo": "No delivery",
     "findNearby": "Find nearby (10km)",
     "locationRequired": "Location access is required to find nearby restaurants.",
     "locationDenied": "Location access was denied.",
@@ -117,6 +119,12 @@
   "news": {
     "draft": "Draft",
     "published": "Published"
+  },
+  "footer": {
+    "aboutLine1": "Discover amazing restaurants and delicious food near you.",
+    "aboutLine2": "Connect directly with restaurant owners for the best experience.",
+    "contact": "Contact",
+    "copyright": "Restaurant & Food. All rights reserved."
   },
   "auth": {
     "loginTitle": "Login",

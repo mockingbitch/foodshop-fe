@@ -26,8 +26,9 @@ const Footer = ({ compact = false }) => {
           <div>
             <h3 className="text-white font-semibold text-lg mb-4">Restaurant & Food</h3>
             <p className="text-sm leading-relaxed">
-              Discover amazing restaurants and delicious food near you. 
-              Connect directly with restaurant owners for the best experience.
+              {t('footer.aboutLine1')}
+              {' '}
+              {t('footer.aboutLine2')}
             </p>
           </div>
 
@@ -91,7 +92,7 @@ const Footer = ({ compact = false }) => {
 
           {/* Contact */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Contact</h3>
+            <h3 className="text-white font-semibold text-lg mb-4">{t('footer.contact')}</h3>
             <ul className="space-y-3 text-sm">
               <li className="flex items-center space-x-2">
                 <Mail size={16} />
@@ -117,7 +118,7 @@ const Footer = ({ compact = false }) => {
 
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 text-sm text-center">
-          <p>&copy; {currentYear} Restaurant & Food. All rights reserved.</p>
+          <p>&copy; {currentYear} {t('footer.copyright')}</p>
         </div>
       </div>
     </footer>

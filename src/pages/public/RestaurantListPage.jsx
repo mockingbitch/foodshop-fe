@@ -104,7 +104,8 @@ const RestaurantListPage = () => {
   // Draft filters (UI state) - đổi UI KHÔNG gọi API
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') ?? '')
   const [countryId, setCountryId] = useState('')
-  const [deliveryOnly, setDeliveryOnly] = useState(false)
+  // '' = không filter, 'true' = chỉ giao hàng, 'false' = không giao hàng
+  const [deliveryAvailable, setDeliveryAvailable] = useState('')
   const [countries, setCountries] = useState([])
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState({ currentPage: 1, lastPage: 1, total: 0, perPage: PER_PAGE })
@@ -119,7 +120,7 @@ const RestaurantListPage = () => {
   const [appliedFilters, setAppliedFilters] = useState(() => ({
     search: (searchParams.get('search') ?? '').trim() || '',
     country_id: '',
-    delivery_available: false,
+    delivery_available: null,
     nearbyMode: false,
     lat: null,
     lng: null,
@@ -144,7 +145,9 @@ const RestaurantListPage = () => {
         const params = { per_page: PER_PAGE, page: pageNum }
         if (filters.search?.trim()) params.search = filters.search.trim()
         if (filters.country_id) params.country_id = Number(filters.country_id)
-        if (filters.delivery_available === true) params.delivery_available = true
+        if (filters.delivery_available === true || filters.delivery_available === false) {
+          params.delivery_available = filters.delivery_available
+        }
         if (filters.nearbyMode && filters.lat != null && filters.lng != null) {
           params.lat = filters.lat
           params.lng = filters.lng
@@ -212,10 +215,14 @@ const RestaurantListPage = () => {
   }
 
   const handleSearchClick = () => {
+    const deliveryValue =
+      deliveryAvailable === 'true' ? true
+        : deliveryAvailable === 'false' ? false
+          : null
     setAppliedFilters({
       search: searchQuery.trim(),
       country_id: countryId || '',
-      delivery_available: !!deliveryOnly,
+      delivery_available: deliveryValue,
       nearbyMode: !!nearbyMode,
       lat: nearbyMode ? userLat : null,
       lng: nearbyMode ? userLng : null,
@@ -228,7 +235,7 @@ const RestaurantListPage = () => {
       {
         search: appliedFilters.search || undefined,
         country_id: appliedFilters.country_id || undefined,
-        delivery_available: appliedFilters.delivery_available || undefined,
+        delivery_available: appliedFilters.delivery_available,
         nearbyMode: appliedFilters.nearbyMode,
         lat: appliedFilters.lat,
         lng: appliedFilters.lng,
@@ -316,15 +323,16 @@ const RestaurantListPage = () => {
                     <Truck size={16} className="text-gray-400" />
                     {t('restaurant.deliveryOnly')}
                   </label>
-                  <label className="flex items-center gap-2 cursor-pointer h-[42px]">
-                    <input
-                      type="checkbox"
-                      checked={deliveryOnly}
-                      onChange={(e) => setDeliveryOnly(e.target.checked)}
-                      className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="text-sm font-medium text-gray-700">{t('restaurant.deliveryOnly')}</span>
-                  </label>
+                  <select
+                    value={deliveryAvailable}
+                    onChange={(e) => setDeliveryAvailable(e.target.value)}
+                    className="input w-full py-2.5 rounded-lg border-gray-200 focus:border-primary-400"
+                    aria-label={t('restaurant.deliveryOnly')}
+                  >
+                    <option value="">{t('common.all')}</option>
+                    <option value="true">{t('restaurant.deliveryAvailableYes')}</option>
+                    <option value="false">{t('restaurant.deliveryAvailableNo')}</option>
+                  </select>
                 </div>
 
                 <div className="space-y-1.5">
