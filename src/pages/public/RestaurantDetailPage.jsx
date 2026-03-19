@@ -159,6 +159,8 @@ const RestaurantDetailPage = () => {
 
   const restaurantName = toDisplayText(restaurant.name)
   const description = toDisplayText(restaurant.description)
+  const outImgs = collectOutsideImages(restaurant)
+  const inImgs = collectInsideImages(restaurant)
   const bestSellerItems = foodItems.filter(
     (i) => i.is_best_seller === true || i.is_best_seller === 1
   )
@@ -232,9 +234,6 @@ const RestaurantDetailPage = () => {
           <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">
             {restaurantName || t('restaurant.detail')}
           </h1>
-          {description && (
-            <p className="text-gray-600 leading-relaxed mb-2 line-clamp-1">{description}</p>
-          )}
           <div className="space-y-1 text-xs sm:text-sm text-gray-600 mb-2">
             {restaurant.address && (
               <p className="flex items-start gap-2 min-w-0">
@@ -275,55 +274,59 @@ const RestaurantDetailPage = () => {
             )}
           </div>
 
+          {(outImgs.length > 0 || inImgs.length > 0) && (
+            <div className="mb-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {outImgs.length > 0 && (
+                  <section>
+                    <h2 className="text-base font-semibold text-gray-900 mb-2">{t('restaurantRegister.outsideImages')}</h2>
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                      {outImgs.map((url, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setPreviewImage(url)}
+                          className="block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition bg-white"
+                          aria-label={t('common.view') || 'View'}
+                        >
+                          <img src={url} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {inImgs.length > 0 && (
+                  <section>
+                    <h2 className="text-base font-semibold text-gray-900 mb-2">{t('restaurantRegister.insideImages')}</h2>
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                      {inImgs.map((url, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setPreviewImage(url)}
+                          className="block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition bg-white"
+                          aria-label={t('common.view') || 'View'}
+                        >
+                          <img src={url} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
 
-      {/* Outside & Inside images - gọn hơn */}
-      {(() => {
-        const outImgs = collectOutsideImages(restaurant)
-        const inImgs = collectInsideImages(restaurant)
-        if (outImgs.length === 0 && inImgs.length === 0) return null
-        return (
-          <div className="md:flex gap-6 mb-6">
-            {outImgs.length > 0 && (
-              <section className="flex-1 mb-5 md:mb-0">
-                <h2 className="text-base font-semibold text-gray-900 mb-2">{t('restaurantRegister.outsideImages')}</h2>
-                <div className="grid grid-cols-8 sm:grid-cols-12 gap-1">
-                  {outImgs.map((url, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setPreviewImage(url)}
-                      className="block aspect-square rounded overflow-hidden border border-gray-200 hover:opacity-90 transition bg-white"
-                      aria-label={t('common.view') || 'View'}
-                    >
-                      <img src={url} alt="" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-            {inImgs.length > 0 && (
-              <section className="flex-1">
-                <h2 className="text-base font-semibold text-gray-900 mb-2">{t('restaurantRegister.insideImages')}</h2>
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                  {inImgs.map((url, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setPreviewImage(url)}
-                      className="block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition bg-white"
-                      aria-label={t('common.view') || 'View'}
-                    >
-                      <img src={url} alt="" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
-        )
-      })()}
+      {/* Description moved below (replaces outside images area) */}
+      {description && (
+        <div className="mb-6">
+          <p className="text-gray-600 leading-relaxed mb-2 whitespace-pre-wrap">{description}</p>
+        </div>
+      )}
 
       {/* Menu / Food list: cột trái = category, cột phải = danh sách món */}
       <div className="flex flex-col lg:flex-row gap-6 mb-8">

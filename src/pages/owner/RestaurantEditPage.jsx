@@ -8,6 +8,7 @@ import { DEFAULT_LAT, DEFAULT_LNG } from '@constants'
 import ImageUrlOrUpload from '@components/owner/ImageUrlOrUpload'
 import { toast } from 'react-toastify'
 import LoadingSpinner from '@components/common/LoadingSpinner'
+import RichTextEditor from '@components/common/RichTextEditor'
 
 const initialFormData = {
   code: '',
@@ -379,15 +380,21 @@ const RestaurantEditPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('restaurantRegister.codeOptional')}</label>
               <input type="text" name="code" value={formData.code} onChange={handleChange} className="input w-full" placeholder={t('restaurantRegister.placeholderCode')} maxLength={20} />
             </div>
-            <div>
+                <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('restaurantRegister.nameRequired')} <span className="text-red-500">*</span></label>
               <input type="text" name="name" value={formData.name} onChange={handleChange} className={`input w-full ${errors.name ? 'border-red-500' : ''}`} placeholder={t('restaurantRegister.placeholderName')} />
               {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('restaurantRegister.descriptionLabel')}</label>
-              <input type="text" name="description" value={formData.description} onChange={handleChange} className="input w-full" placeholder={t('restaurantRegister.placeholderDescription')} />
-            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('restaurantRegister.descriptionLabel')}</label>
+            <RichTextEditor
+              value={formData.description}
+              onChange={(html) => setFormData((prev) => ({ ...prev, description: html ?? '' }))}
+              placeholder={t('restaurantRegister.placeholderDescription')}
+              minHeight={180}
+              uploadImageType="restaurant"
+            />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

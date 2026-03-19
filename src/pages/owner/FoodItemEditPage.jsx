@@ -10,6 +10,7 @@ import { toast } from 'react-toastify'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import ConfirmModal from '@components/common/ConfirmModal'
 import ImageUrlOrUpload from '@components/owner/ImageUrlOrUpload'
+import RichTextEditor from '@components/common/RichTextEditor'
 
 const getOwnerId = (user) => user?.id ?? user?.user_id ?? user?.owner_id
 const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
@@ -329,13 +330,12 @@ const FoodItemEditPage = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.detail')} (description)</label>
-            <textarea
-              name="description"
+            <RichTextEditor
               value={formData.description}
-              onChange={handleChange}
-              rows={3}
-              className="input w-full"
+              onChange={(html) => setFormData((prev) => ({ ...prev, description: html ?? '' }))}
               placeholder={t('food.descriptionPlaceholder')}
+              minHeight={180}
+              uploadImageType="food"
             />
           </div>
 

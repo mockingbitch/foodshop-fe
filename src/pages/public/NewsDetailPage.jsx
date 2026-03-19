@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useLanguage } from '@context/LanguageContext'
 import { newsApi } from '@services/api/newsApi'
+import { restaurantApi } from '@services/api/restaurantApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatDate } from '@utils/helpers'
-import { ChevronRight, Newspaper } from 'lucide-react'
+import { ChevronRight, Newspaper, MapPin, Star } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -33,11 +34,36 @@ const ensureArray = (value) => {
   return []
 }
 
+const ensureRestaurantsArray = (value) => {
+  if (Array.isArray(value)) return value
+  if (!value || typeof value !== 'object') return []
+  const raw = value.data ?? value.restaurants ?? value.items ?? value.results ?? value.list
+  if (Array.isArray(raw)) return raw
+  if (raw && typeof raw === 'object') {
+    const nested = raw.data ?? raw.restaurants ?? raw.items ?? raw.results ?? raw.list
+    return Array.isArray(nested) ? nested : []
+  }
+  return []
+}
+
+const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
+
+const getRestaurantImage = (restaurant) => {
+  const img =
+    restaurant?.main_image ??
+    restaurant?.outside_image_1 ??
+    restaurant?.images?.[0]?.url ??
+    restaurant?.outside_images?.[0]?.url ??
+    restaurant?.image_url
+  return img || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'
+}
+
 const NewsDetailPage = () => {
   const { id } = useParams()
   const { t } = useLanguage()
   const [news, setNews] = useState(null)
   const [latestNews, setLatestNews] = useState([])
+  const [restaurants, setRestaurants] = useState([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
@@ -52,8 +78,9 @@ const NewsDetailPage = () => {
     Promise.all([
       newsApi.getNewsById(id),
       newsApi.getNews({ per_page: 5 }),
+      restaurantApi.getRestaurants({ per_page: 5 }),
     ])
-      .then(([detailRes, listRes]) => {
+      .then(([detailRes, listRes, restRes]) => {
         const raw = detailRes?.data ?? detailRes
         const item = raw?.data ?? raw?.news ?? raw?.result ?? raw
         if (item && typeof item === 'object' && !Array.isArray(item)) {
@@ -66,6 +93,9 @@ const NewsDetailPage = () => {
         const list = ensureArray(listRaw)
         const filtered = (Array.isArray(list) ? list : []).filter((x) => String(x?.id ?? '') !== String(id))
         setLatestNews(filtered.slice(0, 5))
+
+        const restList = ensureRestaurantsArray(restRes?.data ?? restRes)
+        setRestaurants(Array.isArray(restList) ? restList.slice(0, 5) : [])
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false))
@@ -154,6 +184,55 @@ const NewsDetailPage = () => {
                 )
               })}
               {latestNews.length === 0 && (
+                <p className="text-sm text-gray-500">{t('common.noData')}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Khối nhà hàng - 5 nhà hàng */}
+          <div className="card p-4 sm:p-5 mt-4">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
+                {t('common.restaurants')}
+              </h2>
+              <Link to="/restaurants" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                {t('common.view')} {t('common.all')}
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {restaurants.slice(0, 5).map((restaurant, idx) => {
+                const restName = toDisplayText(restaurant?.name) || t('common.noData')
+                const restImage = getRestaurantImage(restaurant)
+                return (
+                  <Link
+                    key={getRestaurantId(restaurant) ?? idx}
+                    to={`/restaurants/${getRestaurantId(restaurant)}`}
+                    className="flex gap-3 p-2 rounded-lg hover:bg-gray-50 transition min-w-0"
+                  >
+                    <div className="w-16 h-16 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+                      <img src={restImage} alt={restName} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold text-gray-900 line-clamp-2">
+                        {restName}
+                      </div>
+                      {restaurant.address && (
+                        <p className="flex items-center gap-1 text-xs text-gray-500 mt-0.5 truncate">
+                          <MapPin size={12} className="flex-shrink-0" />
+                          {restaurant.address}
+                        </p>
+                      )}
+                      {restaurant.rating != null && (
+                        <div className="flex items-center gap-1 mt-1 text-xs">
+                          <Star size={12} className="text-amber-500 fill-amber-500 flex-shrink-0" />
+                          <span>{Number(restaurant.rating).toFixed(1)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                )
+              })}
+              {restaurants.length === 0 && (
                 <p className="text-sm text-gray-500">{t('common.noData')}</p>
               )}
             </div>

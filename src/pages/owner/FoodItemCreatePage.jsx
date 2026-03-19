@@ -7,6 +7,7 @@ import { categoryApi } from '@services/api/categoryApi'
 import { formatPriceInput, parsePriceValue } from '@utils/helpers'
 import { toast } from 'react-toastify'
 import ImageUrlOrUpload from '@components/owner/ImageUrlOrUpload'
+import RichTextEditor from '@components/common/RichTextEditor'
 
 const getOwnerId = (user) => user?.id ?? user?.user_id ?? user?.owner_id
 
@@ -149,6 +150,19 @@ const FoodItemCreatePage = () => {
               {t('common.required')}: restaurant ({t('food.restaurantRequiredHint')})
             </div>
           )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.title')} (name) *</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className={`input w-full ${errors.name ? 'border-red-500' : ''}`}
+              placeholder={t('food.namePlaceholder')}
+            />
+            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.category')} *</label>
@@ -167,21 +181,6 @@ const FoodItemCreatePage = () => {
               </select>
               {errors.food_category_id && <p className="mt-1 text-sm text-red-600">{errors.food_category_id}</p>}
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.title')} (name) *</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className={`input w-full ${errors.name ? 'border-red-500' : ''}`}
-                placeholder={t('food.namePlaceholder')}
-              />
-              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
-            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.price')} *</label>
               <input
@@ -199,13 +198,12 @@ const FoodItemCreatePage = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.detail')} (description)</label>
-            <textarea
-              name="description"
+            <RichTextEditor
               value={formData.description}
-              onChange={handleChange}
-              rows={3}
-              className="input w-full"
+              onChange={(html) => setFormData((prev) => ({ ...prev, description: html ?? '' }))}
               placeholder={t('food.descriptionPlaceholder')}
+              minHeight={180}
+              uploadImageType="food"
             />
           </div>
 
