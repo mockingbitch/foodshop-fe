@@ -54,6 +54,7 @@ const FoodDetailPage = () => {
   const [reviewForm, setReviewForm] = useState({ reviewerName: '', rating: 5, comment: '' })
   const [submittingReview, setSubmittingReview] = useState(false)
   const [showDescriptionPopup, setShowDescriptionPopup] = useState(false)
+  const [previewImage, setPreviewImage] = useState(null)
 
   useEffect(() => {
     if (!id) {
@@ -193,14 +194,19 @@ const FoodDetailPage = () => {
       </nav>
 
       <div className="card overflow-hidden p-0 flex flex-col md:flex-row">
-        <div className="w-full md:w-1/2 lg:w-2/5 flex-shrink-0 aspect-[4/3] md:aspect-auto md:min-h-[320px]">
+        <button
+          type="button"
+          onClick={() => setPreviewImage(getFoodImage(food))}
+          className="w-full md:w-2/5 lg:w-1/3 flex-shrink-0 block aspect-[4/3] md:aspect-[4/3] md:max-h-[min(36vh,280px)] overflow-hidden rounded-l-lg cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-primary-500/50 text-left"
+          aria-label={t('common.view') || 'Xem ảnh'}
+        >
           <img
             src={getFoodImage(food)}
             alt={name}
             className="w-full h-full object-cover"
           />
-        </div>
-        <div className="w-full md:w-1/2 lg:w-3/5 p-6 sm:p-8 flex flex-col">
+        </button>
+        <div className="w-full md:w-3/5 lg:w-2/3 p-6 sm:p-8 flex flex-col">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
             {name || t('food.detail')}
           </h1>
@@ -423,6 +429,37 @@ const FoodDetailPage = () => {
           </>
         )}
       </section>
+
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
+          onClick={() => setPreviewImage(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('common.view') || 'Preview image'}
+        >
+          <div
+            className="relative bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setPreviewImage(null)}
+              className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow text-gray-600 hover:text-gray-900 transition"
+              aria-label={t('common.close') || 'Đóng'}
+            >
+              <X size={20} />
+            </button>
+            <div className="bg-black flex items-center justify-center">
+              <img
+                src={previewImage}
+                alt={name}
+                className="max-h-[90vh] w-auto object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

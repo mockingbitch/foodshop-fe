@@ -6,7 +6,7 @@ import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency, getImageUrl, stripHtml } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
-import { Store, MapPin, Star, ChevronRight, Mail, Phone, X, Leaf } from 'lucide-react'
+import { Store, MapPin, Star, ChevronRight, Mail, Phone, X, Leaf, ExternalLink } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -252,6 +252,28 @@ const RestaurantDetailPage = () => {
               <p className="flex items-center gap-2">
                 <Mail size={14} className="flex-shrink-0 text-gray-500" />
                 <a href={`mailto:${restaurant.email}`} className="hover:text-primary-600 break-all">{restaurant.email}</a>
+              </p>
+            )}
+            {(restaurant.webpage_link || restaurant.facebook_link || restaurant.youtube_link) && (
+              <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm">
+                {restaurant.webpage_link && (
+                  <a href={restaurant.webpage_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary-600 hover:underline">
+                    <ExternalLink size={12} />
+                    {t('restaurantRegister.webpage')}
+                  </a>
+                )}
+                {restaurant.facebook_link && (
+                  <a href={restaurant.facebook_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary-600 hover:underline">
+                    <ExternalLink size={12} />
+                    {t('restaurantRegister.facebook')}
+                  </a>
+                )}
+                {restaurant.youtube_link && (
+                  <a href={restaurant.youtube_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary-600 hover:underline">
+                    <ExternalLink size={12} />
+                    {t('restaurantRegister.youtube')}
+                  </a>
+                )}
               </p>
             )}
           </div>

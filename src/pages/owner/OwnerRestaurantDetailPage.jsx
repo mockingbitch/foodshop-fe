@@ -277,6 +277,28 @@ const OwnerRestaurantDetailPage = () => {
                   <a href={`mailto:${restaurant.email}`} className="hover:text-primary-600 truncate min-w-0">{restaurant.email}</a>
                 </p>
               )}
+              {(restaurant.webpage_link || restaurant.facebook_link || restaurant.youtube_link) && (
+                <p className="flex flex-wrap items-center gap-x-4 gap-y-1 sm:col-span-2">
+                  {restaurant.webpage_link && (
+                    <a href={restaurant.webpage_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary-600 hover:underline">
+                      <ExternalLink size={12} />
+                      {t('restaurantRegister.webpage')}
+                    </a>
+                  )}
+                  {restaurant.facebook_link && (
+                    <a href={restaurant.facebook_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary-600 hover:underline">
+                      <ExternalLink size={12} />
+                      {t('restaurantRegister.facebook')}
+                    </a>
+                  )}
+                  {restaurant.youtube_link && (
+                    <a href={restaurant.youtube_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary-600 hover:underline">
+                      <ExternalLink size={12} />
+                      {t('restaurantRegister.youtube')}
+                    </a>
+                  )}
+                </p>
+              )}
               {(() => {
                 const hoursStr = (restaurant.hours != null && restaurant.hours !== '') ? restaurant.hours : formatBusinessHours(restaurant.business_hours)
                 return hoursStr ? (
@@ -338,24 +360,6 @@ const OwnerRestaurantDetailPage = () => {
                 <p className="flex items-center gap-2">
                   <Calendar size={16} className="flex-shrink-0" />
                   <span>{t('restaurantRegister.updated')} {formatDate(restaurant.updated_at)}</span>
-                </p>
-              )}
-              {restaurant.webpage_link && (
-                <p className="flex items-center gap-2">
-                  <ExternalLink size={16} className="flex-shrink-0" />
-                  <a href={restaurant.webpage_link} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline truncate min-w-0">{t('restaurantRegister.webpage')}</a>
-                </p>
-              )}
-              {restaurant.facebook_link && (
-                <p className="flex items-center gap-2">
-                  <ExternalLink size={16} className="flex-shrink-0" />
-                  <a href={restaurant.facebook_link} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline truncate min-w-0">{t('restaurantRegister.facebook')}</a>
-                </p>
-              )}
-              {restaurant.youtube_link && (
-                <p className="flex items-center gap-2">
-                  <ExternalLink size={16} className="flex-shrink-0" />
-                  <a href={restaurant.youtube_link} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline truncate min-w-0">{t('restaurantRegister.youtube')}</a>
                 </p>
               )}
             </div>
