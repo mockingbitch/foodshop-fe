@@ -108,7 +108,7 @@
 
 /* WYSIWYG / HTML content (news, articles) */
 .content-html {
-  @apply text-gray-700 leading-relaxed w-full max-w-full min-w-0;
+  @apply text-gray-700 leading-relaxed w-full max-w-full;
   overflow-wrap: break-word;
   word-break: normal;
   white-space: normal;
@@ -117,9 +117,11 @@
 .content-html * {
   max-width: 100%;
   white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 .content-html p {
-  @apply mb-4 w-full max-w-full min-w-0;
+  @apply mb-4 w-full max-w-full;
   overflow-wrap: break-word;
   word-break: normal;
 }

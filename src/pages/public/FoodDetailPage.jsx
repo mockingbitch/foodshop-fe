@@ -6,7 +6,7 @@ import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency, getRatingStars } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { toast } from 'react-toastify'
-import { Store, ChevronRight, ChevronLeft, Star, Leaf, MessageSquare } from 'lucide-react'
+import { Store, ChevronRight, ChevronLeft, Star, Leaf, MessageSquare, X } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -53,6 +53,7 @@ const FoodDetailPage = () => {
   const [reviewsLoading, setReviewsLoading] = useState(false)
   const [reviewForm, setReviewForm] = useState({ reviewerName: '', rating: 5, comment: '' })
   const [submittingReview, setSubmittingReview] = useState(false)
+  const [showDescriptionPopup, setShowDescriptionPopup] = useState(false)
 
   useEffect(() => {
     if (!id) {
@@ -230,7 +231,58 @@ const FoodDetailPage = () => {
             )}
           </div>
           {description && (
-            <p className="text-gray-600 leading-relaxed mb-4">{description}</p>
+            <div className="mb-4">
+              <h2 className="text-base font-semibold text-gray-900 mb-3">{t('restaurantRegister.descriptionLabel')}</h2>
+              <div className="overflow-hidden" style={{ maxHeight: '3.5rem' }}>
+                <div
+                  className="content-html text-gray-600 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: description }}
+                />
+              </div>
+              <div className="mt-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowDescriptionPopup(true)}
+                  className="btn btn-outline text-sm py-1.5 px-3"
+                >
+                  {t('common.viewMore')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showDescriptionPopup && description && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+              onClick={() => setShowDescriptionPopup(false)}
+              role="dialog"
+              aria-modal="true"
+              aria-label={t('restaurantRegister.descriptionLabel')}
+            >
+              <div
+                className="relative bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                  <h2 className="text-lg font-semibold text-gray-900">{t('restaurantRegister.descriptionLabel')}</h2>
+                  <button
+                    type="button"
+                    onClick={() => setShowDescriptionPopup(false)}
+                    className="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition"
+                    aria-label={t('common.close')}
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-w-0">
+                  <div
+                    className="content-html text-gray-600 leading-relaxed"
+                    style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}
+                    dangerouslySetInnerHTML={{ __html: description }}
+                  />
+                </div>
+              </div>
+            </div>
           )}
           <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
             {food.serving_size != null && (

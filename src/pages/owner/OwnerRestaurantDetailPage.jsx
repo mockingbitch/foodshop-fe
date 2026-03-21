@@ -4,9 +4,9 @@ import { useLanguage } from '@context/LanguageContext'
 import { restaurantApi } from '@services/api/restaurantApi'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { formatCurrency, getImageUrl } from '@utils/helpers'
+import { formatCurrency, getImageUrl, stripHtml } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
-import { Store, MapPin, Phone, Mail, UtensilsCrossed, ChevronRight, Star, Edit, Plus, Clock, Users, Hash, Truck, Globe, User, Calendar, ExternalLink } from 'lucide-react'
+import { Store, MapPin, Phone, Mail, UtensilsCrossed, ChevronRight, Star, Edit, Plus, Clock, Users, Hash, Truck, Globe, User, Calendar, ExternalLink, X } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -107,6 +107,7 @@ const OwnerRestaurantDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const [loadingFood, setLoadingFood] = useState(false)
   const [notFound, setNotFound] = useState(false)
+  const [showDescriptionPopup, setShowDescriptionPopup] = useState(false)
 
   useEffect(() => {
     if (!id) {
@@ -217,9 +218,27 @@ const OwnerRestaurantDetailPage = () => {
                 </span>
               )}
             </div>
-            <p className="text-gray-600 text-sm sm:text-base mb-4 whitespace-pre-wrap">
-              {toDisplayText(restaurant.description) || '—'}
-            </p>
+            {(() => {
+              const description = toDisplayText(restaurant.description)
+              if (!description) return <p className="text-gray-600 text-sm sm:text-base mb-4">—</p>
+              return (
+                <div className="mb-4">
+                  <div className="overflow-hidden" style={{ maxHeight: '3.5rem' }}>
+                    <div
+                      className="content-html text-gray-600 text-sm sm:text-base leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: description }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowDescriptionPopup(true)}
+                    className="mt-2 text-sm font-medium text-primary-600 hover:text-primary-700 block"
+                  >
+                    {t('common.viewMore')}
+                  </button>
+                </div>
+              )
+            })()}
             {/* Địa chỉ */}
             {(restaurant.address || restaurant.city) && (
               <div className="mb-4 p-3 rounded-lg bg-gray-50 border border-gray-100">
@@ -341,40 +360,6 @@ const OwnerRestaurantDetailPage = () => {
                 <p className="text-sm text-gray-600 whitespace-pre-wrap">{toDisplayText(restaurant.remark) || restaurant.remark}</p>
               </div>
             )}
-            {/* Outside images */}
-            {(() => {
-              const imgs = collectOutsideImages(restaurant)
-              if (imgs.length === 0) return null
-              return (
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{t('restaurantRegister.outsideImages')}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {imgs.map((url, idx) => (
-                      <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90">
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )
-            })()}
-            {/* Inside images */}
-            {(() => {
-              const imgs = collectInsideImages(restaurant)
-              if (imgs.length === 0) return null
-              return (
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{t('restaurantRegister.insideImages')}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {imgs.map((url, idx) => (
-                      <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90">
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )
-            })()}
             <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100">
               <Link
                 to={`/owner/restaurant/${id}/edit`}
@@ -387,6 +372,77 @@ const OwnerRestaurantDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Ảnh bên ngoài & Ảnh bên trong */}
+      {(() => {
+        const outImgs = collectOutsideImages(restaurant)
+        const inImgs = collectInsideImages(restaurant)
+        if (outImgs.length === 0 && inImgs.length === 0) return null
+        return (
+          <div className="card p-4 sm:p-5 mb-6 sm:mb-8">
+            <div className="flex flex-row flex-wrap items-start gap-x-6 gap-y-4">
+              {outImgs.length > 0 && (
+                <section className="flex-shrink-0">
+                  <h2 className="text-base font-semibold text-gray-900 mb-2">{t('restaurantRegister.outsideImages')}</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {outImgs.map((url, idx) => (
+                      <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              )}
+              {inImgs.length > 0 && (
+                <section className="flex-shrink-0">
+                  <h2 className="text-base font-semibold text-gray-900 mb-2">{t('restaurantRegister.insideImages')}</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {inImgs.map((url, idx) => (
+                      <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
+          </div>
+        )
+      })()}
+
+      {showDescriptionPopup && toDisplayText(restaurant?.description) && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          onClick={() => setShowDescriptionPopup(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('restaurantRegister.descriptionLabel')}
+        >
+          <div
+            className="relative bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">{t('restaurantRegister.descriptionLabel')}</h2>
+              <button
+                type="button"
+                onClick={() => setShowDescriptionPopup(false)}
+                className="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition"
+                aria-label={t('common.close')}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-w-0">
+              <div
+                className="content-html text-gray-600 leading-relaxed"
+                style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}
+                dangerouslySetInnerHTML={{ __html: toDisplayText(restaurant.description) }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Food items list */}
       <div className="mb-4 flex items-center justify-between">
@@ -446,7 +502,7 @@ const OwnerRestaurantDetailPage = () => {
                   </Link>
                   {(toDisplayText(item.description) || item.serving_size) && (
                     <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
-                      {toDisplayText(item.description) || item.serving_size}
+                      {stripHtml(toDisplayText(item.description)) || item.serving_size || '—'}
                     </p>
                   )}
                   {toDisplayText(item.category?.name ?? item.food_category?.name) && (

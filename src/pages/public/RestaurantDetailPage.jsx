@@ -4,7 +4,7 @@ import { useLanguage } from '@context/LanguageContext'
 import { restaurantApi } from '@services/api/restaurantApi'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { formatCurrency, getImageUrl } from '@utils/helpers'
+import { formatCurrency, getImageUrl, stripHtml } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { Store, MapPin, Star, ChevronRight, Mail, Phone, X, Leaf } from 'lucide-react'
 
@@ -99,6 +99,7 @@ const RestaurantDetailPage = () => {
   const [notFound, setNotFound] = useState(false)
   const [previewFood, setPreviewFood] = useState(null)
   const [previewImage, setPreviewImage] = useState(null)
+  const [showDescriptionPopup, setShowDescriptionPopup] = useState(false)
   const [selectedCategoryId, setSelectedCategoryId] = useState(null)
 
   useEffect(() => {
@@ -325,10 +326,55 @@ const RestaurantDetailPage = () => {
       {description && (
         <div className="mb-6 bg-white rounded-lg border border-gray-100 p-4 sm:p-5">
           <h2 className="text-base font-semibold text-gray-900 mb-3">{t('restaurantRegister.descriptionLabel')}</h2>
+          <div className="overflow-hidden" style={{ maxHeight: '3.5rem' }}>
+            <div
+              className="content-html text-gray-600 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: description }}
+            />
+          </div>
+          <div className="mt-2 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setShowDescriptionPopup(true)}
+              className="btn btn-outline text-sm py-1.5 px-3"
+            >
+              {t('common.viewMore')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showDescriptionPopup && description && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          onClick={() => setShowDescriptionPopup(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('restaurantRegister.descriptionLabel')}
+        >
           <div
-            className="content-html text-gray-600 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: description }}
-          />
+            className="relative bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">{t('restaurantRegister.descriptionLabel')}</h2>
+              <button
+                type="button"
+                onClick={() => setShowDescriptionPopup(false)}
+                className="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition"
+                aria-label={t('common.close')}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-w-0">
+              <div
+                className="content-html text-gray-600 leading-relaxed"
+                style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}
+                dangerouslySetInnerHTML={{ __html: description }}
+              />
+            </div>
+          </div>
         </div>
       )}
 
@@ -405,7 +451,7 @@ const RestaurantDetailPage = () => {
                           </span>
                           {(toDisplayText(item.description) || item.serving_size) && (
                             <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
-                              {toDisplayText(item.description) || item.serving_size}
+                              {stripHtml(toDisplayText(item.description)) || item.serving_size || '—'}
                             </p>
                           )}
                         </div>
@@ -443,7 +489,7 @@ const RestaurantDetailPage = () => {
                       </span>
                       {(toDisplayText(item.description) || item.serving_size) && (
                         <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
-                          {toDisplayText(item.description) || item.serving_size}
+                          {stripHtml(toDisplayText(item.description)) || item.serving_size || '—'}
                         </p>
                       )}
                     </div>
@@ -487,7 +533,7 @@ const RestaurantDetailPage = () => {
                     {formatCurrency(getItemPrice(item), getItemCurrency(item))}
                   </p>
                   <p className="text-xs text-gray-500 line-clamp-2 flex-1">
-                    {toDisplayText(item.description) || '—'}
+                    {stripHtml(toDisplayText(item.description)) || '—'}
                   </p>
                 </div>
               </article>
@@ -505,14 +551,14 @@ const RestaurantDetailPage = () => {
           aria-label={toDisplayText(previewFood.name) || t('food.detail')}
         >
           <div
-            className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col"
+            className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] min-h-0 overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative aspect-[16/10] flex-shrink-0 bg-gray-100">
+            <div className="relative w-full h-[min(42vh,300px)] max-h-[min(42vh,300px)] flex-shrink-0 overflow-hidden bg-gray-100 rounded-t-xl">
               <img
                 src={getFoodImage(previewFood)}
                 alt={toDisplayText(previewFood.name)}
-                className="w-full h-full object-cover"
+                className="absolute inset-0 h-full w-full object-cover object-center"
               />
               <button
                 type="button"
@@ -549,9 +595,10 @@ const RestaurantDetailPage = () => {
                   </span>
                 )}
               </div>
-              {toDisplayText(previewFood.description) && (
-                <p className="text-gray-600 text-sm leading-relaxed mb-3">
-                  {toDisplayText(previewFood.description)}
+              {getCategoryName(previewFood) && (
+                <p className="text-sm text-gray-600 mb-3">
+                  <span className="font-medium text-gray-500">{t('food.category')}: </span>
+                  {getCategoryName(previewFood)}
                 </p>
               )}
               <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">

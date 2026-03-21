@@ -4,7 +4,7 @@ import { useLanguage } from '@context/LanguageContext'
 import { restaurantApi } from '@services/api/restaurantApi'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { formatCurrency, getImageUrl } from '@utils/helpers'
+import { formatCurrency, getImageUrl, stripHtml } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { UtensilsCrossed, Store, ChevronRight, LayoutList, LayoutGrid, X, Star, Leaf } from 'lucide-react'
 
@@ -209,7 +209,7 @@ const RestaurantMenuPage = () => {
                     {formatCurrency(getItemPrice(item), getItemCurrency(item))}
                   </p>
                   <p className="text-xs text-gray-500 line-clamp-2 flex-1">
-                    {toDisplayText(item.description) || '—'}
+                    {stripHtml(toDisplayText(item.description)) || '—'}
                   </p>
                 </div>
               </article>
@@ -255,7 +255,7 @@ const RestaurantMenuPage = () => {
                   {formatCurrency(getItemPrice(item), getItemCurrency(item))}
                 </p>
                 <p className="text-xs text-gray-500 line-clamp-2 flex-1">
-                  {toDisplayText(item.description) || '—'}
+                  {stripHtml(toDisplayText(item.description)) || '—'}
                 </p>
               </div>
             </article>
@@ -301,7 +301,7 @@ const RestaurantMenuPage = () => {
                                 </span>
                                 {(toDisplayText(item.description) || item.serving_size) && (
                                   <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
-                                    {toDisplayText(item.description) || item.serving_size}
+                                    {stripHtml(toDisplayText(item.description)) || item.serving_size || '—'}
                                   </p>
                                 )}
                               </div>
@@ -331,14 +331,14 @@ const RestaurantMenuPage = () => {
           aria-label={toDisplayText(previewFood.name) || t('food.detail')}
         >
           <div
-            className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col"
+            className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] min-h-0 overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative aspect-[16/10] flex-shrink-0 bg-gray-100">
+            <div className="relative w-full h-[min(42vh,300px)] max-h-[min(42vh,300px)] flex-shrink-0 overflow-hidden bg-gray-100 rounded-t-xl">
               <img
                 src={getFoodImage(previewFood)}
                 alt={toDisplayText(previewFood.name)}
-                className="w-full h-full object-cover"
+                className="absolute inset-0 h-full w-full object-cover object-center"
               />
               <button
                 type="button"
@@ -375,9 +375,10 @@ const RestaurantMenuPage = () => {
                   </span>
                 )}
               </div>
-              {toDisplayText(previewFood.description) && (
-                <p className="text-gray-600 text-sm leading-relaxed mb-3">
-                  {toDisplayText(previewFood.description)}
+              {(toDisplayText(previewFood.food_category?.name ?? previewFood.category?.name)) && (
+                <p className="text-sm text-gray-600 mb-3">
+                  <span className="font-medium text-gray-500">{t('food.category')}: </span>
+                  {toDisplayText(previewFood.food_category?.name ?? previewFood.category?.name)}
                 </p>
               )}
               <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">

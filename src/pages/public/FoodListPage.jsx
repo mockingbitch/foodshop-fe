@@ -4,7 +4,7 @@ import { useLanguage } from '@context/LanguageContext'
 import { foodApi } from '@services/api/foodApi'
 import { categoryApi } from '@services/api/categoryApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { formatCurrency } from '@utils/helpers'
+import { formatCurrency, stripHtml } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { UtensilsCrossed, Star } from 'lucide-react'
 
@@ -149,7 +149,7 @@ const FoodListPage = () => {
                   </Link>
                 </h2>
                 <p className="text-gray-600 text-sm line-clamp-2 mb-3 flex-1">
-                  {toDisplayText(item.description) || '—'}
+                  {stripHtml(toDisplayText(item.description)) || '—'}
                 </p>
                 <div className="flex flex-wrap items-center gap-3 text-sm">
                   <span className="font-semibold text-primary-600">

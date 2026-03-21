@@ -151,14 +151,11 @@ const OwnerDashboardPage = () => {
                 </div>
                 <div className="w-full sm:w-2/3 p-4 sm:p-6 flex flex-col justify-between min-w-0">
                   <div>
-                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2 truncate min-w-0" title={toDisplayText(restaurant.name) || undefined}>
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4 truncate min-w-0" title={toDisplayText(restaurant.name) || undefined}>
                       <Link to={`/owner/restaurant/${getRestaurantId(restaurant)}`} className="hover:text-primary-600 truncate block min-w-0">
                         {toDisplayText(restaurant.name) || restaurant.name || t('common.noData')}
                       </Link>
                     </h2>
-                    <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 mb-3 sm:mb-4">
-                      {toDisplayText(restaurant.description) || restaurant.description || t('common.noData')}
-                    </p>
                     <div className="flex flex-wrap gap-x-3 gap-y-1 sm:gap-4 text-xs sm:text-sm text-gray-500">
                       <span className="flex items-center gap-1"><Users size={14} className="flex-shrink-0" /> {restaurant.reviews_count || 0}</span>
                       <span className="flex items-center gap-1"><Clock size={14} className="flex-shrink-0" /> {restaurant.hours || '24/7'}</span>

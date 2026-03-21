@@ -407,7 +407,7 @@ const RestaurantListPage = () => {
                 </Link>
               </div>
               <div className="p-4 sm:p-5 flex flex-col flex-1 min-w-0">
-                <h2 className="text-lg font-bold text-gray-900 mb-1 truncate">
+                <h2 className="text-lg font-bold text-gray-900 mb-3 truncate">
                   <Link
                     to={`/restaurants/${getRestaurantId(restaurant)}`}
                     className="hover:text-primary-600"
@@ -415,9 +415,6 @@ const RestaurantListPage = () => {
                     {toDisplayText(restaurant.name) || t('common.noData')}
                   </Link>
                 </h2>
-                <p className="text-gray-600 text-sm line-clamp-2 mb-3 flex-1">
-                  {toDisplayText(restaurant.description) || '—'}
-                </p>
                 <div className="space-y-1.5 text-xs sm:text-sm text-gray-500">
                   {restaurant.address && (
                     <p className="flex items-start gap-1.5 min-w-0">

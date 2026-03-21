@@ -5,7 +5,7 @@ import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
-import { Store, ChevronRight, ChevronLeft, Star, Leaf, Edit, Hash, Users, Calendar } from 'lucide-react'
+import { Store, ChevronRight, ChevronLeft, Star, Leaf, Edit, Hash, Users, Calendar, X } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -31,6 +31,7 @@ const OwnerFoodDetailPage = () => {
   const [food, setFood] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [showDescriptionPopup, setShowDescriptionPopup] = useState(false)
 
   useEffect(() => {
     if (!id) {
@@ -215,11 +216,59 @@ const OwnerFoodDetailPage = () => {
           {/* Mô tả */}
           {description ? (
             <div className="mb-4">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{t('food.detail')} (description)</p>
-              <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{description}</p>
+              <h2 className="text-base font-semibold text-gray-900 mb-3">{t('restaurantRegister.descriptionLabel')}</h2>
+              <div className="overflow-hidden" style={{ maxHeight: '3.5rem' }}>
+                <div
+                  className="content-html text-gray-600 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: description }}
+                />
+              </div>
+              <div className="mt-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowDescriptionPopup(true)}
+                  className="btn btn-outline text-sm py-1.5 px-3"
+                >
+                  {t('common.viewMore')}
+                </button>
+              </div>
             </div>
           ) : (
             <p className="text-gray-400 text-sm italic mb-4">—</p>
+          )}
+
+          {showDescriptionPopup && description && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+              onClick={() => setShowDescriptionPopup(false)}
+              role="dialog"
+              aria-modal="true"
+              aria-label={t('restaurantRegister.descriptionLabel')}
+            >
+              <div
+                className="relative bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                  <h2 className="text-lg font-semibold text-gray-900">{t('restaurantRegister.descriptionLabel')}</h2>
+                  <button
+                    type="button"
+                    onClick={() => setShowDescriptionPopup(false)}
+                    className="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition"
+                    aria-label={t('common.close')}
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-w-0">
+                  <div
+                    className="content-html text-gray-600 leading-relaxed"
+                    style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}
+                    dangerouslySetInnerHTML={{ __html: description }}
+                  />
+                </div>
+              </div>
+            </div>
           )}
           {/* Thông tin chi tiết */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm text-gray-600 mb-4 p-3 rounded-lg bg-gray-50 border border-gray-100">
