@@ -108,6 +108,7 @@ const OwnerRestaurantDetailPage = () => {
   const [loadingFood, setLoadingFood] = useState(false)
   const [notFound, setNotFound] = useState(false)
   const [showDescriptionPopup, setShowDescriptionPopup] = useState(false)
+  const [previewImage, setPreviewImage] = useState(null)
 
   useEffect(() => {
     if (!id) {
@@ -187,11 +188,18 @@ const OwnerRestaurantDetailPage = () => {
       <div className="card overflow-hidden p-0 mb-6 sm:mb-8">
         <div className="flex flex-col md:flex-row">
           <div className="w-full md:w-2/5 flex-shrink-0 aspect-[16/10] md:aspect-auto md:min-h-[240px]">
-            <img
-              src={getRestaurantImage(restaurant)}
-              alt={restaurantName}
-              className="w-full h-full object-cover"
-            />
+            <button
+              type="button"
+              onClick={() => setPreviewImage(getRestaurantImage(restaurant))}
+              className="block w-full h-full"
+              aria-label={t('common.view') || 'View'}
+            >
+              <img
+                src={getRestaurantImage(restaurant)}
+                alt={restaurantName}
+                className="w-full h-full object-cover"
+              />
+            </button>
           </div>
           <div className="w-full md:w-3/5 p-4 sm:p-6 flex flex-col">
             <Link
@@ -223,12 +231,9 @@ const OwnerRestaurantDetailPage = () => {
               if (!description) return <p className="text-gray-600 text-sm sm:text-base mb-4">—</p>
               return (
                 <div className="mb-4">
-                  <div className="overflow-hidden" style={{ maxHeight: '3.5rem' }}>
-                    <div
-                      className="content-html text-gray-600 text-sm sm:text-base leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: description }}
-                    />
-                  </div>
+                  <p className="text-gray-600 text-sm sm:text-base leading-relaxed line-clamp-2">
+                    {stripHtml(description)}
+                  </p>
                   <button
                     type="button"
                     onClick={() => setShowDescriptionPopup(true)}
@@ -386,9 +391,15 @@ const OwnerRestaurantDetailPage = () => {
                   <h2 className="text-base font-semibold text-gray-900 mb-2">{t('restaurantRegister.outsideImages')}</h2>
                   <div className="flex flex-wrap gap-2">
                     {outImgs.map((url, idx) => (
-                      <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition">
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setPreviewImage(url)}
+                        className="block w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition bg-white"
+                        aria-label={t('common.view') || 'View'}
+                      >
                         <img src={url} alt="" className="w-full h-full object-cover" />
-                      </a>
+                      </button>
                     ))}
                   </div>
                 </section>
@@ -398,9 +409,15 @@ const OwnerRestaurantDetailPage = () => {
                   <h2 className="text-base font-semibold text-gray-900 mb-2">{t('restaurantRegister.insideImages')}</h2>
                   <div className="flex flex-wrap gap-2">
                     {inImgs.map((url, idx) => (
-                      <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="block w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition">
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setPreviewImage(url)}
+                        className="block w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition bg-white"
+                        aria-label={t('common.view') || 'View'}
+                      >
                         <img src={url} alt="" className="w-full h-full object-cover" />
-                      </a>
+                      </button>
                     ))}
                   </div>
                 </section>
@@ -409,6 +426,37 @@ const OwnerRestaurantDetailPage = () => {
           </div>
         )
       })()}
+
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
+          onClick={() => setPreviewImage(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('common.view') || 'Preview image'}
+        >
+          <div
+            className="relative bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setPreviewImage(null)}
+              className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow text-gray-600 hover:text-gray-900 transition"
+              aria-label={t('common.close')}
+            >
+              <X size={20} />
+            </button>
+            <div className="bg-black flex items-center justify-center">
+              <img
+                src={previewImage}
+                alt=""
+                className="max-h-[90vh] w-auto object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {showDescriptionPopup && toDisplayText(restaurant?.description) && (
         <div

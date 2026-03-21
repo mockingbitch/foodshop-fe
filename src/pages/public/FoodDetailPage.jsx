@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useLanguage } from '@context/LanguageContext'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { formatCurrency, getRatingStars } from '@utils/helpers'
+import { formatCurrency, getRatingStars, stripHtml } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { toast } from 'react-toastify'
 import { Store, ChevronRight, ChevronLeft, Star, Leaf, MessageSquare, X } from 'lucide-react'
@@ -233,12 +233,9 @@ const FoodDetailPage = () => {
           {description && (
             <div className="mb-4">
               <h2 className="text-base font-semibold text-gray-900 mb-3">{t('restaurantRegister.descriptionLabel')}</h2>
-              <div className="overflow-hidden" style={{ maxHeight: '3.5rem' }}>
-                <div
-                  className="content-html text-gray-600 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: description }}
-                />
-              </div>
+              <p className="text-gray-600 leading-relaxed line-clamp-2">
+                {stripHtml(description)}
+              </p>
               <div className="mt-2 flex justify-end">
                 <button
                   type="button"

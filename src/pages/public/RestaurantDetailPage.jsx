@@ -326,12 +326,9 @@ const RestaurantDetailPage = () => {
       {description && (
         <div className="mb-6 bg-white rounded-lg border border-gray-100 p-4 sm:p-5">
           <h2 className="text-base font-semibold text-gray-900 mb-3">{t('restaurantRegister.descriptionLabel')}</h2>
-          <div className="overflow-hidden" style={{ maxHeight: '3.5rem' }}>
-            <div
-              className="content-html text-gray-600 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: description }}
-            />
-          </div>
+          <p className="text-gray-600 leading-relaxed line-clamp-2">
+            {stripHtml(description)}
+          </p>
           <div className="mt-2 flex justify-end">
             <button
               type="button"
