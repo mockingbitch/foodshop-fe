@@ -216,7 +216,7 @@ const RestaurantDetailPage = () => {
 
       {/* Restaurant info (header) - giữ layout như cũ nhưng gọn hơn */}
       <div className="card overflow-hidden p-0 flex flex-col md:flex-row mb-5">
-        <div className="w-full md:w-[28%] flex-shrink-0 bg-gray-100 h-[250px]">
+        <div className="w-full md:w-[28%] flex-shrink-0 bg-gray-100">
           <button
             type="button"
             onClick={() => setPreviewImage(getRestaurantImage(restaurant))}
@@ -276,17 +276,17 @@ const RestaurantDetailPage = () => {
 
           {(outImgs.length > 0 || inImgs.length > 0) && (
             <div className="mb-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-row flex-wrap items-start gap-x-6 gap-y-4">
                 {outImgs.length > 0 && (
-                  <section>
+                  <section className="flex-shrink-0">
                     <h2 className="text-base font-semibold text-gray-900 mb-2">{t('restaurantRegister.outsideImages')}</h2>
-                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {outImgs.map((url, idx) => (
                         <button
                           key={idx}
                           type="button"
                           onClick={() => setPreviewImage(url)}
-                          className="block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition bg-white"
+                          className="block w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition bg-white"
                           aria-label={t('common.view') || 'View'}
                         >
                           <img src={url} alt="" className="w-full h-full object-cover" />
@@ -297,15 +297,15 @@ const RestaurantDetailPage = () => {
                 )}
 
                 {inImgs.length > 0 && (
-                  <section>
+                  <section className="flex-shrink-0">
                     <h2 className="text-base font-semibold text-gray-900 mb-2">{t('restaurantRegister.insideImages')}</h2>
-                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {inImgs.map((url, idx) => (
                         <button
                           key={idx}
                           type="button"
                           onClick={() => setPreviewImage(url)}
-                          className="block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition bg-white"
+                          className="block w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition bg-white"
                           aria-label={t('common.view') || 'View'}
                         >
                           <img src={url} alt="" className="w-full h-full object-cover" />
@@ -323,8 +323,12 @@ const RestaurantDetailPage = () => {
 
       {/* Description moved below (replaces outside images area) */}
       {description && (
-        <div className="mb-6">
-          <p className="text-gray-600 leading-relaxed mb-2 whitespace-pre-wrap">{description}</p>
+        <div className="mb-6 bg-white rounded-lg border border-gray-100 p-4 sm:p-5">
+          <h2 className="text-base font-semibold text-gray-900 mb-3">{t('restaurantRegister.descriptionLabel')}</h2>
+          <div
+            className="content-html text-gray-600 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: description }}
+          />
         </div>
       )}
 
