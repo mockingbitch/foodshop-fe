@@ -5,7 +5,39 @@ import { newsApi } from '@services/api/newsApi'
 import { toast } from 'react-toastify'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import ConfirmModal from '@components/common/ConfirmModal'
-import { Newspaper, Search, Edit, Plus, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Newspaper, Search, Edit, Plus, Trash2, ToggleLeft, ToggleRight, ChevronLeft, ChevronRight } from 'lucide-react'
+
+const PER_PAGE = 10
+
+const getPaginationMeta = (res, listLength = 0) => {
+  const root = res?.data ?? res
+  if (!root || typeof root !== 'object') {
+    return { currentPage: 1, lastPage: 1, total: listLength, perPage: PER_PAGE }
+  }
+  let payload
+  if (
+    root.data &&
+    typeof root.data === 'object' &&
+    !Array.isArray(root.data) &&
+    (root.data.current_page != null || root.data.last_page != null || root.data.total != null)
+  ) {
+    payload = root.data
+  } else {
+    payload = root
+  }
+  const meta = payload.meta ?? payload.pagination ?? payload
+  const currentPage = Number(meta.current_page ?? meta.page ?? meta.currentPage ?? 1) || 1
+  const total = Number(meta.total) >= 0 ? Number(meta.total) : listLength
+  const perPage = Number(meta.per_page ?? meta.perPage ?? PER_PAGE) || PER_PAGE
+  let lastPage = Number(meta.last_page ?? meta.lastPage ?? meta.total_pages ?? meta.totalPages ?? 0) || 0
+  if (lastPage < 1 && total > 0 && perPage > 0) lastPage = Math.ceil(total / perPage)
+  return {
+    currentPage,
+    lastPage: lastPage >= 1 ? lastPage : 1,
+    total,
+    perPage,
+  }
+}
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -40,6 +72,8 @@ const AdminNewsListPage = () => {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({ currentPage: 1, lastPage: 1, total: 0, perPage: PER_PAGE })
   const [deleting, setDeleting] = useState(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const [itemToDelete, setItemToDelete] = useState(null)
@@ -48,27 +82,33 @@ const AdminNewsListPage = () => {
   const fetchNews = useCallback(async () => {
     setLoading(true)
     try {
-      const params = { per_page: 100 }
+      const params = { per_page: PER_PAGE, page }
       if (searchQuery?.trim()) params.search = searchQuery.trim()
       if (typeFilter) params.type = typeFilter
       const res = await newsApi.getAdminNews(params)
       const raw = res?.data ?? res
       const list = ensureArray(raw)
       setItems(Array.isArray(list) ? list : [])
+      setPagination(getPaginationMeta(res, Array.isArray(list) ? list.length : 0))
     } catch (error) {
       console.error('Error fetching news:', error)
       setItems([])
+      setPagination({ currentPage: 1, lastPage: 1, total: 0, perPage: PER_PAGE })
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [page, searchQuery, typeFilter])
 
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchNews()
-    }, DEBOUNCE_MS)
+    }, searchQuery ? DEBOUNCE_MS : 0)
     return () => clearTimeout(timer)
-  }, [searchQuery, typeFilter, fetchNews])
+  }, [searchQuery, typeFilter, page, fetchNews])
+
+  useEffect(() => {
+    setPage(1)
+  }, [searchQuery, typeFilter])
 
   const buildUpdatePayload = (item, newStatus) => {
     const titleObj = item.title && typeof item.title === 'object' && !Array.isArray(item.title)
@@ -206,9 +246,10 @@ const AdminNewsListPage = () => {
                 {items.map((item, index) => {
                   const isDeleting = deleting === item.id
                   const typeLabel = NEWS_TYPES[item.type] || item.type
+                  const rowNum = (pagination.currentPage - 1) * pagination.perPage + index + 1
                   return (
                     <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm text-gray-600">{index + 1}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{rowNum}</td>
                       <td className="px-4 py-3 text-sm text-gray-700">{typeLabel}</td>
                       <td className="px-4 py-3">
                         <span className="font-medium text-gray-900 truncate block max-w-[200px]">
@@ -263,6 +304,45 @@ const AdminNewsListPage = () => {
             </table>
           </div>
         </div>
+      )}
+
+      {!loading && items.length > 0 && pagination.total > PER_PAGE && (
+        <nav
+          className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6"
+          aria-label="Pagination"
+        >
+          <p className="text-sm text-gray-600 order-2 sm:order-1">
+            {t('common.showing')}{' '}
+            <span className="font-medium">{Math.min((pagination.currentPage - 1) * pagination.perPage + 1, pagination.total)}</span>–
+            <span className="font-medium">{Math.min(pagination.currentPage * pagination.perPage, pagination.total)}</span>{' '}
+            {t('common.of')} <span className="font-medium">{pagination.total}</span>
+          </p>
+          <div className="flex items-center gap-2 order-1 sm:order-2">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={pagination.currentPage <= 1}
+              className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={t('common.previous')}
+            >
+              <ChevronLeft size={18} />
+              {t('common.previous')}
+            </button>
+            <span className="text-sm text-gray-700 px-3 py-1.5 bg-white border border-gray-200 rounded min-w-[80px] text-center">
+              {t('common.page')} {pagination.currentPage} / {pagination.lastPage}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(pagination.lastPage, p + 1))}
+              disabled={pagination.currentPage >= pagination.lastPage}
+              className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={t('common.next')}
+            >
+              {t('common.next')}
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </nav>
       )}
 
       <ConfirmModal

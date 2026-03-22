@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useLanguage } from '@context/LanguageContext'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { formatCurrency, getRatingStars, stripHtml } from '@utils/helpers'
+import { formatCurrency, getRatingStars, stripHtml, getLocalizedText } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { toast } from 'react-toastify'
 import { Store, ChevronRight, ChevronLeft, Star, Leaf, MessageSquare, X } from 'lucide-react'
@@ -45,7 +45,7 @@ const ensureReviewsArray = (res) => {
 const FoodDetailPage = () => {
   const { id, restaurantId: restaurantIdParam } = useParams()
   const navigate = useNavigate()
-  const { t } = useLanguage()
+  const { t, currentLanguage } = useLanguage()
   const [food, setFood] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
@@ -216,7 +216,7 @@ const FoodDetailPage = () => {
             </span>
             {(food.category?.name || food.food_category?.name) && (
               <span className="text-gray-500">
-                {toDisplayText(food.category?.name ?? food.food_category?.name)}
+                {getLocalizedText(food.category?.name ?? food.food_category?.name, currentLanguage)}
               </span>
             )}
             {(food.rating != null || food.customer_rating != null) && (

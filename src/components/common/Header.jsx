@@ -52,11 +52,11 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/restaurants" className={navLinkClass('/restaurants')}>
-              {t('common.restaurants')}
+            <Link to="/restaurants" className={`text-lg font-medium ${navLinkClass('/restaurants')}`}>
+              {t('common.navRestaurants')}
             </Link>
-            <Link to="/news" className={navLinkClass('/news')}>
-              {t('common.news')}
+            <Link to="/news" className={`text-lg font-medium ${navLinkClass('/news')}`}>
+              {t('common.navNews')}
             </Link>
           </nav>
 
@@ -65,7 +65,7 @@ const Header = () => {
             {/* Search Button */}
             <button 
               className="p-2 text-gray-600 hover:text-primary-600 transition"
-              onClick={() => navigate('/restaurants/search')}
+              onClick={() => navigate('/restaurants')}
             >
               <Search size={20} />
             </button>
@@ -153,24 +153,24 @@ const Header = () => {
             <nav className="flex flex-col space-y-4">
               <Link
                 to="/restaurants"
-                className={navLinkClass('/restaurants')}
+                className={`text-lg font-medium ${navLinkClass('/restaurants')}`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {t('common.restaurants')}
+                {t('common.navRestaurants')}
               </Link>
               <Link
                 to="/food-categories"
-                className={navLinkClass('/food-categories')}
+                className={`text-lg font-medium ${navLinkClass('/food-categories')}`}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t('common.categories')}
               </Link>
               <Link
                 to="/news"
-                className={navLinkClass('/news')}
+                className={`text-lg font-medium ${navLinkClass('/news')}`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {t('common.news')}
+                {t('common.navNews')}
               </Link>
 
               {(isAuthenticated || hasToken()) && (isOwner() || !user) && (

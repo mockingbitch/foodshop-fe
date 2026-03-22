@@ -4,7 +4,7 @@ import { useLanguage } from '@context/LanguageContext'
 import { restaurantApi } from '@services/api/restaurantApi'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { formatCurrency, getImageUrl, stripHtml } from '@utils/helpers'
+import { formatCurrency, getImageUrl, stripHtml, getLocalizedText } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { Store, MapPin, Phone, Mail, UtensilsCrossed, ChevronRight, Star, Edit, Plus, Clock, Users, Hash, Truck, Globe, User, Calendar, ExternalLink, X } from 'lucide-react'
 
@@ -101,7 +101,7 @@ const PER_PAGE = 100
 
 const OwnerRestaurantDetailPage = () => {
   const { id } = useParams()
-  const { t } = useLanguage()
+  const { t, currentLanguage } = useLanguage()
   const [restaurant, setRestaurant] = useState(null)
   const [foodItems, setFoodItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -552,14 +552,9 @@ const OwnerRestaurantDetailPage = () => {
                   >
                     {toDisplayText(item.name) || t('common.noData')}
                   </Link>
-                  {(toDisplayText(item.description) || item.serving_size) && (
-                    <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
-                      {stripHtml(toDisplayText(item.description)) || item.serving_size || '—'}
-                    </p>
-                  )}
-                  {toDisplayText(item.category?.name ?? item.food_category?.name) && (
+                  {(getLocalizedText(item.category?.name ?? item.food_category?.name, currentLanguage)) && (
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {toDisplayText(item.category?.name ?? item.food_category?.name)}
+                      {getLocalizedText(item.category?.name ?? item.food_category?.name, currentLanguage)}
                     </p>
                   )}
                 </div>

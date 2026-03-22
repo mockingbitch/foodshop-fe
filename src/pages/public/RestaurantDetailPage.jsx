@@ -4,7 +4,7 @@ import { useLanguage } from '@context/LanguageContext'
 import { restaurantApi } from '@services/api/restaurantApi'
 import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { formatCurrency, getImageUrl, stripHtml } from '@utils/helpers'
+import { formatCurrency, getImageUrl, stripHtml, getLocalizedText } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { Store, MapPin, Star, ChevronRight, Mail, Phone, X, Leaf, ExternalLink } from 'lucide-react'
 
@@ -86,13 +86,13 @@ const getRatingWidth = (rating) => (!rating ? '0%' : `${(rating / 5) * 100}%`)
 const getCategoryId = (item) =>
   item?.food_category?.id ?? item?.food_category_id ?? item?.category?.id ?? item?.category_id ?? null
 
-/** Lấy tên danh mục hiển thị */
-const getCategoryName = (item) =>
-  toDisplayText(item?.food_category?.name ?? item?.category?.name) || ''
+/** Lấy tên danh mục theo ngôn ngữ */
+const getCategoryName = (item, lang) =>
+  getLocalizedText(item?.food_category?.name ?? item?.category?.name, lang) || ''
 
 const RestaurantDetailPage = () => {
   const { id } = useParams()
-  const { t } = useLanguage()
+  const { t, currentLanguage } = useLanguage()
   const [restaurant, setRestaurant] = useState(null)
   const [foodItems, setFoodItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -170,7 +170,7 @@ const RestaurantDetailPage = () => {
   foodItems.forEach((item) => {
     const cid = getCategoryId(item)
     if (cid != null && !categoryMap.has(cid)) {
-      categoryMap.set(cid, getCategoryName(item) || `Category ${cid}`)
+      categoryMap.set(cid, getCategoryName(item, currentLanguage) || `Category ${cid}`)
     }
   })
   const categories = [{ id: null, name: t('common.all') }, ...Array.from(categoryMap.entries()).map(([id, name]) => ({ id, name }))]
@@ -186,7 +186,7 @@ const RestaurantDetailPage = () => {
     const cid = getCategoryId(item)
     if (cid != null && !categorySeen.has(cid)) {
       categorySeen.add(cid)
-      categoryOrder.push({ id: cid, name: categoryMap.get(cid) || getCategoryName(item) || `Category ${cid}` })
+      categoryOrder.push({ id: cid, name: categoryMap.get(cid) || getCategoryName(item, currentLanguage) || `Category ${cid}` })
     }
   })
   const groupedByCategory =
@@ -468,11 +468,6 @@ const RestaurantDetailPage = () => {
                           <span className="font-medium text-gray-900 block">
                             {toDisplayText(item.name)}
                           </span>
-                          {(toDisplayText(item.description) || item.serving_size) && (
-                            <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
-                              {stripHtml(toDisplayText(item.description)) || item.serving_size || '—'}
-                            </p>
-                          )}
                         </div>
                         <div className="flex-shrink-0 text-primary-600 font-semibold">
                           {formatCurrency(getItemPrice(item), getItemCurrency(item))}
@@ -506,11 +501,6 @@ const RestaurantDetailPage = () => {
                       <span className="font-medium text-gray-900 block">
                         {toDisplayText(item.name)}
                       </span>
-                      {(toDisplayText(item.description) || item.serving_size) && (
-                        <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
-                          {stripHtml(toDisplayText(item.description)) || item.serving_size || '—'}
-                        </p>
-                      )}
                     </div>
                     <div className="flex-shrink-0 text-primary-600 font-semibold">
                       {formatCurrency(getItemPrice(item), getItemCurrency(item))}
@@ -537,7 +527,7 @@ const RestaurantDetailPage = () => {
                 onKeyDown={(e) => e.key === 'Enter' && setPreviewFood(item)}
                 className="card overflow-hidden p-0 flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow"
               >
-                <div className="aspect-[16/10] flex-shrink-0 bg-gray-100">
+                <div className="h-44 sm:h-48 flex-shrink-0 overflow-hidden bg-gray-100">
                   <img
                     src={getFoodImage(item)}
                     alt={toDisplayText(item.name)}
@@ -548,11 +538,8 @@ const RestaurantDetailPage = () => {
                   <h3 className="font-semibold text-gray-900 mb-1 truncate">
                     {toDisplayText(item.name) || t('common.noData')}
                   </h3>
-                  <p className="text-primary-600 font-medium text-sm mb-2">
+                  <p className="text-primary-600 font-medium text-sm">
                     {formatCurrency(getItemPrice(item), getItemCurrency(item))}
-                  </p>
-                  <p className="text-xs text-gray-500 line-clamp-2 flex-1">
-                    {stripHtml(toDisplayText(item.description)) || '—'}
                   </p>
                 </div>
               </article>
@@ -614,10 +601,10 @@ const RestaurantDetailPage = () => {
                   </span>
                 )}
               </div>
-              {getCategoryName(previewFood) && (
+              {getCategoryName(previewFood, currentLanguage) && (
                 <p className="text-sm text-gray-600 mb-3">
                   <span className="font-medium text-gray-500">{t('food.category')}: </span>
-                  {getCategoryName(previewFood)}
+                  {getCategoryName(previewFood, currentLanguage)}
                 </p>
               )}
               <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">

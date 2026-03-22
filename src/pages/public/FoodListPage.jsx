@@ -4,9 +4,9 @@ import { useLanguage } from '@context/LanguageContext'
 import { foodApi } from '@services/api/foodApi'
 import { categoryApi } from '@services/api/categoryApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { formatCurrency, stripHtml } from '@utils/helpers'
+import { formatCurrency, getLocalizedText } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
-import { UtensilsCrossed, Star } from 'lucide-react'
+import { UtensilsCrossed, Star, Store } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -35,10 +35,13 @@ const ensureArray = (value) => {
 const getFoodImage = (item) =>
   item?.main_image ?? item?.image_url ?? item?.images?.[0]?.url ?? DEFAULT_FOOD_IMAGE
 
+const getRestaurantFromItem = (item) => item?.restaurant ?? item?.restaurant_id ?? null
+const getRestaurantId = (r) => (r && typeof r === 'object' ? (r.id ?? r.restaurant_id) : r)
+
 const DEBOUNCE_MS = 350
 
 const FoodListPage = () => {
-  const { t } = useLanguage()
+  const { t, currentLanguage } = useLanguage()
   const [items, setItems] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -76,27 +79,32 @@ const FoodListPage = () => {
     <div className="container-custom py-8 sm:py-12">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{t('food.title')}</h1>
-        <p className="text-gray-600 text-sm sm:text-base">{t('restaurant.search')}</p>
+        <p className="text-gray-600 text-sm sm:text-base">{t('food.searchByName')}</p>
       </div>
 
       <div className="card p-4 sm:p-6 mb-6 sm:mb-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-              <UtensilsCrossed size={18} />
-            </span>
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t('restaurant.search')}
-              className="input w-full pl-10 pr-4 py-2.5"
-              aria-label={t('restaurant.search')}
-            />
+          <div>
+            <label htmlFor="food-search" className="block text-sm font-medium text-gray-700 mb-1">{t('food.searchByName')}</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                <UtensilsCrossed size={18} />
+              </span>
+              <input
+                id="food-search"
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t('food.searchByName')}
+                className="input w-full pl-10 pr-4 py-2.5"
+                aria-label={t('food.searchByName')}
+              />
+            </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.category')}</label>
+            <label htmlFor="food-category" className="block text-sm font-medium text-gray-700 mb-1">{t('food.category')}</label>
             <select
+              id="food-category"
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
               className="input w-full py-2.5"
@@ -104,7 +112,7 @@ const FoodListPage = () => {
               <option value="">{t('common.all')}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {toDisplayText(c.name) || c.name_en || c.code || c.id}
+                  {getLocalizedText(c.name, currentLanguage) || c.name_en || c.code || c.id}
                 </option>
               ))}
             </select>
@@ -129,7 +137,7 @@ const FoodListPage = () => {
               key={item.id ?? idx}
               className="card overflow-hidden p-0 flex flex-col h-full"
             >
-              <div className="relative group aspect-[16/10] flex-shrink-0">
+              <div className="relative group h-44 sm:h-48 flex-shrink-0 overflow-hidden bg-gray-100">
                 <img
                   src={getFoodImage(item)}
                   alt={toDisplayText(item.name)}
@@ -148,16 +156,33 @@ const FoodListPage = () => {
                     {toDisplayText(item.name) || t('common.noData')}
                   </Link>
                 </h2>
-                <p className="text-gray-600 text-sm line-clamp-2 mb-3 flex-1">
-                  {stripHtml(toDisplayText(item.description)) || '—'}
-                </p>
-                <div className="flex flex-wrap items-center gap-3 text-sm">
+                {(() => {
+                  const restaurant = getRestaurantFromItem(item)
+                  const restaurantName = restaurant && typeof restaurant === 'object' ? toDisplayText(restaurant.name) : null
+                  const restaurantId = restaurant ? getRestaurantId(restaurant) : null
+                  if (!restaurantName) return null
+                  return (
+                    <p className="flex items-center gap-1.5 text-xs text-gray-500 mb-2 min-w-0">
+                      <Store size={12} className="flex-shrink-0 text-gray-400" />
+                      <span className="truncate">
+                        {restaurantId ? (
+                          <Link to={`/restaurants/${restaurantId}`} className="hover:text-primary-600">
+                            {restaurantName}
+                          </Link>
+                        ) : (
+                          restaurantName
+                        )}
+                      </span>
+                    </p>
+                  )
+                })()}
+                <div className="flex flex-wrap items-center gap-3 text-sm mb-3">
                   <span className="font-semibold text-primary-600">
                     {formatCurrency(item.price ?? 0, item.currency_code ?? 'VND')}
                   </span>
                   {(item.category?.name || item.food_category?.name) && (
                     <span className="text-gray-500 truncate">
-                      {toDisplayText(item.category?.name ?? item.food_category?.name)}
+                      {getLocalizedText(item.category?.name ?? item.food_category?.name, currentLanguage)}
                     </span>
                   )}
                   {item.rating != null && (
@@ -167,7 +192,7 @@ const FoodListPage = () => {
                     </span>
                   )}
                 </div>
-                <div className="mt-4 pt-3 border-t border-gray-100">
+                <div className="pt-3 border-t border-gray-100">
                   <Link to={`/food-items/${item.id}`} className="btn btn-primary w-full sm:w-auto text-sm">
                     {t('common.view')}
                   </Link>

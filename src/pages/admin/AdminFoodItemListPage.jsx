@@ -103,7 +103,7 @@ const AdminFoodItemListPage = () => {
   const handleStatusToggle = async (foodItemId, currentStatus) => {
     if (updating.has(foodItemId)) return
 
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
+    const newStatus = currentStatus === 'active' ? 'hidden' : 'active'
     setUpdating((prev) => new Set(prev).add(foodItemId))
 
     try {
@@ -182,7 +182,7 @@ const AdminFoodItemListPage = () => {
           >
             <option value="">{t('common.allStatus')}</option>
             <option value="active">{t('common.active')}</option>
-            <option value="inactive">{t('common.inactive')}</option>
+            <option value="hidden">{t('common.hidden')}</option>
           </select>
         </div>
       </div>
@@ -207,7 +207,7 @@ const AdminFoodItemListPage = () => {
 
             return (
               <div key={item.id} className="card overflow-hidden p-0 flex flex-col">
-                <div className="aspect-[16/10] flex-shrink-0">
+                <div className="h-44 sm:h-48 flex-shrink-0 overflow-hidden bg-gray-100">
                   <img
                     src={getFoodImage(item)}
                     alt={name}
@@ -219,9 +219,6 @@ const AdminFoodItemListPage = () => {
                   <p className="text-primary-600 font-medium text-sm mb-2">
                     {formatCurrency(item.price ?? 0, item.currency_code ?? 'VND')}
                   </p>
-                  {item.description && (
-                    <p className="text-gray-500 text-xs mb-3 line-clamp-2">{toDisplayText(item.description)}</p>
-                  )}
                   <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
                     <button
                       onClick={() => handleStatusToggle(item.id, status)}
@@ -231,7 +228,7 @@ const AdminFoodItemListPage = () => {
                       } ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       {isActive ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
-                      <span>{isActive ? t('common.active') : t('common.inactive')}</span>
+                      <span>{isActive ? t('common.active') : t('common.hidden')}</span>
                     </button>
                   </div>
                 </div>

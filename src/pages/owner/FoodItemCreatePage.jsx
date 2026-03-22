@@ -4,7 +4,7 @@ import { useLanguage } from '@context/LanguageContext'
 import { useAuth } from '@context/AuthContext'
 import { foodApi } from '@services/api/foodApi'
 import { categoryApi } from '@services/api/categoryApi'
-import { formatPriceInput, parsePriceValue } from '@utils/helpers'
+import { formatPriceInput, parsePriceValue, getLocalizedText } from '@utils/helpers'
 import { toast } from 'react-toastify'
 import ImageUrlOrUpload from '@components/owner/ImageUrlOrUpload'
 import RichTextEditor from '@components/common/RichTextEditor'
@@ -52,7 +52,7 @@ const initialFormData = {
 }
 
 const FoodItemCreatePage = () => {
-  const { t, getMultilingualContent } = useLanguage()
+  const { t, currentLanguage, getMultilingualContent } = useLanguage()
   const { user } = useAuth()
   const navigate = useNavigate()
   const { restaurantId: restaurantIdFromUrl } = useParams()
@@ -175,7 +175,7 @@ const FoodItemCreatePage = () => {
                 <option value="">{t('common.filter')}...</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {toDisplayName(c.name, getMultilingualContent) || c.name_en || c.code || c.id}
+                    {getLocalizedText(c.name, currentLanguage) || c.name_en || c.code || c.id}
                   </option>
                 ))}
               </select>

@@ -2,9 +2,11 @@
   "common": {
     "home": "Trang chủ",
     "restaurants": "Nhà hàng",
+    "navRestaurants": "Nhà Hàng",
     "food": "Món ăn",
     "categories": "Danh mục",
     "news": "Tin tức",
+    "navNews": "Tin Tức",
     "courses": "Khóa học",
     "chefs": "Đầu bếp",
     "login": "Đăng nhập",
@@ -15,6 +17,7 @@
     "search": "Tìm kiếm",
     "filter": "Lọc",
     "all": "Tất cả",
+    "none": "Không",
     "add": "Thêm",
     "actions": "Thao tác",
     "clearFilters": "Xóa bộ lọc",
@@ -91,6 +94,7 @@
   "food": {
     "title": "Món ăn",
     "detail": "Chi tiết món ăn",
+    "searchByName": "Tìm theo tên món ăn",
     "category": "Danh mục",
     "otherCategory": "Khác",
     "price": "Giá",
@@ -230,6 +234,8 @@
     "manageFoodItems": "Quản lý món ăn",
     "manageCategories": "Quản lý danh mục",
     "manageNews": "Quản lý tin tức",
-    "statistics": "Thống kê"
+    "statistics": "Thống kê",
+    "sortOrder": "Thứ tự sắp xếp",
+    "translations": "Dịch"
   }
 }

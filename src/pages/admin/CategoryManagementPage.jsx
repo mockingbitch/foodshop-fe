@@ -5,18 +5,39 @@ import { categoryApi } from '@services/api/categoryApi'
 import { toast } from 'react-toastify'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import ConfirmModal from '@components/common/ConfirmModal'
-import { FolderTree, Search, Edit, Plus, Trash2 } from 'lucide-react'
+import { getLocalizedText } from '@utils/helpers'
+import { FolderTree, Search, Edit, Plus, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 
-const toDisplayText = (val) => {
-  if (val == null) return ''
-  if (typeof val === 'string') return val
-  if (typeof val === 'object') {
-    const v = val.vn ?? val.vi ?? val.kr ?? val.ko ?? val.en
-    if (typeof v === 'string') return v
-    const first = Object.values(val).find((x) => typeof x === 'string')
-    return first ?? ''
+const PER_PAGE = 10
+
+const getPaginationMeta = (res, listLength = 0) => {
+  const root = res?.data ?? res
+  if (!root || typeof root !== 'object') {
+    return { currentPage: 1, lastPage: 1, total: listLength, perPage: PER_PAGE }
   }
-  return String(val)
+  let payload
+  if (
+    root.data &&
+    typeof root.data === 'object' &&
+    !Array.isArray(root.data) &&
+    (root.data.current_page != null || root.data.last_page != null || root.data.total != null)
+  ) {
+    payload = root.data
+  } else {
+    payload = root
+  }
+  const meta = payload.meta ?? payload.pagination ?? payload
+  const currentPage = Number(meta.current_page ?? meta.page ?? meta.currentPage ?? 1) || 1
+  const total = Number(meta.total) >= 0 ? Number(meta.total) : listLength
+  const perPage = Number(meta.per_page ?? meta.perPage ?? PER_PAGE) || PER_PAGE
+  let lastPage = Number(meta.last_page ?? meta.lastPage ?? meta.total_pages ?? meta.totalPages ?? 0) || 0
+  if (lastPage < 1 && total > 0 && perPage > 0) lastPage = Math.ceil(total / perPage)
+  return {
+    currentPage,
+    lastPage: lastPage >= 1 ? lastPage : 1,
+    total,
+    perPage,
+  }
 }
 
 const ensureArray = (value) => {
@@ -34,10 +55,12 @@ const ensureArray = (value) => {
 const DEBOUNCE_MS = 350
 
 const CategoryManagementPage = () => {
-  const { t } = useLanguage()
+  const { t, currentLanguage } = useLanguage()
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({ currentPage: 1, lastPage: 1, total: 0, perPage: PER_PAGE })
   const [deleting, setDeleting] = useState(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const [itemToDelete, setItemToDelete] = useState(null)
@@ -45,26 +68,32 @@ const CategoryManagementPage = () => {
   const fetchCategories = useCallback(async () => {
     setLoading(true)
     try {
-      const params = { per_page: 100 }
+      const params = { per_page: PER_PAGE, page }
       if (searchQuery?.trim()) params.search = searchQuery.trim()
       const res = await categoryApi.getCategories(params)
       const raw = res?.data ?? res
       const list = ensureArray(raw)
       setCategories(Array.isArray(list) ? list : [])
+      setPagination(getPaginationMeta(res, Array.isArray(list) ? list.length : 0))
     } catch (error) {
       console.error('Error fetching categories:', error)
       setCategories([])
+      setPagination({ currentPage: 1, lastPage: 1, total: 0, perPage: PER_PAGE })
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [page, searchQuery])
 
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchCategories()
-    }, DEBOUNCE_MS)
+    }, searchQuery ? DEBOUNCE_MS : 0)
     return () => clearTimeout(timer)
-  }, [searchQuery, fetchCategories])
+  }, [searchQuery, page, fetchCategories])
+
+  useEffect(() => {
+    setPage(1)
+  }, [searchQuery])
 
   const handleDeleteClick = (id, name) => {
     setItemToDelete({ id, name })
@@ -145,16 +174,17 @@ const CategoryManagementPage = () => {
               <tbody className="divide-y divide-gray-100">
                 {categories.map((cat, index) => {
                   const id = cat.id ?? cat.category_id
-                  const name = toDisplayText(cat.name)
+                  const name = getLocalizedText(cat.name, currentLanguage)
                   const isDeleting = deleting === id
+                  const rowNum = (pagination.currentPage - 1) * pagination.perPage + index + 1
                   return (
                     <tr key={id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm text-gray-600">{index + 1}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{rowNum}</td>
                       <td className="px-4 py-3">
                         <span className="font-medium text-gray-900">{name || t('common.noData')}</span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
-                        {cat.parent_id ? toDisplayText(cat.parent?.name) || `#${cat.parent_id}` : '—'}
+                        {cat.parent_id ? getLocalizedText(cat.parent?.name, currentLanguage) || `#${cat.parent_id}` : '—'}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -185,6 +215,45 @@ const CategoryManagementPage = () => {
         </div>
       )}
 
+      {!loading && categories.length > 0 && pagination.total > PER_PAGE && (
+        <nav
+          className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6"
+          aria-label="Pagination"
+        >
+          <p className="text-sm text-gray-600 order-2 sm:order-1">
+            {t('common.showing')}{' '}
+            <span className="font-medium">{Math.min((pagination.currentPage - 1) * pagination.perPage + 1, pagination.total)}</span>–
+            <span className="font-medium">{Math.min(pagination.currentPage * pagination.perPage, pagination.total)}</span>{' '}
+            {t('common.of')} <span className="font-medium">{pagination.total}</span>
+          </p>
+          <div className="flex items-center gap-2 order-1 sm:order-2">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={pagination.currentPage <= 1}
+              className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={t('common.previous')}
+            >
+              <ChevronLeft size={18} />
+              {t('common.previous')}
+            </button>
+            <span className="text-sm text-gray-700 px-3 py-1.5 bg-white border border-gray-200 rounded min-w-[80px] text-center">
+              {t('common.page')} {pagination.currentPage} / {pagination.lastPage}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(pagination.lastPage, p + 1))}
+              disabled={pagination.currentPage >= pagination.lastPage}
+              className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={t('common.next')}
+            >
+              {t('common.next')}
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </nav>
+      )}
+
       <ConfirmModal
         isOpen={showConfirm}
         onClose={() => {
@@ -193,7 +262,7 @@ const CategoryManagementPage = () => {
         }}
         onConfirm={handleDeleteConfirm}
         title={t('common.confirmDelete')}
-        message={itemToDelete && itemToDelete.name ? `${t('common.confirmDelete')} "${toDisplayText(itemToDelete.name)}"?` : t('common.confirmDelete')}
+        message={itemToDelete && itemToDelete.name ? `${t('common.confirmDelete')} "${itemToDelete.name}"?` : t('common.confirmDelete')}
         confirmText={t('common.delete')}
         cancelText={t('common.cancel')}
         variant="danger"

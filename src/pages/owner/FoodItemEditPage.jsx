@@ -5,7 +5,7 @@ import { useAuth } from '@context/AuthContext'
 import { restaurantApi } from '@services/api/restaurantApi'
 import { foodApi } from '@services/api/foodApi'
 import { categoryApi } from '@services/api/categoryApi'
-import { formatPriceInput, parsePriceValue } from '@utils/helpers'
+import { formatPriceInput, parsePriceValue, getLocalizedText } from '@utils/helpers'
 import { toast } from 'react-toastify'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import ConfirmModal from '@components/common/ConfirmModal'
@@ -110,7 +110,7 @@ const mapFoodToForm = (item) => {
 
 const FoodItemEditPage = () => {
   const { id } = useParams()
-  const { t, getMultilingualContent } = useLanguage()
+  const { t, currentLanguage, getMultilingualContent } = useLanguage()
   const { user } = useAuth()
   const navigate = useNavigate()
   const ownerId = getOwnerId(user)
@@ -292,7 +292,7 @@ const FoodItemEditPage = () => {
                 <option value="">{t('common.filter')}...</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {toDisplayName(c.name, getMultilingualContent) || c.name_en || c.code || c.id}
+                    {getLocalizedText(c.name, currentLanguage) || c.name_en || c.code || c.id}
                   </option>
                 ))}
               </select>

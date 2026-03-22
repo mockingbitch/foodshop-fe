@@ -337,3 +337,59 @@ export const downloadFile = (url, filename) => {
   link.click()
   document.body.removeChild(link)
 }
+
+/**
+ * Get localized text from multilingual value based on language code.
+ * Handles: string, object { en, vn, vi, kr, ko }, translations array [{ language_code, name }]
+ * @param val - The multilingual value (string, object, or translations array)
+ * @param lang - App language: 'en' | 'vi' | 'ko'
+ * @returns Localized string
+ */
+export const getLocalizedText = (val, lang) => {
+  if (val == null) return ''
+  if (typeof val === 'string') return val
+  if (typeof val === 'object') {
+    const langMap = {
+      en: ['en', 'EN'],
+      vi: ['vn', 'VN', 'vi', 'VI'],
+      ko: ['kr', 'KR', 'ko', 'KO'],
+    }
+    const keys = langMap[lang] || ['en', 'EN']
+
+    for (const k of keys) {
+      if (val[k] != null && typeof val[k] === 'string') return val[k]
+    }
+
+    const arr = val.translations
+    if (Array.isArray(arr)) {
+      for (const t of arr) {
+        const lc = String(t.language_code || t.languageCode || '').toUpperCase()
+        const match =
+          (lang === 'vi' && (lc === 'VN' || lc === 'VI')) ||
+          (lang === 'ko' && (lc === 'KR' || lc === 'KO')) ||
+          (lang === 'en' && lc === 'EN')
+        if (match && (t.name != null || t.description != null)) {
+          return String(t.name ?? t.description ?? '')
+        }
+      }
+      const first = arr.find((x) => x.name)
+      if (first) return String(first.name)
+    }
+
+    return (
+      val.vn ??
+      val.vi ??
+      val.en ??
+      val.kr ??
+      val.ko ??
+      val.VN ??
+      val.EN ??
+      val.KR ??
+      (() => {
+        const first = Object.values(val).find((x) => typeof x === 'string')
+        return first ?? ''
+      })()
+    )
+  }
+  return String(val)
+}

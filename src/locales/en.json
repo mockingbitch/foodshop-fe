@@ -2,9 +2,11 @@
   "common": {
     "home": "Home",
     "restaurants": "Restaurants",
+    "navRestaurants": "Restaurants",
     "food": "Food",
     "categories": "Categories",
     "news": "News",
+    "navNews": "News",
     "courses": "Courses",
     "chefs": "Chefs",
     "login": "Login",
@@ -15,6 +17,7 @@
     "search": "Search",
     "filter": "Filter",
     "all": "All",
+    "none": "None",
     "add": "Add",
     "actions": "Actions",
     "clearFilters": "Clear filters",
@@ -91,6 +94,7 @@
   "food": {
     "title": "Food Items",
     "detail": "Food Details",
+    "searchByName": "Search by food name",
     "category": "Category",
     "otherCategory": "Other",
     "price": "Price",
@@ -230,6 +234,8 @@
     "manageFoodItems": "Manage Food Items",
     "manageCategories": "Manage Categories",
     "manageNews": "Manage News",
-    "statistics": "Statistics"
+    "statistics": "Statistics",
+    "sortOrder": "Sort order",
+    "translations": "Translations"
   }
 }
