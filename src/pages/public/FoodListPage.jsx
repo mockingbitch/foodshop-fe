@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '@context/LanguageContext'
 import { foodApi } from '@services/api/foodApi'
@@ -6,7 +6,7 @@ import { categoryApi } from '@services/api/categoryApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency, getLocalizedText } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
-import { UtensilsCrossed, Star, Store } from 'lucide-react'
+import { UtensilsCrossed, Star, Store, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -39,6 +39,39 @@ const getRestaurantFromItem = (item) => item?.restaurant ?? item?.restaurant_id 
 const getRestaurantId = (r) => (r && typeof r === 'object' ? (r.id ?? r.restaurant_id) : r)
 
 const DEBOUNCE_MS = 350
+const PER_PAGE = 12
+
+const getPaginationMeta = (res, listLength = 0) => {
+  const root = res?.data ?? res
+  if (!root || typeof root !== 'object') {
+    return { currentPage: 1, lastPage: 1, total: listLength, perPage: PER_PAGE }
+  }
+  let payload
+  if (
+    root.data &&
+    typeof root.data === 'object' &&
+    !Array.isArray(root.data) &&
+    (root.data.current_page != null || root.data.last_page != null || root.data.total != null)
+  ) {
+    payload = root.data
+  } else {
+    payload = root
+  }
+
+  const meta = payload.meta ?? payload.pagination ?? payload
+  const currentPage = Number(meta.current_page ?? meta.page ?? meta.currentPage ?? 1) || 1
+  const total = Number(meta.total) >= 0 ? Number(meta.total) : listLength
+  const perPage = Number(meta.per_page ?? meta.perPage ?? PER_PAGE) || PER_PAGE
+  let lastPage = Number(meta.last_page ?? meta.lastPage ?? meta.total_pages ?? meta.totalPages ?? 0) || 0
+  if (lastPage < 1 && total > 0 && perPage > 0) lastPage = Math.ceil(total / perPage)
+
+  return {
+    currentPage,
+    lastPage: lastPage >= 1 ? lastPage : 1,
+    total,
+    perPage,
+  }
+}
 
 const FoodListPage = () => {
   const { t, currentLanguage } = useLanguage()
@@ -47,6 +80,12 @@ const FoodListPage = () => {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryId, setCategoryId] = useState('')
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({ currentPage: 1, lastPage: 1, total: 0, perPage: PER_PAGE })
+
+  // Track last filters to decide whether to debounce or fetch immediately.
+  const prevFiltersRef = useRef({ searchQuery: '', categoryId: '' })
+  const skipFetchOnNextPageRef = useRef(false)
 
   useEffect(() => {
     categoryApi
@@ -55,25 +94,56 @@ const FoodListPage = () => {
       .catch(() => setCategories([]))
   }, [])
 
-  const fetchItems = useCallback((search, catId) => {
+  const fetchItems = useCallback((search, catId, pageNum) => {
     setLoading(true)
-    const params = { per_page: 50 }
+    const params = { per_page: PER_PAGE, page: pageNum }
     if (search?.trim()) params.search = search.trim()
     if (catId) params.category_id = Number(catId)
     foodApi
       .getFoodItems(params)
-      .then((res) => setItems(ensureArray(res?.data)))
+      .then((res) => {
+        const list = ensureArray(res?.data)
+        setItems(Array.isArray(list) ? list : [])
+        setPagination(getPaginationMeta(res, Array.isArray(list) ? list.length : 0))
+      })
       .catch(() => setItems([]))
       .finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
-    const timer = setTimeout(() => fetchItems(searchQuery, categoryId), DEBOUNCE_MS)
-    return () => clearTimeout(timer)
-  }, [searchQuery, categoryId, fetchItems])
+    if (skipFetchOnNextPageRef.current) {
+      skipFetchOnNextPageRef.current = false
+      return
+    }
+
+    const filtersChanged =
+      prevFiltersRef.current.searchQuery !== searchQuery || prevFiltersRef.current.categoryId !== categoryId
+
+    // Update ref so the next effect run (e.g. page change) doesn't double-fetch.
+    if (filtersChanged) {
+      prevFiltersRef.current = { searchQuery, categoryId }
+      if (page !== 1) {
+        skipFetchOnNextPageRef.current = true
+        setPage(1)
+      }
+    }
+
+    if (filtersChanged) {
+      const timer = setTimeout(() => fetchItems(searchQuery, categoryId, 1), DEBOUNCE_MS)
+      return () => clearTimeout(timer)
+    }
+
+    fetchItems(searchQuery, categoryId, page)
+  }, [searchQuery, categoryId, page, fetchItems])
 
   const getRatingWidth = (rating) => (!rating ? '0%' : `${(rating / 5) * 100}%`)
   const hasFilters = searchQuery.trim() || categoryId
+  const currentPage = pagination.currentPage
+  const lastPage = pagination.lastPage
+  const showPagination = lastPage > 1
+  const safeTotal = pagination.total > 0 ? pagination.total : items.length
+  const from = Math.min((currentPage - 1) * pagination.perPage + 1, safeTotal || 0)
+  const to = Math.min(currentPage * pagination.perPage, safeTotal || 0)
 
   return (
     <div className="container-custom py-8 sm:py-12">
@@ -131,10 +201,11 @@ const FoodListPage = () => {
           {hasFilters && <p className="text-sm text-gray-500">{t('restaurant.noResults')}</p>}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {items.map((item, idx) => (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {items.map((item) => (
             <article
-              key={item.id ?? idx}
+              key={item.id}
               className="card overflow-hidden p-0 flex flex-col h-full"
             >
               <div className="relative group h-44 sm:h-48 flex-shrink-0 overflow-hidden bg-gray-100">
@@ -199,8 +270,46 @@ const FoodListPage = () => {
                 </div>
               </div>
             </article>
-          ))}
-        </div>
+            ))}
+          </div>
+
+          {showPagination && (
+            <nav
+              className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-6"
+              aria-label="Pagination"
+            >
+              <p className="text-sm text-gray-600 order-2 sm:order-1">
+                {t('common.showing')} <span className="font-medium">{from}</span>-<span className="font-medium">{to}</span>{' '}
+                {t('common.of')} <span className="font-medium">{safeTotal}</span>
+              </p>
+              <div className="flex items-center gap-2 order-1 sm:order-2">
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage <= 1}
+                  className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label={t('common.previous')}
+                >
+                  <ChevronLeft size={18} />
+                  {t('common.previous')}
+                </button>
+                <span className="text-sm text-gray-700 px-3 py-1.5 bg-white border border-gray-200 rounded min-w-[80px] text-center">
+                  {t('common.page')} {currentPage} / {lastPage}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
+                  disabled={currentPage >= lastPage}
+                  className="btn btn-outline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label={t('common.next')}
+                >
+                  {t('common.next')}
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </nav>
+          )}
+        </>
       )}
     </div>
   )
