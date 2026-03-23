@@ -109,21 +109,22 @@
 /* WYSIWYG / HTML content (news, articles) */
 .content-html {
   @apply text-gray-700 leading-relaxed w-full max-w-full;
-  overflow-wrap: break-word;
-  word-break: normal;
+  overflow-x: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   white-space: normal;
   overflow: visible;
 }
 .content-html * {
   max-width: 100%;
   white-space: normal;
-  overflow-wrap: break-word;
-  word-break: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .content-html p {
   @apply mb-4 w-full max-w-full;
-  overflow-wrap: break-word;
-  word-break: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .content-html h1, .content-html h2, .content-html h3, .content-html h4, .content-html h5, .content-html h6 {
   @apply font-semibold text-gray-900 mt-6 mb-2;

@@ -15,6 +15,15 @@ const NEWS_TYPES = [
   { value: 'chef', labelKey: 'common.chefs' },
 ]
 
+const normalizeRichTextForSave = (value) => {
+  if (value == null) return ''
+  const str = String(value)
+  // Quill usually outputs HTML. Keep it untouched to preserve <br/> and other tags.
+  if (str.includes('<') && str.includes('>')) return str
+  // If it's plain text, convert newlines to <br/> so backend stores the line breaks.
+  return str.replace(/\r?\n/g, '<br/>')
+}
+
 const NewsCreatePage = () => {
   const { t } = useLanguage()
   const navigate = useNavigate()
@@ -78,7 +87,7 @@ const NewsCreatePage = () => {
         type: formData.type,
         category_id: null,
         title: { en: formData.title?.trim() || '' },
-        content: { en: formData.content?.trim() || '' },
+        content: { en: normalizeRichTextForSave(formData.content) },
         excerpt: { en: '' },
         status: formData.status,
         published_at: new Date().toISOString(),

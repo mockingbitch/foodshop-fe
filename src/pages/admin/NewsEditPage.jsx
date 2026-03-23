@@ -28,6 +28,13 @@ const NEWS_TYPES = [
   { value: 'chef', labelKey: 'common.chefs' },
 ]
 
+const normalizeRichTextForSave = (value) => {
+  if (value == null) return ''
+  const str = String(value)
+  if (str.includes('<') && str.includes('>')) return str
+  return str.replace(/\r?\n/g, '<br/>')
+}
+
 const NewsEditPage = () => {
   const { id } = useParams()
   const { t } = useLanguage()
@@ -125,7 +132,7 @@ const NewsEditPage = () => {
         type: formData.type,
         category_id: null,
         title: { en: formData.title?.trim() || '' },
-        content: { en: formData.content?.trim() || '' },
+        content: { en: normalizeRichTextForSave(formData.content) },
         excerpt: { en: '' },
         status: formData.status,
         published_at: new Date().toISOString(),

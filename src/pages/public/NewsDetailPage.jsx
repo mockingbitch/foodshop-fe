@@ -124,7 +124,8 @@ const NewsDetailPage = () => {
   }
 
   const title = toDisplayText(news.title)
-  const contentHtml = toDisplayText(news.content)
+  const contentValue = toDisplayText(news.content)
+  const contentIsHtml = typeof contentValue === 'string' && contentValue.includes('<') && contentValue.includes('>')
   const imageUrl = getNewsImage(news)
   const publishedAt = news.published_at ?? news.created_at ?? news.date
 
@@ -150,7 +151,7 @@ const NewsDetailPage = () => {
               />
             </div>
           )}
-          <div className="p-6 sm:p-8 w-full min-w-0 overflow-visible box-border">
+          <div className="p-6 sm:p-8 w-full min-w-0 overflow-x-hidden box-border">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 break-words">
               {title || t('common.noData')}
             </h1>
@@ -159,23 +160,27 @@ const NewsDetailPage = () => {
                 {formatDate(publishedAt, 'PPP')}
               </p>
             )}
-            {toDisplayText(news.excerpt) && !contentHtml && (
-              <p className="text-gray-600 mb-6">{toDisplayText(news.excerpt)}</p>
+            {toDisplayText(news.excerpt) && !contentValue && (
+              <p className="text-gray-600 mb-6 break-all whitespace-pre-wrap overflow-hidden">{toDisplayText(news.excerpt)}</p>
             )}
-            {contentHtml ? (
-              <div
-                className="content-html w-full min-w-0 overflow-visible"
-                style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}
-                dangerouslySetInnerHTML={{ __html: contentHtml }}
-              />
+            {contentValue ? (
+              contentIsHtml ? (
+                <div
+                  className="content-html w-full min-w-0 overflow-x-hidden break-words"
+                  style={{ wordBreak: 'break-all', overflowWrap: 'break-word' }}
+                  dangerouslySetInnerHTML={{ __html: contentValue }}
+                />
+              ) : (
+                <p className="text-gray-600 break-all whitespace-pre-wrap overflow-x-hidden">{contentValue}</p>
+              )
             ) : toDisplayText(news.excerpt) ? (
-              <p className="text-gray-600">{toDisplayText(news.excerpt)}</p>
+              <p className="text-gray-600 break-all whitespace-pre-wrap overflow-x-hidden">{toDisplayText(news.excerpt)}</p>
             ) : null}
           </div>
         </article>
 
         {/* Right column: latest 5 news + restaurants */}
-        <aside className="lg:sticky lg:top-20">
+        <aside className="lg:sticky lg:top-20 min-w-0">
           <div className="card p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3 mb-3">
               <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
@@ -194,7 +199,7 @@ const NewsDetailPage = () => {
                   <Link
                     key={item?.id}
                     to={`/news/${item?.id}`}
-                    className="flex gap-3 p-2 rounded-lg hover:bg-gray-50 transition min-w-0"
+                    className="flex gap-3 p-2 rounded-lg hover:bg-gray-50 transition min-w-0 overflow-hidden"
                   >
                     <div className="w-16 h-16 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
                       {itemImage ? (
@@ -206,7 +211,7 @@ const NewsDetailPage = () => {
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm font-semibold text-gray-900 line-clamp-2">
+                      <div className="text-sm font-semibold text-gray-900 line-clamp-2 break-all whitespace-normal overflow-hidden">
                         {itemTitle}
                       </div>
                       {date && (
