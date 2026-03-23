@@ -4,9 +4,12 @@ import axios from '@services/axios'
  * Food Items API - theo Postman FoodShop-API.
  * List: restaurant_id, category_id, best_seller, vegetarian, search, per_page.
  * Search: search, per_page. By Category: /by-category/:categoryId. Best-seller: restaurant_id, per_page.
+ * Owner list: /owner/restaurants/:restaurantId/food-items (includes hidden/disable).
  */
 export const foodApi = {
   getFoodItems: (params) => axios.get('/food-items', { params }),
+  getOwnerFoodItems: (restaurantId, params) =>
+    axios.get(`/owner/restaurants/${restaurantId}/food-items`, { params }),
   searchFoodItems: (params) => axios.get('/food-items/search', { params }),
   getFoodItemsByCategory: (categoryId, params) =>
     axios.get(`/food-items/by-category/${categoryId}`, { params }),

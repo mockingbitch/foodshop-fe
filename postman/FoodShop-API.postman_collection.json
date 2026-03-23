@@ -246,8 +246,17 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/restaurants/nearby?latitude=10.7769&longitude=106.7009&radius=10",
-            "description": "Nhà hàng trong bán kính (km). Params: latitude, longitude, radius (1-100)."
+            "url": "{{base_url}}/api/restaurants/nearby?lat=21.013844333333335&lng=105.76690683333334&radius=10&per_page=15&page=1",
+            "description": "Nhà hàng trong bán kính (km). Params: lat, lng, radius (1-100), per_page, page."
+          }
+        },
+        {
+          "name": "Owner: List My Restaurants (includes hidden/disable)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/owner/restaurants?per_page=15&page=1",
+            "description": "Danh sách nhà hàng của owner (tất cả trạng thái: active/hidden/pending)."
           }
         },
         {
@@ -347,6 +356,15 @@
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/api/food-items?restaurant_id=&category_id=&best_seller=&vegetarian=&search=&per_page=15",
             "description": "Danh sách món ăn. Query: restaurant_id, category_id, best_seller, vegetarian, search, per_page (1-100 hoặc all), group_by=category hoặc group_by_category=true để nhóm theo danh mục. Response mỗi item có food_category kèm name: { en, vn, kr }."
+          }
+        },
+        {
+          "name": "Owner: List Food Items for Restaurant (includes hidden)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/owner/restaurants/{{restaurantId}}/food-items?status=",
+            "description": "Danh sách món ăn của restaurant thuộc owner (không lọc active/confirmed), nên owner thấy cả hidden/pending."
           }
         },
         {
@@ -494,8 +512,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/food-categories?root_only=&parent_id=",
-            "description": "Danh sách category (active). Query: root_only, parent_id."
+            "url": "{{base_url}}/api/food-categories?root_only=&parent_id=&per_page=15&page=1",
+            "description": "Danh sách category (active, paginated). Query: root_only, parent_id, per_page (1-100 hoặc all), page."
           }
         },
         {
@@ -530,8 +548,8 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/news/by-type/news",
-            "description": "type: news | course | chef"
+            "url": "{{base_url}}/api/news/by-type/news?per_page=15&page=1",
+            "description": "type: news | course | chef. Query: per_page (1-100 hoặc all), page."
           }
         },
         {
@@ -641,10 +659,12 @@
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "images[]", "type": "file", "src": [], "description": "Một hoặc nhiều file ảnh" }
+                { "key": "type", "type": "text", "value": "food", "description": "restaurant | food | news — thư mục lưu ảnh (mặc định food)" },
+                { "key": "images[]", "type": "file", "src": [], "description": "Một hoặc nhiều file ảnh (max 5)" }
               ]
             },
-            "url": "{{base_url}}/api/upload/images"
+            "url": "{{base_url}}/api/upload/images",
+            "description": "Upload nhiều ảnh (max 5). Gửi type=news để lưu vào uploads/news, type=restaurant → uploads/restaurant, type=food hoặc bỏ qua → uploads/food."
           }
         },
         {

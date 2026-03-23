@@ -6,9 +6,6 @@ import { restaurantApi } from '@services/api/restaurantApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { Store, Users, Clock, MapPin } from 'lucide-react'
 
-/** owner_id từ user (backend có thể dùng id, user_id, owner_id) */
-const getOwnerId = (user) => user?.id ?? user?.user_id ?? user?.owner_id
-
 /** Chuỗi hiển thị từ name/description (string hoặc object { en, vn, kr }) */
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -21,31 +18,19 @@ const toDisplayText = (val) => {
   }
   return String(val)
 }
-
 /** ID nhà hàng (backend có thể trả id hoặc restaurant_id) */
 const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
-
-/** Nhà hàng có thuộc owner này không (user_id / owner_id) */
-const belongsToOwner = (restaurant, ownerId) => {
-  if (!ownerId || !restaurant) return false
-  const uid = restaurant.user_id ?? restaurant.owner_id
-  return String(uid) === String(ownerId)
-}
 
 const OwnerDashboardPage = () => {
   const { t } = useLanguage()
   const { user } = useAuth()
-  const ownerId = getOwnerId(user)
   const [restaurants, setRestaurants] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (ownerId) {
-      fetchData()
-    } else {
-      setLoading(false)
-    }
-  }, [ownerId])
+    if (user) fetchData()
+    else setLoading(false)
+  }, [user])
 
   /** Rút mảng từ response (hỗ trợ data, data.data, restaurants, items, results, list, phân trang). */
   const ensureArray = (value) => {
@@ -69,16 +54,12 @@ const OwnerDashboardPage = () => {
   }
 
   const fetchData = async () => {
-    if (!ownerId) return
     setLoading(true)
     try {
-      const res = await restaurantApi.getRestaurants({ owner_id: ownerId })
+      const res = await restaurantApi.getOwnerRestaurants({ per_page: 15, page: 1 })
       const raw = res?.data
       const list = ensureArray(raw)
-      const filtered = Array.isArray(list)
-        ? list.filter((r) => belongsToOwner(r, ownerId))
-        : []
-      setRestaurants(filtered)
+      setRestaurants(Array.isArray(list) ? list : [])
     } catch (error) {
       console.error('Error fetching data:', error)
       setRestaurants([])

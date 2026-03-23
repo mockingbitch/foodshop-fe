@@ -140,7 +140,7 @@ const OwnerRestaurantDetailPage = () => {
     if (!id) return
     setLoadingFood(true)
     foodApi
-      .getFoodItems({ restaurant_id: id, per_page: PER_PAGE })
+      .getOwnerFoodItems(id, { per_page: PER_PAGE, status: '' })
       .then((foodRes) => {
         const raw = foodRes?.data ?? foodRes
         const list = ensureArray(raw?.data ?? raw?.food_items ?? raw)

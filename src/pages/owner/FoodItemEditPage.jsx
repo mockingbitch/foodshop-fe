@@ -12,7 +12,6 @@ import ConfirmModal from '@components/common/ConfirmModal'
 import ImageUrlOrUpload from '@components/owner/ImageUrlOrUpload'
 import RichTextEditor from '@components/common/RichTextEditor'
 
-const getOwnerId = (user) => user?.id ?? user?.user_id ?? user?.owner_id
 const getRestaurantId = (r) => r?.id ?? r?.restaurant_id
 
 const ensureArray = (value) => {
@@ -113,7 +112,6 @@ const FoodItemEditPage = () => {
   const { t, currentLanguage, getMultilingualContent } = useLanguage()
   const { user } = useAuth()
   const navigate = useNavigate()
-  const ownerId = getOwnerId(user)
   const [formData, setFormData] = useState(initialFormData)
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
@@ -124,9 +122,9 @@ const FoodItemEditPage = () => {
   const [showConfirm, setShowConfirm] = useState(false)
 
   useEffect(() => {
-    if (!ownerId) return
+    if (!user) return
     Promise.all([
-      restaurantApi.getRestaurants({ owner_id: ownerId }),
+      restaurantApi.getOwnerRestaurants({ per_page: 100, page: 1 }),
       categoryApi.getCategories(),
     ])
       .then(([restRes, catRes]) => {
@@ -137,7 +135,7 @@ const FoodItemEditPage = () => {
         setRestaurants([])
         setCategories([])
       })
-  }, [ownerId])
+  }, [user])
 
   useEffect(() => {
     if (!id) {
