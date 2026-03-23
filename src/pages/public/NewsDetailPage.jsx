@@ -138,8 +138,43 @@ const NewsDetailPage = () => {
         <span className="text-gray-700 truncate max-w-[200px] sm:max-w-none">{title || t('common.news')}</span>
       </nav>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[320px,1fr] gap-6 items-start">
-        {/* Left column: latest 5 news */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr,320px] gap-6 items-start">
+        {/* Left column: detail */}
+        <article className="card p-0 overflow-visible">
+          {imageUrl && (
+            <div className="w-full aspect-[16/10] sm:aspect-[21/9] bg-gray-100 overflow-hidden rounded-t-xl">
+              <img
+                src={imageUrl}
+                alt={title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          <div className="p-6 sm:p-8 w-full min-w-0 overflow-visible box-border">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 break-words">
+              {title || t('common.noData')}
+            </h1>
+            {publishedAt && (
+              <p className="text-sm text-gray-500 mb-6">
+                {formatDate(publishedAt, 'PPP')}
+              </p>
+            )}
+            {toDisplayText(news.excerpt) && !contentHtml && (
+              <p className="text-gray-600 mb-6">{toDisplayText(news.excerpt)}</p>
+            )}
+            {contentHtml ? (
+              <div
+                className="content-html w-full min-w-0 overflow-visible"
+                style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}
+                dangerouslySetInnerHTML={{ __html: contentHtml }}
+              />
+            ) : toDisplayText(news.excerpt) ? (
+              <p className="text-gray-600">{toDisplayText(news.excerpt)}</p>
+            ) : null}
+          </div>
+        </article>
+
+        {/* Right column: latest 5 news + restaurants */}
         <aside className="lg:sticky lg:top-20">
           <div className="card p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3 mb-3">
@@ -238,41 +273,6 @@ const NewsDetailPage = () => {
             </div>
           </div>
         </aside>
-
-        {/* Right column: detail */}
-        <article className="card p-0 overflow-visible">
-          {imageUrl && (
-            <div className="w-full aspect-[16/10] sm:aspect-[21/9] bg-gray-100 overflow-hidden rounded-t-xl">
-              <img
-                src={imageUrl}
-                alt={title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-          <div className="p-6 sm:p-8 w-full min-w-0 overflow-visible box-border">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 break-words">
-              {title || t('common.noData')}
-            </h1>
-            {publishedAt && (
-              <p className="text-sm text-gray-500 mb-6">
-                {formatDate(publishedAt, 'PPP')}
-              </p>
-            )}
-            {toDisplayText(news.excerpt) && !contentHtml && (
-              <p className="text-gray-600 mb-6">{toDisplayText(news.excerpt)}</p>
-            )}
-            {contentHtml ? (
-              <div
-                className="content-html w-full min-w-0 overflow-visible"
-                style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}
-                dangerouslySetInnerHTML={{ __html: contentHtml }}
-              />
-            ) : toDisplayText(news.excerpt) ? (
-              <p className="text-gray-600">{toDisplayText(news.excerpt)}</p>
-            ) : null}
-          </div>
-        </article>
       </div>
     </div>
   )
