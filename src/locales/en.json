@@ -93,6 +93,7 @@
   },
   "food": {
     "title": "Food Items",
+    "newDishes": "New dishes",
     "detail": "Food Details",
     "searchByName": "Search by food name",
     "category": "Category",
@@ -112,6 +113,9 @@
     "reviewerName": "Your name",
     "reviewerNamePlaceholder": "Enter your display name",
     "reviewerNameRequired": "Please enter your name",
+    "nameVietnamese": "Dish name (Vietnamese)",
+    "nameEnglish": "Dish name (English)",
+    "nameKorean": "Dish name (Korean)",
     "namePlaceholder": "Food name",
     "descriptionPlaceholder": "Short description",
     "mainImageUrl": "Main image URL",

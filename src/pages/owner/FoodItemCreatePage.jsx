@@ -42,6 +42,8 @@ const toDisplayName = (name, getMultilingualContent) => {
 const initialFormData = {
   food_category_id: '',
   name: '',
+  name_en: '',
+  name_kr: '',
   description: '',
   main_image: '',
   price: '',
@@ -102,7 +104,11 @@ const FoodItemCreatePage = () => {
       const payload = {
         restaurant_id: Number(restaurantId),
         food_category_id: Number(formData.food_category_id),
-        name: { en: formData.name?.trim() || '', vn: formData.name?.trim() || '' },
+        name: {
+          en: formData.name_en?.trim() || '',
+          vn: formData.name?.trim() || '',
+          kr: formData.name_kr?.trim() || '',
+        },
         description: formData.description?.trim()
           ? { en: formData.description.trim(), vn: formData.description.trim() }
           : undefined,
@@ -150,17 +156,43 @@ const FoodItemCreatePage = () => {
               {t('common.required')}: restaurant ({t('food.restaurantRequiredHint')})
             </div>
           )}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.title')} (name) *</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className={`input w-full ${errors.name ? 'border-red-500' : ''}`}
-              placeholder={t('food.namePlaceholder')}
-            />
-            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.nameVietnamese')} *</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className={`input w-full ${errors.name ? 'border-red-500' : ''}`}
+                placeholder={t('food.namePlaceholder')}
+              />
+              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.nameEnglish')}</label>
+              <input
+                type="text"
+                name="name_en"
+                value={formData.name_en}
+                onChange={handleChange}
+                className="input w-full"
+                placeholder={t('food.namePlaceholder')}
+                autoComplete="off"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.nameKorean')}</label>
+              <input
+                type="text"
+                name="name_kr"
+                value={formData.name_kr}
+                onChange={handleChange}
+                className="input w-full"
+                placeholder={t('food.namePlaceholder')}
+                autoComplete="off"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

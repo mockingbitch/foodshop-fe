@@ -339,57 +339,89 @@ export const downloadFile = (url, filename) => {
 }
 
 /**
+ * Non-empty trimmed string check (skip empty / whitespace-only for locale fallback)
+ */
+const isNonEmptyStr = (s) => typeof s === 'string' && s.trim() !== ''
+
+/**
+ * Chuẩn hoá giá trị đa ngôn ngữ từ API: object, mảng translations, hoặc chuỗi JSON.
+ * Nhiều backend (vd. Laravel) serialize `{ en, vn, kr }` thành string — cần parse thì mới đổi theo ngôn ngữ.
+ */
+const normalizeMultilingualValue = (val) => {
+  if (val == null) return null
+  if (Array.isArray(val)) return { translations: val }
+  if (typeof val === 'string') {
+    const t = val.trim()
+    if (!t) return null
+    const looksJson = (t.startsWith('{') && t.endsWith('}')) || (t.startsWith('[') && t.endsWith(']'))
+    if (looksJson) {
+      try {
+        const parsed = JSON.parse(t)
+        if (Array.isArray(parsed)) return { translations: parsed }
+        if (parsed && typeof parsed === 'object') return parsed
+      } catch {
+        return { __plain: t }
+      }
+    }
+    return { __plain: t }
+  }
+  if (typeof val === 'object') return val
+  return { __plain: String(val) }
+}
+
+/**
  * Get localized text from multilingual value based on language code.
- * Handles: string, object { en, vn, vi, kr, ko }, translations array [{ language_code, name }]
+ * Handles: string (plain or JSON), object { en, vn, vi, kr, ko }, translations array [{ language_code, name }]
+ * Prefers `lang`, then falls back to any other non-empty string value.
  * @param val - The multilingual value (string, object, or translations array)
  * @param lang - App language: 'en' | 'vi' | 'ko'
  * @returns Localized string
  */
 export const getLocalizedText = (val, lang) => {
-  if (val == null) return ''
-  if (typeof val === 'string') return val
-  if (typeof val === 'object') {
-    const langMap = {
-      en: ['en', 'EN'],
-      vi: ['vn', 'VN', 'vi', 'VI'],
-      ko: ['kr', 'KR', 'ko', 'KO'],
-    }
-    const keys = langMap[lang] || ['en', 'EN']
+  const normalized = normalizeMultilingualValue(val)
+  if (normalized == null) return ''
 
-    for (const k of keys) {
-      if (val[k] != null && typeof val[k] === 'string') return val[k]
-    }
-
-    const arr = val.translations
-    if (Array.isArray(arr)) {
-      for (const t of arr) {
-        const lc = String(t.language_code || t.languageCode || '').toUpperCase()
-        const match =
-          (lang === 'vi' && (lc === 'VN' || lc === 'VI')) ||
-          (lang === 'ko' && (lc === 'KR' || lc === 'KO')) ||
-          (lang === 'en' && lc === 'EN')
-        if (match && (t.name != null || t.description != null)) {
-          return String(t.name ?? t.description ?? '')
-        }
-      }
-      const first = arr.find((x) => x.name)
-      if (first) return String(first.name)
-    }
-
-    return (
-      val.vn ??
-      val.vi ??
-      val.en ??
-      val.kr ??
-      val.ko ??
-      val.VN ??
-      val.EN ??
-      val.KR ??
-      (() => {
-        const first = Object.values(val).find((x) => typeof x === 'string')
-        return first ?? ''
-      })()
-    )
+  if (normalized.__plain != null && typeof normalized.__plain === 'string') {
+    return normalized.__plain.trim()
   }
-  return String(val)
+
+  const obj = normalized
+  const langMap = {
+    en: ['en', 'EN'],
+    vi: ['vn', 'VN', 'vi', 'VI'],
+    ko: ['kr', 'KR', 'ko', 'KO'],
+  }
+  const keys = langMap[lang] || ['en', 'EN']
+
+  for (const k of keys) {
+    if (isNonEmptyStr(obj[k])) return obj[k].trim()
+  }
+
+  const arr = obj.translations
+  if (Array.isArray(arr)) {
+    for (const item of arr) {
+      const lc = String(item.language_code || item.languageCode || '').toUpperCase()
+      const match =
+        (lang === 'vi' && (lc === 'VN' || lc === 'VI')) ||
+        (lang === 'ko' && (lc === 'KR' || lc === 'KO')) ||
+        (lang === 'en' && lc === 'EN')
+      if (match) {
+        const n = item.name ?? item.description
+        if (isNonEmptyStr(n)) return String(n).trim()
+      }
+    }
+    const first = arr.find((x) => isNonEmptyStr(x.name))
+    if (first) return String(first.name).trim()
+  }
+
+  const fallbackOrder = ['vn', 'vi', 'en', 'kr', 'ko', 'VN', 'VI', 'EN', 'KR', 'KO']
+  for (const k of fallbackOrder) {
+    if (isNonEmptyStr(obj[k])) return obj[k].trim()
+  }
+
+  const first = Object.entries(obj)
+    .filter(([key]) => key !== 'translations' && key !== '__plain')
+    .map(([, v]) => v)
+    .find((x) => isNonEmptyStr(x))
+  return first != null ? String(first).trim() : ''
 }

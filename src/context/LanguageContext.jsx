@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { getLanguage, setLanguage as saveLanguage } from '@utils/storage'
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@constants'
+import { getLocalizedText } from '@utils/helpers'
 
 // Import translation files
 import enTranslations from '@locales/en.json'
@@ -81,38 +82,36 @@ export const LanguageProvider = ({ children }) => {
     return result
   }
 
-  // Get multilingual content from object
+  // Get multilingual content from object (align với getLocalizedText: theo currentLanguage, fallback giá trị khác)
   const getMultilingualContent = (content, field = 'name') => {
     if (!content) return ''
-    
-    // If content is already a string, return it
-    if (typeof content === 'string') return content
-    
-    // If content is an object with language codes
-    if (typeof content === 'object') {
-      // Try current language
-      if (content[currentLanguage]) {
-        return typeof content[currentLanguage] === 'object' 
-          ? content[currentLanguage][field] 
-          : content[currentLanguage]
-      }
-      
-      // Try English as fallback
-      if (content.en) {
-        return typeof content.en === 'object' 
-          ? content.en[field] 
-          : content.en
-      }
-      
-      // Return first available language
-      const firstLang = Object.keys(content)[0]
-      if (firstLang) {
-        return typeof content[firstLang] === 'object' 
-          ? content[firstLang][field] 
-          : content[firstLang]
+    if (typeof content === 'string') return content.trim()
+    if (typeof content !== 'object') return ''
+
+    const node = content[currentLanguage]
+    if (node != null) {
+      if (typeof node === 'object' && node[field] != null) {
+        const s = node[field]
+        if (typeof s === 'string' && s.trim()) return s.trim()
+      } else if (typeof node === 'string' && node.trim()) {
+        return node.trim()
       }
     }
-    
+
+    if (field === 'name' || field === 'description') {
+      return getLocalizedText(content, currentLanguage)
+    }
+
+    if (content.en && typeof content.en === 'object' && content.en[field] != null) {
+      const s = content.en[field]
+      if (typeof s === 'string' && s.trim()) return s.trim()
+    }
+    const firstKey = Object.keys(content)[0]
+    if (firstKey && content[firstKey]) {
+      const n = content[firstKey]
+      if (typeof n === 'object' && n[field] != null && typeof n[field] === 'string') return n[field].trim()
+      if (typeof n === 'string') return n.trim()
+    }
     return ''
   }
 

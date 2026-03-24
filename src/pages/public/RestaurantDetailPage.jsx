@@ -6,7 +6,7 @@ import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency, getImageUrl, stripHtml, getLocalizedText } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
-import { Store, MapPin, Star, ChevronRight, Mail, Phone, X, Leaf, ExternalLink } from 'lucide-react'
+import { Store, MapPin, Star, ChevronRight, Mail, Phone, X, Leaf, ExternalLink, Truck } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -81,6 +81,11 @@ const ensureArray = (value) => {
 const getItemPrice = (item) => item?.price ?? item?.unit_price ?? 0
 const getItemCurrency = (item) => item?.currency_code ?? item?.currency ?? 'VND'
 const getRatingWidth = (rating) => (!rating ? '0%' : `${(rating / 5) * 100}%`)
+
+const isDeliveryAvailable = (r) =>
+  r?.delivery_available === true ||
+  r?.delivery_available === 1 ||
+  String(r?.delivery_available).toLowerCase() === 'true'
 
 /** Lấy id danh mục món từ item (food_category_id hoặc food_category.id) */
 const getCategoryId = (item) =>
@@ -254,6 +259,33 @@ const RestaurantDetailPage = () => {
                 <a href={`mailto:${restaurant.email}`} className="hover:text-primary-600 break-all">{restaurant.email}</a>
               </p>
             )}
+            {(() => {
+              const hasDelivery = isDeliveryAvailable(restaurant)
+              return (
+                <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border ${
+                      hasDelivery
+                        ? 'bg-primary-50 text-primary-800 border-primary-200'
+                        : 'bg-gray-50 text-gray-400 border-gray-100'
+                    }`}
+                  >
+                    <Truck size={14} className={`flex-shrink-0 ${hasDelivery ? 'text-primary-600' : 'text-gray-400'}`} />
+                    {t('restaurant.deliveryAvailableYes')}
+                  </span>
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border ${
+                      !hasDelivery
+                        ? 'bg-gray-100 text-gray-800 border-gray-200'
+                        : 'bg-gray-50 text-gray-400 border-gray-100'
+                    }`}
+                  >
+                    <Truck size={14} className={`flex-shrink-0 ${!hasDelivery ? 'text-gray-700' : 'text-gray-400'}`} />
+                    {t('restaurant.deliveryAvailableNo')}
+                  </span>
+                </div>
+              )
+            })()}
             {(restaurant.webpage_link || restaurant.facebook_link || restaurant.youtube_link) && (
               <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm">
                 {restaurant.webpage_link && (
@@ -460,13 +492,13 @@ const RestaurantDetailPage = () => {
                         <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-gray-100">
                           <img
                             src={getFoodImage(item)}
-                            alt={toDisplayText(item.name)}
+                            alt={getLocalizedText(item.name, currentLanguage)}
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="min-w-0 flex-1">
                           <span className="font-medium text-gray-900 block">
-                            {toDisplayText(item.name)}
+                            {getLocalizedText(item.name, currentLanguage)}
                           </span>
                         </div>
                         <div className="flex-shrink-0 text-primary-600 font-semibold">
@@ -493,13 +525,13 @@ const RestaurantDetailPage = () => {
                     <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-gray-100">
                       <img
                         src={getFoodImage(item)}
-                        alt={toDisplayText(item.name)}
+                        alt={getLocalizedText(item.name, currentLanguage)}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="min-w-0 flex-1">
                       <span className="font-medium text-gray-900 block">
-                        {toDisplayText(item.name)}
+                        {getLocalizedText(item.name, currentLanguage)}
                       </span>
                     </div>
                     <div className="flex-shrink-0 text-primary-600 font-semibold">
@@ -530,13 +562,13 @@ const RestaurantDetailPage = () => {
                 <div className="h-44 sm:h-48 flex-shrink-0 overflow-hidden bg-gray-100">
                   <img
                     src={getFoodImage(item)}
-                    alt={toDisplayText(item.name)}
+                    alt={getLocalizedText(item.name, currentLanguage)}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="p-4 flex flex-col flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900 mb-1 truncate">
-                    {toDisplayText(item.name) || t('common.noData')}
+                    {getLocalizedText(item.name, currentLanguage) || t('common.noData')}
                   </h3>
                   <p className="text-primary-600 font-medium text-sm">
                     {formatCurrency(getItemPrice(item), getItemCurrency(item))}
@@ -554,7 +586,7 @@ const RestaurantDetailPage = () => {
           onClick={() => setPreviewFood(null)}
           role="dialog"
           aria-modal="true"
-          aria-label={toDisplayText(previewFood.name) || t('food.detail')}
+          aria-label={getLocalizedText(previewFood.name, currentLanguage) || t('food.detail')}
         >
           <div
             className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] min-h-0 overflow-hidden flex flex-col"
@@ -563,7 +595,7 @@ const RestaurantDetailPage = () => {
             <div className="relative w-full h-[min(42vh,300px)] max-h-[min(42vh,300px)] flex-shrink-0 overflow-hidden bg-gray-100 rounded-t-xl">
               <img
                 src={getFoodImage(previewFood)}
-                alt={toDisplayText(previewFood.name)}
+                alt={getLocalizedText(previewFood.name, currentLanguage)}
                 className="absolute inset-0 h-full w-full object-cover object-center"
               />
               <button
@@ -577,7 +609,7 @@ const RestaurantDetailPage = () => {
             </div>
             <div className="p-4 sm:p-6 overflow-y-auto flex-1">
               <h2 className="text-xl font-bold text-gray-900 mb-2">
-                {toDisplayText(previewFood.name) || t('common.noData')}
+                {getLocalizedText(previewFood.name, currentLanguage) || t('common.noData')}
               </h2>
               <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 mb-3">
                 <span className="font-semibold text-primary-600 text-lg">

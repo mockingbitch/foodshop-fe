@@ -5,7 +5,7 @@ import { adminApi } from '@services/api/adminApi'
 import { restaurantApi } from '@services/api/restaurantApi'
 import { toast } from 'react-toastify'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { formatCurrency } from '@utils/helpers'
+import { formatCurrency, getLocalizedText } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
 import { UtensilsCrossed, Search, ToggleLeft, ToggleRight, Store, ChevronRight } from 'lucide-react'
 
@@ -40,7 +40,7 @@ const DEBOUNCE_MS = 350
 
 const AdminFoodItemListPage = () => {
   const { id: restaurantId } = useParams()
-  const { t } = useLanguage()
+  const { t, currentLanguage } = useLanguage()
   const [restaurant, setRestaurant] = useState(null)
   const [foodItems, setFoodItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -200,7 +200,7 @@ const AdminFoodItemListPage = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {foodItems.map((item) => {
-            const name = toDisplayText(item.name)
+            const name = getLocalizedText(item.name, currentLanguage)
             const status = item.status ?? 'active'
             const isActive = status === 'active'
             const isUpdating = updating.has(item.id)

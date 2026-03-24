@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '@context/LanguageContext'
 import { restaurantApi } from '@services/api/restaurantApi'
+import { foodApi } from '@services/api/foodApi'
 import { newsApi } from '@services/api/newsApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
-import { stripHtml } from '@utils/helpers'
-import { Search, Store, MapPin, Star, ChevronRight, ChevronLeft, Newspaper } from 'lucide-react'
+import { stripHtml, formatCurrency, getImageUrl, getLocalizedText } from '@utils/helpers'
+import { DEFAULT_FOOD_IMAGE } from '@constants'
+import { Search, UtensilsCrossed, Star, ChevronRight, ChevronLeft, Newspaper, Store, MapPin } from 'lucide-react'
 
 const toDisplayText = (val) => {
   if (val == null) return ''
@@ -31,43 +33,81 @@ const getRestaurantImage = (restaurant) => {
   return img || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'
 }
 
+const getFoodImage = (item) => {
+  const path = item?.main_image ?? item?.image_url ?? item?.images?.[0]?.url ?? null
+  if (!path) return DEFAULT_FOOD_IMAGE
+  if (typeof path === 'string' && (path.startsWith('http') || path.startsWith('/'))) return path
+  return getImageUrl(path)
+}
+
+const getRestaurantFromItem = (item) => item?.restaurant ?? item?.restaurant_id ?? null
+
 const ensureArray = (value) => {
   if (Array.isArray(value)) return value
   if (!value || typeof value !== 'object') return []
-  const raw = value.data ?? value.restaurants ?? value.items ?? value.results ?? value.list ?? value.news
+  const raw =
+    value.data ??
+    value.restaurants ??
+    value.items ??
+    value.food_items ??
+    value.foodItems ??
+    value.results ??
+    value.list ??
+    value.news
   if (Array.isArray(raw)) return raw
   if (raw && typeof raw === 'object') {
-    const nested = raw.data ?? raw.restaurants ?? raw.items ?? raw.results ?? raw.list ?? raw.news
+    const nested =
+      raw.data ??
+      raw.restaurants ??
+      raw.items ??
+      raw.food_items ??
+      raw.foodItems ??
+      raw.results ??
+      raw.list ??
+      raw.news
     return Array.isArray(nested) ? nested : []
   }
   return []
 }
+
+const sortFoodItemsByNewest = (items) =>
+  [...items].sort((a, b) => {
+    const ta = new Date(a.created_at || a.updated_at || 0).getTime()
+    const tb = new Date(b.created_at || b.updated_at || 0).getTime()
+    return tb - ta
+  })
 
 const getNewsId = (item) => item?.id
 const getNewsImage = (item) =>
   item?.featured_image ?? item?.image ?? item?.featured_image_url ?? item?.images?.[0]?.url ?? null
 
 const HomePage = () => {
-  const { t } = useLanguage()
+  const { t, currentLanguage } = useLanguage()
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [restaurants, setRestaurants] = useState([])
+  const [foodItems, setFoodItems] = useState([])
   const [news, setNews] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([
       restaurantApi.getRestaurants({ per_page: 24 }),
+      foodApi.getFoodItems({ per_page: 24 }),
       newsApi.getNews({ per_page: 4 }),
     ])
-      .then(([resRest, resNews]) => {
+      .then(([resRest, resFood, resNews]) => {
         const listRest = ensureArray(resRest?.data)
         setRestaurants(Array.isArray(listRest) ? listRest : [])
+        const listFood = ensureArray(resFood?.data)
+        const sorted = sortFoodItemsByNewest(Array.isArray(listFood) ? listFood : [])
+        setFoodItems(sorted)
         const listNews = ensureArray(resNews?.data)
         setNews(Array.isArray(listNews) ? listNews : [])
       })
       .catch(() => {
         setRestaurants([])
+        setFoodItems([])
         setNews([])
       })
       .finally(() => setLoading(false))
@@ -80,12 +120,7 @@ const HomePage = () => {
     else navigate('/restaurants')
   }
 
-  const getRatingWidth = (rating) => (!rating ? '0%' : `${(Number(rating) / 5) * 100}%`)
-
-  const popularRestaurants = restaurants.slice(0, 10)
-  const moreRestaurants = restaurants.slice(10, 22)
-
-  const HorizontalSection = ({ title, list }) => {
+  const RestaurantsHorizontalSection = ({ title, list }) => {
     const scrollRef = useRef(null)
     const scroll = (dir) => {
       if (!scrollRef.current) return
@@ -177,6 +212,103 @@ const HomePage = () => {
     )
   }
 
+  const FoodItemsHorizontalSection = ({ title, list }) => {
+    const scrollRef = useRef(null)
+    const scroll = (dir) => {
+      if (!scrollRef.current) return
+      const step = 320
+      scrollRef.current.scrollBy({ left: dir * step, behavior: 'smooth' })
+    }
+    if (!list.length) return null
+    return (
+      <section className="mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+          <Link
+            to="/food-items"
+            className="text-primary-600 hover:text-primary-700 font-medium text-sm inline-flex items-center gap-1"
+          >
+            {t('common.view')} {t('common.all')}
+            <ChevronRight size={18} />
+          </Link>
+        </div>
+        <div className="relative group/section">
+          <button
+            type="button"
+            onClick={() => scroll(-1)}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center opacity-0 group-hover/section:opacity-100 transition hover:bg-gray-50 -translate-x-1"
+            aria-label="Previous"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <div
+            ref={scrollRef}
+            className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scroll-smooth scrollbar-thin -mx-1 px-1"
+            style={{ scrollbarWidth: 'thin' }}
+          >
+            {list.map((item, idx) => {
+              const restaurant = getRestaurantFromItem(item)
+              const restaurantName = restaurant && typeof restaurant === 'object' ? toDisplayText(restaurant.name) : null
+              return (
+                <Link
+                  key={item.id ?? idx}
+                  to={`/food-items/${item.id}`}
+                  className="flex-shrink-0 w-[calc((100%-1.5rem)/2.5)] min-w-[120px] sm:w-[300px] sm:min-w-[300px] rounded-xl overflow-hidden bg-white border border-gray-100 hover:shadow-lg transition-shadow"
+                >
+                  <div className="relative aspect-square overflow-hidden rounded-t-xl">
+                    <img
+                      src={getFoodImage(item)}
+                      alt={getLocalizedText(item.name, currentLanguage)}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                    {(item.is_best_seller === true || item.is_best_seller === 1) && (
+                      <span className="absolute top-2 left-2 px-2 py-1 rounded-md bg-white/95 text-xs font-medium text-gray-700 shadow-sm">
+                        {t('restaurant.bestSellers')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <h3 className="font-semibold text-gray-900 truncate">
+                      {getLocalizedText(item.name, currentLanguage) || t('common.noData')}
+                    </h3>
+                    {restaurantName && (
+                      <p className="flex items-center gap-1 text-xs text-gray-500 mt-0.5 truncate">
+                        <Store size={12} className="flex-shrink-0" />
+                        <span className="truncate">{restaurantName}</span>
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 mt-2 text-sm flex-wrap">
+                      <span className="font-semibold text-primary-600">
+                        {formatCurrency(item.price ?? item.unit_price ?? 0, item.currency_code ?? item.currency ?? 'VND')}
+                      </span>
+                      {item.rating != null && (
+                        <span className="flex items-center gap-1 font-medium text-gray-600">
+                          <Star size={14} className="text-amber-500 fill-amber-500" />
+                          {Number(item.rating).toFixed(1)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+          <button
+            type="button"
+            onClick={() => scroll(1)}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center opacity-0 group-hover/section:opacity-100 transition hover:bg-gray-50 translate-x-1"
+            aria-label="Next"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      </section>
+    )
+  }
+
+  const hasAnyListContent = restaurants.length > 0 || foodItems.length > 0
+  const hasOnlyNews = !hasAnyListContent && news.length > 0
+
   return (
     <div className="min-h-[70vh]">
       {/* Search bar - on top */}
@@ -214,26 +346,23 @@ const HomePage = () => {
           <div className="flex justify-center min-h-[320px] items-center">
             <LoadingSpinner />
           </div>
-        ) : !restaurants.length ? (
+        ) : !hasAnyListContent && !hasOnlyNews ? (
           <div className="card p-12 text-center">
             <Store size={56} className="mx-auto text-gray-300 mb-4" />
             <p className="text-gray-600 mb-2">{t('common.noData')}</p>
-            <Link to="/restaurants" className="btn btn-primary mt-2">
-              {t('restaurant.title')}
-            </Link>
+            <div className="flex flex-wrap gap-2 justify-center mt-4">
+              <Link to="/restaurants" className="btn btn-primary">
+                {t('restaurant.title')}
+              </Link>
+              <Link to="/food-items" className="btn btn-outline">
+                {t('food.title')}
+              </Link>
+            </div>
           </div>
         ) : (
           <>
-            <HorizontalSection
-              title={t('restaurant.nearby')}
-              list={popularRestaurants}
-            />
-            {moreRestaurants.length > 0 && (
-              <HorizontalSection
-                title={t('restaurant.title')}
-                list={moreRestaurants}
-              />
-            )}
+            <RestaurantsHorizontalSection title={t('restaurant.title')} list={restaurants} />
+            <FoodItemsHorizontalSection title={t('food.newDishes')} list={foodItems} />
             {/* News section */}
             {news.length > 0 && (
               <section className="mb-10">

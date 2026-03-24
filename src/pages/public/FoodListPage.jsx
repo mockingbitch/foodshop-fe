@@ -211,7 +211,7 @@ const FoodListPage = () => {
               <div className="relative group h-44 sm:h-48 flex-shrink-0 overflow-hidden bg-gray-100">
                 <img
                   src={getFoodImage(item)}
-                  alt={toDisplayText(item.name)}
+                  alt={getLocalizedText(item.name, currentLanguage)}
                   className="w-full h-full object-cover"
                 />
                 <Link
@@ -224,7 +224,7 @@ const FoodListPage = () => {
               <div className="p-4 sm:p-5 flex flex-col flex-1 min-w-0">
                 <h2 className="text-lg font-bold text-gray-900 mb-1 truncate">
                   <Link to={`/food-items/${item.id}`} className="hover:text-primary-600">
-                    {toDisplayText(item.name) || t('common.noData')}
+                    {getLocalizedText(item.name, currentLanguage) || t('common.noData')}
                   </Link>
                 </h2>
                 {(() => {

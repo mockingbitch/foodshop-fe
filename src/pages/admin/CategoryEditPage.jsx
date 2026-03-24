@@ -111,7 +111,7 @@ const CategoryEditPage = () => {
         }
         const translations = mapToTranslations(cat)
         setFormData({
-          code: cat.code ?? '',
+          code: String(cat.code ?? '').replace(/\D/g, ''),
           parent_id: cat.parent_id != null ? String(cat.parent_id) : '',
           sort_order: cat.sort_order ?? 0,
           translations,
@@ -127,6 +127,8 @@ const CategoryEditPage = () => {
     const { name, value } = e.target
     if (name === 'sort_order') {
       setFormData((prev) => ({ ...prev, sort_order: Number(value) || 0 }))
+    } else if (name === 'code') {
+      setFormData((prev) => ({ ...prev, code: value.replace(/\D/g, '') }))
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }))
     }
@@ -241,12 +243,15 @@ const CategoryEditPage = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">{t('restaurantRegister.codeOptional')} <span className="text-red-500">*</span></label>
             <input
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               name="code"
               value={formData.code}
               onChange={handleChange}
               className={`input w-full ${errors.code ? 'border-red-500' : ''}`}
               placeholder={t('restaurantRegister.placeholderCode')}
               maxLength={50}
+              autoComplete="off"
             />
             {errors.code && <p className="mt-1 text-sm text-red-600">{errors.code}</p>}
           </div>

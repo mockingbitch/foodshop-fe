@@ -93,6 +93,7 @@
   },
   "food": {
     "title": "음식",
+    "newDishes": "신규 메뉴",
     "detail": "음식 상세정보",
     "searchByName": "음식명으로 검색",
     "category": "카테고리",
@@ -112,6 +113,9 @@
     "reviewerName": "이름",
     "reviewerNamePlaceholder": "표시할 이름을 입력하세요",
     "reviewerNameRequired": "이름을 입력해 주세요",
+    "nameVietnamese": "음식 이름 (베트남어)",
+    "nameEnglish": "음식 이름 (영어)",
+    "nameKorean": "음식 이름 (한국어)",
     "namePlaceholder": "음식 이름",
     "descriptionPlaceholder": "간단한 설명",
     "mainImageUrl": "대표 이미지 URL",

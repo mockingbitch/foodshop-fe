@@ -152,7 +152,7 @@ const FoodDetailPage = () => {
     )
   }
 
-  const name = toDisplayText(food.name)
+  const name = getLocalizedText(food.name, currentLanguage)
   const description = toDisplayText(food.description)
   const restaurant = food.restaurant ?? food.restaurant_id
   const restaurantIdFromFood = typeof restaurant === 'object' ? getRestaurantId(restaurant) : restaurant

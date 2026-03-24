@@ -97,6 +97,11 @@ const formatDate = (str) => {
   }
 }
 
+const isDeliveryAvailable = (r) =>
+  r?.delivery_available === true ||
+  r?.delivery_available === 1 ||
+  String(r?.delivery_available).toLowerCase() === 'true'
+
 const PER_PAGE = 100
 
 const OwnerRestaurantDetailPage = () => {
@@ -277,6 +282,33 @@ const OwnerRestaurantDetailPage = () => {
                   <a href={`mailto:${restaurant.email}`} className="hover:text-primary-600 truncate min-w-0">{restaurant.email}</a>
                 </p>
               )}
+              {(() => {
+                const hasDelivery = isDeliveryAvailable(restaurant)
+                return (
+                  <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border ${
+                        hasDelivery
+                          ? 'bg-primary-50 text-primary-800 border-primary-200'
+                          : 'bg-gray-50 text-gray-400 border-gray-100'
+                      }`}
+                    >
+                      <Truck size={14} className={`flex-shrink-0 ${hasDelivery ? 'text-primary-600' : 'text-gray-400'}`} />
+                      {t('restaurant.deliveryAvailableYes')}
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border ${
+                        !hasDelivery
+                          ? 'bg-gray-100 text-gray-800 border-gray-200'
+                          : 'bg-gray-50 text-gray-400 border-gray-100'
+                      }`}
+                    >
+                      <Truck size={14} className={`flex-shrink-0 ${!hasDelivery ? 'text-gray-700' : 'text-gray-400'}`} />
+                      {t('restaurant.deliveryAvailableNo')}
+                    </span>
+                  </div>
+                )
+              })()}
               {(restaurant.webpage_link || restaurant.facebook_link || restaurant.youtube_link) && (
                 <p className="flex flex-wrap items-center gap-x-4 gap-y-1 sm:col-span-2">
                   {restaurant.webpage_link && (
@@ -330,12 +362,6 @@ const OwnerRestaurantDetailPage = () => {
                 <p className="flex items-center gap-2">
                   <Store size={16} className="flex-shrink-0" />
                   <span>{toDisplayText(restaurant.restaurant_type.name ?? restaurant.restaurant_type.name_en ?? restaurant.restaurant_type.code) || restaurant.restaurant_type.code || '—'}</span>
-                </p>
-              )}
-              {restaurant.delivery_available === true && (
-                <p className="flex items-center gap-2">
-                  <Truck size={16} className="flex-shrink-0" />
-                  <span>{t('restaurant.delivery')}</span>
                 </p>
               )}
               {restaurant.user && (
@@ -541,7 +567,7 @@ const OwnerRestaurantDetailPage = () => {
                 >
                   <img
                     src={getFoodImage(item)}
-                    alt={toDisplayText(item.name)}
+                    alt={getLocalizedText(item.name, currentLanguage)}
                     className="w-full h-full object-cover"
                   />
                 </Link>
@@ -550,7 +576,7 @@ const OwnerRestaurantDetailPage = () => {
                     to={`/owner/restaurant/${id}/food-items/${item.id}`}
                     className="font-medium text-gray-900 block hover:text-primary-600"
                   >
-                    {toDisplayText(item.name) || t('common.noData')}
+                    {getLocalizedText(item.name, currentLanguage) || t('common.noData')}
                   </Link>
                   {(getLocalizedText(item.category?.name ?? item.food_category?.name, currentLanguage)) && (
                     <p className="text-xs text-gray-400 mt-0.5">

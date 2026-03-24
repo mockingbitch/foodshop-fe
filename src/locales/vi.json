@@ -93,6 +93,7 @@
   },
   "food": {
     "title": "Món ăn",
+    "newDishes": "Món ăn mới",
     "detail": "Chi tiết món ăn",
     "searchByName": "Tìm theo tên món ăn",
     "category": "Danh mục",
@@ -112,6 +113,9 @@
     "reviewerName": "Tên của bạn",
     "reviewerNamePlaceholder": "Nhập tên hiển thị",
     "reviewerNameRequired": "Vui lòng nhập tên của bạn",
+    "nameVietnamese": "Tên món (Tiếng Việt)",
+    "nameEnglish": "Tên món (Tiếng Anh)",
+    "nameKorean": "Tên món (Tiếng Hàn)",
     "namePlaceholder": "Tên món ăn",
     "descriptionPlaceholder": "Mô tả ngắn",
     "mainImageUrl": "URL ảnh chính",

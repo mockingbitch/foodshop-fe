@@ -197,13 +197,13 @@ const RestaurantMenuPage = () => {
                 <div className="h-44 sm:h-48 flex-shrink-0 overflow-hidden bg-gray-100">
                   <img
                     src={getFoodImage(item)}
-                    alt={toDisplayText(item.name)}
+                    alt={getLocalizedText(item.name, currentLanguage)}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="p-4 flex flex-col flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900 mb-1 truncate">
-                    {toDisplayText(item.name) || t('common.noData')}
+                    {getLocalizedText(item.name, currentLanguage) || t('common.noData')}
                   </h3>
                   <p className="text-primary-600 font-medium text-sm">
                     {formatCurrency(getItemPrice(item), getItemCurrency(item))}
@@ -240,13 +240,13 @@ const RestaurantMenuPage = () => {
               <div className="h-44 sm:h-48 flex-shrink-0 overflow-hidden bg-gray-100">
                 <img
                   src={getFoodImage(item)}
-                  alt={toDisplayText(item.name)}
+                  alt={getLocalizedText(item.name, currentLanguage)}
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="p-4 flex flex-col flex-1 min-w-0">
                 <h3 className="font-semibold text-gray-900 mb-1 truncate">
-                  {toDisplayText(item.name) || t('common.noData')}
+                  {getLocalizedText(item.name, currentLanguage) || t('common.noData')}
                 </h3>
                 <p className="text-primary-600 font-medium text-sm">
                   {formatCurrency(getItemPrice(item), getItemCurrency(item))}
@@ -291,7 +291,7 @@ const RestaurantMenuPage = () => {
                             >
                               <div className="min-w-0 flex-1">
                                 <span className="font-medium text-gray-900">
-                                  {toDisplayText(item.name)}
+                                  {getLocalizedText(item.name, currentLanguage)}
                                 </span>
                               </div>
                               <div className="flex-shrink-0 text-primary-600 font-semibold">
@@ -317,7 +317,7 @@ const RestaurantMenuPage = () => {
           onClick={() => setPreviewFood(null)}
           role="dialog"
           aria-modal="true"
-          aria-label={toDisplayText(previewFood.name) || t('food.detail')}
+          aria-label={getLocalizedText(previewFood.name, currentLanguage) || t('food.detail')}
         >
           <div
             className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] min-h-0 overflow-hidden flex flex-col"
@@ -326,7 +326,7 @@ const RestaurantMenuPage = () => {
             <div className="relative w-full h-[min(42vh,300px)] max-h-[min(42vh,300px)] flex-shrink-0 overflow-hidden bg-gray-100 rounded-t-xl">
               <img
                 src={getFoodImage(previewFood)}
-                alt={toDisplayText(previewFood.name)}
+                alt={getLocalizedText(previewFood.name, currentLanguage)}
                 className="absolute inset-0 h-full w-full object-cover object-center"
               />
               <button
@@ -340,7 +340,7 @@ const RestaurantMenuPage = () => {
             </div>
             <div className="p-4 sm:p-6 overflow-y-auto flex-1">
               <h2 className="text-xl font-bold text-gray-900 mb-2">
-                {toDisplayText(previewFood.name) || t('common.noData')}
+                {getLocalizedText(previewFood.name, currentLanguage) || t('common.noData')}
               </h2>
               <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 mb-3">
                 <span className="font-semibold text-primary-600 text-lg">

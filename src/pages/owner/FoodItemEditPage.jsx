@@ -80,6 +80,8 @@ const initialFormData = {
   restaurant_id: '',
   food_category_id: '',
   name: '',
+  name_en: '',
+  name_kr: '',
   description: '',
   main_image: '',
   price: '',
@@ -93,10 +95,23 @@ const mapFoodToForm = (item) => {
   if (!item) return initialFormData
   const nameObj = parseJsonField(fromItem(item, 'name'))
   const descObj = parseJsonField(fromItem(item, 'description'))
+  let name = ''
+  let name_en = ''
+  let name_kr = ''
+  if (typeof nameObj === 'string') {
+    name = nameObj.trim()
+  } else if (nameObj && typeof nameObj === 'object') {
+    const vn = String(nameObj.vn ?? nameObj.vi ?? '').trim()
+    name_en = String(nameObj.en ?? '').trim()
+    name_kr = String(nameObj.kr ?? nameObj.ko ?? '').trim()
+    name = vn || pickFirst(nameObj)
+  }
   return {
     restaurant_id: String(fromItem(item, 'restaurant_id') ?? item.restaurant?.id ?? ''),
     food_category_id: String(fromItem(item, 'food_category_id') ?? item.food_category?.id ?? item.category?.id ?? ''),
-    name: pickFirst(nameObj),
+    name,
+    name_en,
+    name_kr,
     description: pickFirst(descObj),
     main_image: fromItem(item, 'main_image') ?? item.image_url ?? '',
     price: fromItem(item, 'price') != null ? formatPriceInput(String(fromItem(item, 'price'))) : '',
@@ -191,7 +206,11 @@ const FoodItemEditPage = () => {
       const payload = {
         restaurant_id: Number(formData.restaurant_id),
         food_category_id: Number(formData.food_category_id),
-        name: { en: formData.name?.trim() || '', vn: formData.name?.trim() || '' },
+        name: {
+          en: formData.name_en?.trim() || '',
+          vn: formData.name?.trim() || '',
+          kr: formData.name_kr?.trim() || '',
+        },
         description: formData.description?.trim()
           ? { en: formData.description.trim(), vn: formData.description.trim() }
           : undefined,
@@ -298,9 +317,9 @@ const FoodItemEditPage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.title')} (name) *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.nameVietnamese')} *</label>
               <input
                 type="text"
                 name="name"
@@ -312,18 +331,43 @@ const FoodItemEditPage = () => {
               {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.price')} *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.nameEnglish')}</label>
               <input
                 type="text"
-                name="price"
-                value={formData.price}
+                name="name_en"
+                value={formData.name_en}
                 onChange={handleChange}
-                inputMode="numeric"
-                className={`input w-full ${errors.price ? 'border-red-500' : ''}`}
-                placeholder="50,000"
+                className="input w-full"
+                placeholder={t('food.namePlaceholder')}
+                autoComplete="off"
               />
-              {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price}</p>}
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.nameKorean')}</label>
+              <input
+                type="text"
+                name="name_kr"
+                value={formData.name_kr}
+                onChange={handleChange}
+                className="input w-full"
+                placeholder={t('food.namePlaceholder')}
+                autoComplete="off"
+              />
+            </div>
+          </div>
+
+          <div className="max-w-md">
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('food.price')} *</label>
+            <input
+              type="text"
+              name="price"
+              value={formData.price}
+              onChange={handleChange}
+              inputMode="numeric"
+              className={`input w-full ${errors.price ? 'border-red-500' : ''}`}
+              placeholder="50,000"
+            />
+            {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price}</p>}
           </div>
 
           <div>
