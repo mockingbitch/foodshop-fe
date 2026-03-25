@@ -42,6 +42,18 @@ const ensureReviewsArray = (res) => {
   return []
 }
 
+const ensureArray = (value) => {
+  if (Array.isArray(value)) return value
+  if (!value || typeof value !== 'object') return []
+  const raw = value.data ?? value.items ?? value.food_items ?? value.foodItems ?? value.results ?? value.list
+  if (Array.isArray(raw)) return raw
+  if (raw && typeof raw === 'object') {
+    const nested = raw.data ?? raw.items ?? raw.food_items ?? raw.foodItems ?? raw.results ?? raw.list
+    return Array.isArray(nested) ? nested : []
+  }
+  return []
+}
+
 const FoodDetailPage = () => {
   const { id, restaurantId: restaurantIdParam } = useParams()
   const navigate = useNavigate()
@@ -49,6 +61,8 @@ const FoodDetailPage = () => {
   const [food, setFood] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [restaurantFoods, setRestaurantFoods] = useState([])
+  const [foodsLoading, setFoodsLoading] = useState(false)
   const [reviews, setReviews] = useState([])
   const [reviewsLoading, setReviewsLoading] = useState(false)
   const [reviewForm, setReviewForm] = useState({ reviewerName: '', rating: 5, comment: '' })
@@ -93,6 +107,22 @@ const FoodDetailPage = () => {
   useEffect(() => {
     if (id && food) fetchReviews()
   }, [id, food, fetchReviews])
+
+  useEffect(() => {
+    const restaurant = food?.restaurant ?? food?.restaurant_id
+    const rid = restaurantIdParam ?? (typeof restaurant === 'object' ? getRestaurantId(restaurant) : restaurant)
+    if (!rid) return
+    setFoodsLoading(true)
+    foodApi
+      .getFoodItems({ restaurant_id: rid, per_page: 100 })
+      .then((res) => {
+        const list = ensureArray(res?.data)
+        const arr = (Array.isArray(list) ? list : []).filter((x) => String(x?.id ?? '') !== String(id))
+        setRestaurantFoods(arr)
+      })
+      .catch(() => setRestaurantFoods([]))
+      .finally(() => setFoodsLoading(false))
+  }, [food, id, restaurantIdParam])
 
   const handleSubmitReview = async (e) => {
     e.preventDefault()
@@ -307,69 +337,119 @@ const FoodDetailPage = () => {
         </div>
       </div>
 
-      {/* Review section - list reviews trước đó + form thêm mới */}
+      {/* Food + Reviews (2 columns) */}
       <section className="mt-8 sm:mt-10" aria-labelledby="food-reviews-heading">
-        <h2 id="food-reviews-heading" className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <MessageSquare size={22} />
-          {t('food.reviews')}
-        </h2>
+        <div id="food-reviews-heading" className="sr-only">{t('food.reviews')}</div>
 
-        {reviewsLoading ? (
-          <div className="card p-8 flex justify-center">
-            <LoadingSpinner />
-          </div>
-        ) : (
-          <>
-            {reviews.length > 0 && (
-              <>
-                <h3 className="text-sm font-medium text-gray-700 mb-3">{t('food.previousReviews')}</h3>
-                <ul className="space-y-4 mb-6" role="list">
-                {reviews.map((r) => {
-                  const userName = r.reviewer_name ?? r.user_name ?? r.user?.name ?? r.customer_name ?? t('common.guest')
-                  const rating = Number(r.rating ?? r.score ?? 0)
-                  const stars = getRatingStars(rating)
-                  const comment = r.comment ?? r.content ?? r.body ?? ''
-                  const createdAt = r.created_at ?? r.created_at_formatted ?? ''
-                  return (
-                    <li key={r.id ?? `${userName}-${createdAt}`} className="card p-4">
-                      <div className="flex gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 text-gray-600 font-medium">
-                          {(userName || '?').charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <span className="font-medium text-gray-900">{userName}</span>
-                            <span className="flex items-center gap-0.5 text-amber-500">
-                              {[...Array(stars.full)].map((_, i) => (
-                                <Star key={`f-${i}`} size={14} className="fill-current" />
-                              ))}
-                              {stars.half > 0 && <Star size={14} className="fill-current opacity-80" />}
-                              {[...Array(stars.empty)].map((_, i) => (
-                                <Star key={`e-${i}`} size={14} className="text-gray-300" />
-                              ))}
-                            </span>
-                            {createdAt && (
-                              <span className="text-xs text-gray-400">
-                                {typeof createdAt === 'string' && createdAt.length > 10
-                                  ? new Date(createdAt).toLocaleDateString()
-                                  : createdAt}
-                              </span>
-                            )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-stretch">
+          {/* Left: foods from this restaurant */}
+          <div className="card p-4 sm:p-6 lg:h-[800px] flex flex-col min-w-0">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <h3 className="text-base font-medium text-gray-900 truncate">{t('owner.myFoodItems')}</h3>
+              {restaurantId && (
+                <Link to={`/restaurants/${restaurantId}`} className="text-sm text-primary-600 hover:text-primary-700 font-medium whitespace-nowrap">
+                  {t('common.view')} {t('restaurant.detail')}
+                </Link>
+              )}
+            </div>
+
+            {foodsLoading ? (
+              <div className="flex-1 flex items-center justify-center">
+                <LoadingSpinner />
+              </div>
+            ) : restaurantFoods.length === 0 ? (
+              <p className="text-sm text-gray-500">{t('common.noData')}</p>
+            ) : (
+              <div className="flex-1 overflow-y-auto pr-1">
+                <ul className="space-y-2">
+                  {restaurantFoods.map((it) => {
+                    const itName = getLocalizedText(it?.name, currentLanguage) || t('common.noData')
+                    return (
+                      <li key={it.id} className="border border-gray-100 rounded-lg hover:bg-gray-50 transition">
+                        <Link to={`/restaurants/${restaurantId}/food-items/${it.id}`} className="flex items-center gap-3 p-2 min-w-0">
+                          <img
+                            src={getFoodImage(it)}
+                            alt={itName}
+                            className="w-12 h-12 rounded-lg object-cover bg-gray-100 flex-shrink-0"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium text-gray-900 truncate">{itName}</div>
+                            <div className="text-sm text-primary-600 font-semibold">
+                              {formatCurrency(it.price ?? 0, it.currency_code ?? 'VND')}
+                            </div>
                           </div>
-                          {comment && <p className="text-gray-600 text-sm leading-relaxed">{comment}</p>}
-                        </div>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-              </>
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
             )}
-            {!reviewsLoading && reviews.length === 0 && (
-              <p className="text-gray-500 text-sm mb-4">{t('food.noReviews')}</p>
+          </div>
+
+          {/* Right: reviews list (same height as foods) */}
+          <div className="card p-4 sm:p-6 lg:h-[800px] flex flex-col min-w-0">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <h3 className="text-base font-medium text-gray-900 flex items-center gap-2 truncate">
+                <MessageSquare size={18} className="flex-shrink-0" />
+                {t('food.reviews')}
+              </h3>
+            </div>
+            {reviewsLoading ? (
+              <div className="flex-1 flex items-center justify-center">
+                <LoadingSpinner />
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto pr-1">
+                {reviews.length > 0 ? (
+                  <ul className="space-y-3" role="list">
+                    {reviews.map((r) => {
+                      const userName = r.reviewer_name ?? r.user_name ?? r.user?.name ?? r.customer_name ?? t('common.guest')
+                      const rating = Number(r.rating ?? r.score ?? 0)
+                      const stars = getRatingStars(rating)
+                      const comment = r.comment ?? r.content ?? r.body ?? ''
+                      const createdAt = r.created_at ?? r.created_at_formatted ?? ''
+                      return (
+                        <li key={r.id ?? `${userName}-${createdAt}`} className="border border-gray-100 rounded-lg p-3">
+                          <div className="flex gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 text-gray-600 font-medium">
+                              {(userName || '?').charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-2 mb-1">
+                                <span className="font-medium text-gray-900">{userName}</span>
+                                <span className="flex items-center gap-0.5 text-amber-500">
+                                  {[...Array(stars.full)].map((_, i) => (
+                                    <Star key={`f-${i}`} size={14} className="fill-current" />
+                                  ))}
+                                  {stars.half > 0 && <Star size={14} className="fill-current opacity-80" />}
+                                  {[...Array(stars.empty)].map((_, i) => (
+                                    <Star key={`e-${i}`} size={14} className="text-gray-300" />
+                                  ))}
+                                </span>
+                                {createdAt && (
+                                  <span className="text-xs text-gray-400">
+                                    {typeof createdAt === 'string' && createdAt.length > 10
+                                      ? new Date(createdAt).toLocaleDateString()
+                                      : createdAt}
+                                  </span>
+                                )}
+                              </div>
+                              {comment && <p className="text-gray-600 text-sm leading-relaxed">{comment}</p>}
+                            </div>
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500 text-sm">{t('food.noReviews')}</p>
+                )}
+              </div>
             )}
 
-            <div className="card p-4 sm:p-6">
+            {/* Add review form */}
+            <div className="pt-4 border-t border-gray-100 mt-4">
               <h3 className="text-base font-medium text-gray-900 mb-3">{t('food.addReview')}</h3>
               <form onSubmit={handleSubmitReview} className="space-y-3">
                 <div>
@@ -426,8 +506,8 @@ const FoodDetailPage = () => {
                 </button>
               </form>
             </div>
-          </>
-        )}
+          </div>
+        </div>
       </section>
 
       {previewImage && (
