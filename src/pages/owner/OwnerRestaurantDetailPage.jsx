@@ -286,26 +286,17 @@ const OwnerRestaurantDetailPage = () => {
                 const hasDelivery = isDeliveryAvailable(restaurant)
                 return (
                   <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border ${
-                        hasDelivery
-                          ? 'bg-primary-50 text-primary-800 border-primary-200'
-                          : 'bg-gray-50 text-gray-400 border-gray-100'
-                      }`}
-                    >
-                      <Truck size={14} className={`flex-shrink-0 ${hasDelivery ? 'text-primary-600' : 'text-gray-400'}`} />
-                      {t('restaurant.deliveryAvailableYes')}
-                    </span>
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border ${
-                        !hasDelivery
-                          ? 'bg-gray-100 text-gray-800 border-gray-200'
-                          : 'bg-gray-50 text-gray-400 border-gray-100'
-                      }`}
-                    >
-                      <Truck size={14} className={`flex-shrink-0 ${!hasDelivery ? 'text-gray-700' : 'text-gray-400'}`} />
-                      {t('restaurant.deliveryAvailableNo')}
-                    </span>
+                    {hasDelivery ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border bg-primary-50 text-primary-800 border-primary-200">
+                        <Truck size={14} className="flex-shrink-0 text-primary-600" />
+                        {t('restaurant.deliveryAvailableYes')}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border bg-gray-100 text-gray-800 border-gray-200">
+                        <Truck size={14} className="flex-shrink-0 text-gray-700" />
+                        {t('restaurant.deliveryAvailableNo')}
+                      </span>
+                    )}
                   </div>
                 )
               })()}

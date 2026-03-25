@@ -52,7 +52,8 @@ const pickFirst = (val) => {
   if (val == null) return ''
   if (typeof val === 'string') return val
   if (typeof val === 'object') {
-    const v = val.vn ?? val.vi ?? val.en ?? val.kr ?? val.ko
+    // Food item translations now use `vn` and `kr` (no `vi/ko`).
+    const v = val.vn ?? val.en ?? val.kr
     if (typeof v === 'string') return v
     const first = Object.values(val).find((x) => typeof x === 'string')
     return first ?? ''
@@ -101,9 +102,9 @@ const mapFoodToForm = (item) => {
   if (typeof nameObj === 'string') {
     name = nameObj.trim()
   } else if (nameObj && typeof nameObj === 'object') {
-    const vn = String(nameObj.vn ?? nameObj.vi ?? '').trim()
+    const vn = String(nameObj.vn ?? '').trim()
     name_en = String(nameObj.en ?? '').trim()
-    name_kr = String(nameObj.kr ?? nameObj.ko ?? '').trim()
+    name_kr = String(nameObj.kr ?? '').trim()
     name = vn || pickFirst(nameObj)
   }
   return {
