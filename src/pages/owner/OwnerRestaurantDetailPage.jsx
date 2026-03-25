@@ -207,12 +207,33 @@ const OwnerRestaurantDetailPage = () => {
             </button>
           </div>
           <div className="w-full md:w-3/5 p-4 sm:p-6 flex flex-col">
-            <Link
-              to={`/owner/restaurant/${id}/edit`}
-              className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 hover:text-primary-600 hover:underline block"
-            >
-              {restaurantName || t('restaurant.detail')}
-            </Link>
+            {(() => {
+              const hasDelivery = isDeliveryAvailable(restaurant)
+              return (
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                  <Link
+                    to={`/owner/restaurant/${id}/edit`}
+                    className="text-xl sm:text-2xl font-bold text-gray-900 hover:text-primary-600 hover:underline block min-w-0"
+                    title={restaurantName || undefined}
+                  >
+                    <span className="block truncate">{restaurantName || t('restaurant.detail')}</span>
+                  </Link>
+                  <div className="flex sm:justify-end">
+                    {hasDelivery ? (
+                      <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border bg-primary-100 text-primary-900 border-primary-300">
+                        <Truck size={25} className="flex-shrink-0 text-primary-800" />
+                        {t('restaurant.deliveryAvailableYes')}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border bg-gray-200 text-gray-900 border-gray-300">
+                        <Truck size={25} className="flex-shrink-0 text-gray-800" />
+                        {t('restaurant.deliveryAvailableNo')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )
+            })()}
             {/* Mã, trạng thái */}
             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mb-2">
               {(restaurant.code != null && restaurant.code !== '') && (
@@ -282,24 +303,6 @@ const OwnerRestaurantDetailPage = () => {
                   <a href={`mailto:${restaurant.email}`} className="hover:text-primary-600 truncate min-w-0">{restaurant.email}</a>
                 </p>
               )}
-              {(() => {
-                const hasDelivery = isDeliveryAvailable(restaurant)
-                return (
-                  <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
-                    {hasDelivery ? (
-                      <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border bg-primary-100 text-primary-900 border-primary-300">
-                        <Truck size={18} className="flex-shrink-0 text-primary-800" />
-                        {t('restaurant.deliveryAvailableYes')}
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border bg-gray-200 text-gray-900 border-gray-300">
-                        <Truck size={18} className="flex-shrink-0 text-gray-800" />
-                        {t('restaurant.deliveryAvailableNo')}
-                      </span>
-                    )}
-                  </div>
-                )
-              })()}
               {(restaurant.webpage_link || restaurant.facebook_link || restaurant.youtube_link) && (
                 <p className="flex flex-wrap items-center gap-x-4 gap-y-1 sm:col-span-2">
                   {restaurant.webpage_link && (
