@@ -193,14 +193,31 @@ const AdminRestaurantListPage = () => {
                   return (
                     <tr key={id} className="bg-white hover:bg-gray-50 transition-colors">
                       <td className="py-3 px-4">
-                        <img
-                          src={getRestaurantImage(restaurant)}
-                          alt=""
-                          className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
-                        />
+                        <Link
+                          to={`/restaurants/${id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block"
+                          aria-label={name || t('restaurant.detail')}
+                          title={name || undefined}
+                        >
+                          <img
+                            src={getRestaurantImage(restaurant)}
+                            alt={name || ''}
+                            className="w-12 h-12 rounded-xl object-cover flex-shrink-0 hover:opacity-90 transition"
+                          />
+                        </Link>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="font-medium text-gray-900">{name || t('common.noData')}</span>
+                        <Link
+                          to={`/restaurants/${id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-gray-900 hover:text-primary-600 hover:underline"
+                          title={name || undefined}
+                        >
+                          {name || t('common.noData')}
+                        </Link>
                       </td>
                       <td className="py-3 px-4 hidden sm:table-cell text-sm text-gray-500 max-w-[200px] truncate">
                         {restaurant.address ? (

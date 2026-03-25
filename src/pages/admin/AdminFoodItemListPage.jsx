@@ -204,18 +204,40 @@ const AdminFoodItemListPage = () => {
             const status = item.status ?? 'active'
             const isActive = status === 'active'
             const isUpdating = updating.has(item.id)
+            const publicFoodUrl = restaurantId
+              ? `/restaurants/${restaurantId}/food-items/${item.id}`
+              : `/food-items/${item.id}`
 
             return (
               <div key={item.id} className="card overflow-hidden p-0 flex flex-col">
                 <div className="h-44 sm:h-48 flex-shrink-0 overflow-hidden bg-gray-100">
-                  <img
-                    src={getFoodImage(item)}
-                    alt={name}
-                    className="w-full h-full object-cover"
-                  />
+                  <Link
+                    to={publicFoodUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full h-full"
+                    aria-label={name || t('food.detail')}
+                    title={name || undefined}
+                  >
+                    <img
+                      src={getFoodImage(item)}
+                      alt={name}
+                      className="w-full h-full object-cover hover:opacity-90 transition"
+                    />
+                  </Link>
                 </div>
                 <div className="p-4 flex flex-col flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate mb-1">{name || t('common.noData')}</h3>
+                  <h3 className="font-semibold text-gray-900 truncate mb-1">
+                    <Link
+                      to={publicFoodUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-primary-600 hover:underline"
+                      title={name || undefined}
+                    >
+                      {name || t('common.noData')}
+                    </Link>
+                  </h3>
                   <p className="text-primary-600 font-medium text-sm mb-2">
                     {formatCurrency(item.price ?? 0, item.currency_code ?? 'VND')}
                   </p>

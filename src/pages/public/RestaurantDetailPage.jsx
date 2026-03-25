@@ -264,13 +264,13 @@ const RestaurantDetailPage = () => {
               return (
                 <div className="flex flex-wrap items-center gap-2 pt-0.5">
                   {hasDelivery ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border bg-primary-50 text-primary-800 border-primary-200">
-                      <Truck size={14} className="flex-shrink-0 text-primary-600" />
+                    <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border bg-primary-100 text-primary-900 border-primary-300">
+                      <Truck size={18} className="flex-shrink-0 text-primary-800" />
                       {t('restaurant.deliveryAvailableYes')}
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border bg-gray-100 text-gray-800 border-gray-200">
-                      <Truck size={14} className="flex-shrink-0 text-gray-700" />
+                    <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border bg-gray-200 text-gray-900 border-gray-300">
+                      <Truck size={18} className="flex-shrink-0 text-gray-800" />
                       {t('restaurant.deliveryAvailableNo')}
                     </span>
                   )}
