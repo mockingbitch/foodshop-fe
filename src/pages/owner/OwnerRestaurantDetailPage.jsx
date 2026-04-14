@@ -6,6 +6,8 @@ import { foodApi } from '@services/api/foodApi'
 import LoadingSpinner from '@components/common/LoadingSpinner'
 import { formatCurrency, getImageUrl, stripHtml, getLocalizedText } from '@utils/helpers'
 import { DEFAULT_FOOD_IMAGE } from '@constants'
+import ConfirmModal from '@components/common/ConfirmModal'
+import { toast } from 'react-toastify'
 import { Store, MapPin, Phone, Mail, UtensilsCrossed, ChevronRight, Star, Edit, Plus, Clock, Users, Hash, Truck, Globe, User, Calendar, ExternalLink, X } from 'lucide-react'
 
 const toDisplayText = (val) => {
@@ -114,6 +116,8 @@ const OwnerRestaurantDetailPage = () => {
   const [notFound, setNotFound] = useState(false)
   const [showDescriptionPopup, setShowDescriptionPopup] = useState(false)
   const [previewImage, setPreviewImage] = useState(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
 
   useEffect(() => {
     if (!id) {
@@ -154,6 +158,26 @@ const OwnerRestaurantDetailPage = () => {
       .catch(() => setFoodItems([]))
       .finally(() => setLoadingFood(false))
   }, [id])
+
+  const handleDeleteClick = (foodItemId) => {
+    setDeletingId(foodItemId)
+    setShowDeleteConfirm(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingId) return
+    try {
+      await foodApi.deleteFoodItem(deletingId)
+      toast.success(t('common.success'))
+      setFoodItems((prev) => prev.filter((x) => String(x?.id ?? '') !== String(deletingId)))
+    } catch (err) {
+      // Error toast handled by axios interceptor
+      console.error(err)
+    } finally {
+      setShowDeleteConfirm(false)
+      setDeletingId(null)
+    }
+  }
 
   if (loading) {
     return (
@@ -595,12 +619,33 @@ const OwnerRestaurantDetailPage = () => {
                     <Edit size={14} />
                     {t('common.edit')}
                   </Link>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteClick(item.id)}
+                    className="btn btn-outline text-xs py-1.5 text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    {t('common.delete')}
+                  </button>
                 </div>
               </li>
             ))}
           </ul>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false)
+          setDeletingId(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        title={t('common.confirmDelete')}
+        message={t('common.confirmDelete')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        variant="danger"
+      />
     </div>
   )
 }
