@@ -54,7 +54,7 @@ const OwnerLoginPage = () => {
 
     if (!formData.password) {
       newErrors.password = t('auth.password') + ' ' + t('common.required')
-    } else if (formData.password.length < 6) {
+    } else if (formData.password.length < 8) {
       newErrors.password = t('auth.passwordMinLength')
     }
 

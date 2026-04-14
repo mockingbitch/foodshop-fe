@@ -153,7 +153,7 @@
     "orContinueWith": "Hoặc đăng nhập bằng",
     "socialLoginNotSupported": "Đăng nhập bằng phương thức này chưa được hỗ trợ.",
     "invalidEmail": "Email không hợp lệ",
-    "passwordMinLength": "Mật khẩu phải có ít nhất 6 ký tự",
+    "passwordMinLength": "Mật khẩu phải có ít nhất 8 ký tự",
     "required": "là bắt buộc",
     "hidePassword": "Ẩn mật khẩu",
     "showPassword": "Hiện mật khẩu"
