@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import { restoreToken, setToken, clearToken, hasToken, getRememberMe } from '@utils/authToken'
 import { authApi } from '@services/api/authApi'
 import { SUCCESS_MESSAGES, ERROR_MESSAGES, getErrorMessageKey } from '@constants'
+import { translateBackendMessage } from '@utils/backendMessageI18n'
 
 const AuthContext = createContext(null)
 const USER_STORAGE_KEY = 'auth_user'
@@ -137,7 +138,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true)
       })
 
-      toast.success(SUCCESS_MESSAGES.LOGIN_SUCCESS)
+      toast.success(translateBackendMessage(SUCCESS_MESSAGES.LOGIN_SUCCESS) || SUCCESS_MESSAGES.LOGIN_SUCCESS)
       navigate('/owner/dashboard', { replace: true })
 
       return { success: true }
@@ -167,7 +168,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true)
       })
 
-      toast.success(SUCCESS_MESSAGES.LOGIN_SUCCESS)
+      toast.success(translateBackendMessage(SUCCESS_MESSAGES.LOGIN_SUCCESS) || SUCCESS_MESSAGES.LOGIN_SUCCESS)
       navigate('/admin/dashboard', { replace: true })
 
       return { success: true }
@@ -196,7 +197,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true)
       })
 
-      toast.success(SUCCESS_MESSAGES.REGISTER_SUCCESS)
+      toast.success(translateBackendMessage(SUCCESS_MESSAGES.REGISTER_SUCCESS) || SUCCESS_MESSAGES.REGISTER_SUCCESS)
       navigate('/owner/dashboard', { replace: true })
 
       return { success: true }
@@ -212,7 +213,7 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false)
 
     if (showToast) {
-      toast.success(SUCCESS_MESSAGES.LOGOUT_SUCCESS)
+      toast.success(translateBackendMessage(SUCCESS_MESSAGES.LOGOUT_SUCCESS) || SUCCESS_MESSAGES.LOGOUT_SUCCESS)
     }
     
     navigate('/')
